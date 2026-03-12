@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -7,6 +7,7 @@ import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import { getPracticeMode, PRACTICE_MODES } from '../constants/practiceModes';
 import { useAppTheme } from '../theme/ThemeProvider';
+import { getResponsiveLayout } from '../utils/layout';
 
 const LEVELS = [1, 2, 3, 4, 5, 6];
 
@@ -32,10 +33,17 @@ const THEME_OPTIONS = [
 ];
 
 const SettingsScreen = ({ settings, updateSettings }) => {
+    const { width } = useWindowDimensions();
+    const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
-        () => createStyles(colors, radii, shadows, typography),
-        [colors, radii, shadows, typography],
+        () =>
+            createStyles(colors, radii, shadows, typography, {
+                isWebWide,
+                isWebDesktop,
+                contentMaxWidth,
+            }),
+        [colors, radii, shadows, typography, isWebWide, isWebDesktop, contentMaxWidth],
     );
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
@@ -72,6 +80,7 @@ const SettingsScreen = ({ settings, updateSettings }) => {
                     onPress={() => setMode(type, mode.id)}
                     style={({ pressed }) => [
                         styles.modeRow,
+                        isWebDesktop && styles.modeRowDesktop,
                         isActive && styles.modeRowActive,
                         pressed && styles.modeRowPressed,
                     ]}
@@ -85,7 +94,7 @@ const SettingsScreen = ({ settings, updateSettings }) => {
                     </View>
 
                     <View style={styles.modeCopy}>
-                        <Text style={styles.modeLabel}>
+                        <Text style={[styles.modeLabel, isWebDesktop && styles.modeLabelDesktop]}>
                             {mode.label} <Text style={styles.modeDetail}>{mode.detail}</Text>
                         </Text>
                         <Text style={styles.modeDescription}>{mode.description}</Text>
@@ -104,124 +113,190 @@ const SettingsScreen = ({ settings, updateSettings }) => {
     return (
         <SafeAreaView style={styles.container}>
             <BackdropOrbs />
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <View style={styles.hero}>
-                    <Text style={styles.eyebrow}>Practice setup</Text>
-                    <Text style={styles.heroTitle}>Tune the study flow to match your pace.</Text>
-                    <Text style={styles.heroSubtitle}>
-                        Right now you see {inputMode.label.toLowerCase()} and answer with{' '}
-                        {outputMode.label.toLowerCase()}.
-                    </Text>
+            <ScrollView
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    isWebWide && styles.scrollContentWeb,
+                    isWebDesktop && styles.scrollContentDesktop,
+                ]}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={[styles.heroRow, isWebDesktop && styles.heroRowDesktop]}>
+                    <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
+                        <Text style={styles.eyebrow}>Practice setup</Text>
+                        <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
+                            Tune the study flow to match your pace.
+                        </Text>
+                        <Text
+                            style={[
+                                styles.heroSubtitle,
+                                isWebDesktop && styles.heroSubtitleDesktop,
+                            ]}
+                        >
+                            Right now you see {inputMode.label.toLowerCase()} and answer with{' '}
+                            {outputMode.label.toLowerCase()}.
+                        </Text>
+                    </View>
+
+                    <Card
+                        tone="accent"
+                        style={[
+                            styles.summaryCard,
+                            isWebDesktop && styles.summaryCardDesktop,
+                        ]}
+                    >
+                        <Text style={styles.summaryEyebrow}>Current session</Text>
+                        <Text
+                            style={[
+                                styles.summaryTitle,
+                                isWebDesktop && styles.summaryTitleDesktop,
+                            ]}
+                        >
+                            See {inputMode.label}. Answer with {outputMode.label}.
+                        </Text>
+                        <View style={styles.summaryChipRow}>
+                            <View style={styles.summaryChip}>
+                                <Ionicons color={colors.accent} name="albums" size={14} />
+                                <Text style={styles.summaryChipText}>{levelSummary}</Text>
+                            </View>
+                            <View style={styles.summaryChip}>
+                                <Ionicons
+                                    color={colors.accent}
+                                    name={themeMode === 'dark' ? 'moon' : 'sunny'}
+                                    size={14}
+                                />
+                                <Text style={styles.summaryChipText}>
+                                    {themeMode === 'dark' ? 'Night mode' : 'Day mode'}
+                                </Text>
+                            </View>
+                        </View>
+                    </Card>
                 </View>
 
-                <Card tone="accent" style={styles.summaryCard}>
-                    <Text style={styles.summaryEyebrow}>Current session</Text>
-                    <Text style={styles.summaryTitle}>
-                        See {inputMode.label}. Answer with {outputMode.label}.
-                    </Text>
-                    <View style={styles.summaryChipRow}>
-                        <View style={styles.summaryChip}>
-                            <Ionicons color={colors.accent} name="albums" size={14} />
-                            <Text style={styles.summaryChipText}>{levelSummary}</Text>
-                        </View>
-                        <View style={styles.summaryChip}>
-                            <Ionicons
-                                color={colors.accent}
-                                name={themeMode === 'dark' ? 'moon' : 'sunny'}
-                                size={14}
-                            />
-                            <Text style={styles.summaryChipText}>
-                                {themeMode === 'dark' ? 'Night mode' : 'Day mode'}
+                <View style={[styles.sectionsGrid, isWebDesktop && styles.sectionsGridDesktop]}>
+                    <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
+                        <Card style={styles.card}>
+                            <Text style={styles.sectionTitle}>Appearance</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                Switch between day and night study themes.
                             </Text>
-                        </View>
+                            <View style={[styles.themeRow, isWebDesktop && styles.themeRowDesktop]}>
+                                {THEME_OPTIONS.map((option) => {
+                                    const isActive = themeMode === option.id;
+
+                                    return (
+                                        <Pressable
+                                            key={option.id}
+                                            onPress={() => setMode('themeMode', option.id)}
+                                            style={({ pressed }) => [
+                                                styles.themeOption,
+                                                isWebDesktop && styles.themeOptionDesktop,
+                                                isActive && styles.themeOptionActive,
+                                                pressed && styles.themeOptionPressed,
+                                            ]}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.themeIcon,
+                                                    isActive && styles.themeIconActive,
+                                                ]}
+                                            >
+                                                <Ionicons
+                                                    color={isActive ? colors.onPrimary : colors.primaryStrong}
+                                                    name={option.icon}
+                                                    size={18}
+                                                />
+                                            </View>
+                                            <Text
+                                                style={[
+                                                    styles.themeLabel,
+                                                    isActive && styles.themeLabelActive,
+                                                ]}
+                                            >
+                                                {option.label}
+                                            </Text>
+                                            <Text
+                                                style={[
+                                                    styles.themeDetail,
+                                                    isActive && styles.themeDetailActive,
+                                                ]}
+                                            >
+                                                {option.detail}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </Card>
                     </View>
-                </Card>
 
-                <Card style={styles.card}>
-                    <Text style={styles.sectionTitle}>Appearance</Text>
-                    <Text style={styles.sectionSubtitle}>Switch between day and night study themes.</Text>
-                    <View style={styles.themeRow}>
-                        {THEME_OPTIONS.map((option) => {
-                            const isActive = themeMode === option.id;
+                    <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
+                        <Card style={styles.card}>
+                            <Text style={styles.sectionTitle}>HSK levels</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                Choose the vocabulary pool for each round.
+                            </Text>
 
-                            return (
-                                <Pressable
-                                    key={option.id}
-                                    onPress={() => setMode('themeMode', option.id)}
-                                    style={({ pressed }) => [
-                                        styles.themeOption,
-                                        isActive && styles.themeOptionActive,
-                                        pressed && styles.themeOptionPressed,
-                                    ]}
-                                >
-                                    <View style={[styles.themeIcon, isActive && styles.themeIconActive]}>
-                                        <Ionicons
-                                            color={isActive ? colors.onPrimary : colors.primaryStrong}
-                                            name={option.icon}
-                                            size={18}
-                                        />
-                                    </View>
-                                    <Text style={[styles.themeLabel, isActive && styles.themeLabelActive]}>
-                                        {option.label}
-                                    </Text>
-                                    <Text
-                                        style={[
-                                            styles.themeDetail,
-                                            isActive && styles.themeDetailActive,
-                                        ]}
-                                    >
-                                        {option.detail}
-                                    </Text>
-                                </Pressable>
-                            );
-                        })}
+                            <View style={styles.levelGrid}>
+                                {LEVELS.map((level) => {
+                                    const isActive = settings.hskLevels.includes(level);
+
+                                    return (
+                                        <Pressable
+                                            key={level}
+                                            onPress={() => toggleLevel(level)}
+                                            style={({ pressed }) => [
+                                                styles.levelButton,
+                                                isWebDesktop && styles.levelButtonDesktop,
+                                                isActive && styles.levelButtonActive,
+                                                pressed && styles.levelButtonPressed,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.levelText,
+                                                    isActive && styles.levelTextActive,
+                                                ]}
+                                            >
+                                                HSK {level}
+                                            </Text>
+                                        </Pressable>
+                                    );
+                                })}
+                            </View>
+                        </Card>
                     </View>
-                </Card>
 
-                <Card style={styles.card}>
-                    <Text style={styles.sectionTitle}>HSK levels</Text>
-                    <Text style={styles.sectionSubtitle}>Choose the vocabulary pool for each round.</Text>
-
-                    <View style={styles.levelGrid}>
-                        {LEVELS.map((level) => {
-                            const isActive = settings.hskLevels.includes(level);
-
-                            return (
-                                <Pressable
-                                    key={level}
-                                    onPress={() => toggleLevel(level)}
-                                    style={({ pressed }) => [
-                                        styles.levelButton,
-                                        isActive && styles.levelButtonActive,
-                                        pressed && styles.levelButtonPressed,
-                                    ]}
-                                >
-                                    <Text style={[styles.levelText, isActive && styles.levelTextActive]}>
-                                        HSK {level}
-                                    </Text>
-                                </Pressable>
-                            );
-                        })}
+                    <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
+                        <Card style={styles.card}>
+                            <Text style={styles.sectionTitle}>Prompt format</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                What appears on the main study card.
+                            </Text>
+                            <View style={styles.modeList}>
+                                {renderModeRow('inputMode', settings.inputMode)}
+                            </View>
+                        </Card>
                     </View>
-                </Card>
 
-                <Card style={styles.card}>
-                    <Text style={styles.sectionTitle}>Prompt format</Text>
-                    <Text style={styles.sectionSubtitle}>What appears on the main study card.</Text>
-                    <View style={styles.modeList}>{renderModeRow('inputMode', settings.inputMode)}</View>
-                </Card>
-
-                <Card style={styles.card}>
-                    <Text style={styles.sectionTitle}>Answer format</Text>
-                    <Text style={styles.sectionSubtitle}>What you tap in the answer grid.</Text>
-                    <View style={styles.modeList}>{renderModeRow('outputMode', settings.outputMode)}</View>
-                </Card>
+                    <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
+                        <Card style={styles.card}>
+                            <Text style={styles.sectionTitle}>Answer format</Text>
+                            <Text style={styles.sectionSubtitle}>
+                                What you tap in the answer grid.
+                            </Text>
+                            <View style={styles.modeList}>
+                                {renderModeRow('outputMode', settings.outputMode)}
+                            </View>
+                        </Card>
+                    </View>
+                </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
 
-const createStyles = (colors, radii, shadows, typography) =>
+const createStyles = (colors, radii, shadows, typography, layout) =>
     StyleSheet.create({
         container: {
             flex: 1,
@@ -233,8 +308,35 @@ const createStyles = (colors, radii, shadows, typography) =>
             paddingBottom: 120,
             gap: 18,
         },
+        scrollContentWeb: {
+            width: '100%',
+            maxWidth: layout.contentMaxWidth,
+            alignSelf: 'center',
+            paddingHorizontal: 24,
+            paddingTop: 24,
+            paddingBottom: 148,
+            gap: 22,
+        },
+        scrollContentDesktop: {
+            paddingTop: 34,
+            paddingHorizontal: 28,
+            gap: 24,
+        },
+        heroRow: {
+            gap: 18,
+        },
+        heroRowDesktop: {
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            gap: 24,
+        },
         hero: {
             gap: 8,
+        },
+        heroDesktop: {
+            flex: 1,
+            justifyContent: 'center',
+            maxWidth: 560,
         },
         eyebrow: {
             color: colors.primaryStrong,
@@ -249,13 +351,27 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontSize: 34,
             lineHeight: 39,
         },
+        heroTitleDesktop: {
+            fontSize: 46,
+            lineHeight: 52,
+        },
         heroSubtitle: {
             color: colors.textSecondary,
             fontSize: 16,
             lineHeight: 24,
         },
+        heroSubtitleDesktop: {
+            fontSize: 17,
+            lineHeight: 26,
+            maxWidth: 520,
+        },
         summaryCard: {
             gap: 12,
+        },
+        summaryCardDesktop: {
+            width: 380,
+            gap: 16,
+            padding: 26,
         },
         summaryEyebrow: {
             color: colors.accent,
@@ -269,6 +385,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontFamily: typography.headingFont,
             fontSize: 28,
             lineHeight: 32,
+        },
+        summaryTitleDesktop: {
+            fontSize: 34,
+            lineHeight: 38,
         },
         summaryChipRow: {
             flexDirection: 'row',
@@ -290,6 +410,21 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontSize: 13,
             fontWeight: '700',
         },
+        sectionsGrid: {
+            gap: 18,
+        },
+        sectionsGridDesktop: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            rowGap: 24,
+        },
+        sectionSlot: {
+            width: '100%',
+        },
+        sectionSlotHalf: {
+            width: '48.8%',
+        },
         card: {
             gap: 16,
         },
@@ -309,6 +444,9 @@ const createStyles = (colors, radii, shadows, typography) =>
             flexDirection: 'row',
             gap: 12,
         },
+        themeRowDesktop: {
+            gap: 16,
+        },
         themeOption: {
             flex: 1,
             paddingHorizontal: 14,
@@ -318,6 +456,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             borderWidth: 1,
             borderColor: colors.border,
             gap: 8,
+        },
+        themeOptionDesktop: {
+            paddingHorizontal: 18,
+            paddingVertical: 18,
         },
         themeOptionActive: {
             backgroundColor: colors.surface,
@@ -369,6 +511,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             borderWidth: 1,
             borderColor: colors.border,
         },
+        levelButtonDesktop: {
+            minWidth: '31.5%',
+            paddingVertical: 16,
+        },
         levelButtonActive: {
             backgroundColor: colors.primary,
             borderColor: 'transparent',
@@ -398,6 +544,9 @@ const createStyles = (colors, radii, shadows, typography) =>
             borderWidth: 1,
             borderColor: colors.border,
         },
+        modeRowDesktop: {
+            padding: 18,
+        },
         modeRowActive: {
             backgroundColor: colors.surface,
             borderColor: colors.primarySoft,
@@ -425,6 +574,9 @@ const createStyles = (colors, radii, shadows, typography) =>
             color: colors.text,
             fontSize: 16,
             fontWeight: '800',
+        },
+        modeLabelDesktop: {
+            fontSize: 17,
         },
         modeDetail: {
             color: colors.primaryStrong,

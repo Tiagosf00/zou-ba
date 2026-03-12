@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,6 +8,7 @@ import BackdropOrbs from '../components/BackdropOrbs';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { initials, finals } from '../data/pinyinData';
 import { validSyllables } from '../data/validPinyin';
+import { getResponsiveLayout } from '../utils/layout';
 
 const CELL_WIDTH = 68;
 const CELL_HEIGHT = 54;
@@ -25,10 +26,17 @@ const getPinyinSyllable = (initial, final) => {
 };
 
 const PinyinChartScreen = () => {
+    const { width } = useWindowDimensions();
+    const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const { colors, radii, typography } = useAppTheme();
     const styles = useMemo(
-        () => createStyles(colors, radii, typography),
-        [colors, radii, typography],
+        () =>
+            createStyles(colors, radii, typography, {
+                isWebWide,
+                isWebDesktop,
+                contentMaxWidth,
+            }),
+        [colors, radii, typography, isWebWide, isWebDesktop, contentMaxWidth],
     );
     const leftColRef = useRef(null);
     const rightGridRef = useRef(null);
@@ -70,28 +78,54 @@ const PinyinChartScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <BackdropOrbs />
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                <View style={styles.hero}>
-                    <Text style={styles.eyebrow}>Reference chart</Text>
-                    <Text style={styles.heroTitle}>Explore initials and finals together.</Text>
-                    <Text style={styles.heroSubtitle}>
-                        Scroll sideways for finals and vertically for initials. Filled cells mark valid Mandarin syllables.
-                    </Text>
+            <ScrollView
+                contentContainerStyle={[
+                    styles.scrollContent,
+                    isWebWide && styles.scrollContentWeb,
+                    isWebDesktop && styles.scrollContentDesktop,
+                ]}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={[styles.overviewRow, isWebDesktop && styles.overviewRowDesktop]}>
+                    <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
+                        <Text style={styles.eyebrow}>Reference chart</Text>
+                        <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
+                            Explore initials and finals together.
+                        </Text>
+                        <Text
+                            style={[
+                                styles.heroSubtitle,
+                                isWebDesktop && styles.heroSubtitleDesktop,
+                            ]}
+                        >
+                            Scroll sideways for finals and vertically for initials. Filled cells
+                            mark valid Mandarin syllables.
+                        </Text>
+                    </View>
+
+                    <Card
+                        tone="accent"
+                        style={[styles.legendCard, isWebDesktop && styles.legendCardDesktop]}
+                    >
+                        <View style={styles.legendItem}>
+                            <Ionicons color={colors.accent} name="ellipse" size={12} />
+                            <Text style={styles.legendText}>Filled cells are valid syllables.</Text>
+                        </View>
+                        <View style={styles.legendItem}>
+                            <Ionicons
+                                color={colors.primaryStrong}
+                                name="swap-horizontal"
+                                size={14}
+                            />
+                            <Text style={styles.legendText}>
+                                Swipe in both directions to browse the full table.
+                            </Text>
+                        </View>
+                    </Card>
                 </View>
 
-                <Card tone="accent" style={styles.legendCard}>
-                    <View style={styles.legendItem}>
-                        <Ionicons color={colors.accent} name="ellipse" size={12} />
-                        <Text style={styles.legendText}>Filled cells are valid syllables.</Text>
-                    </View>
-                    <View style={styles.legendItem}>
-                        <Ionicons color={colors.primaryStrong} name="swap-horizontal" size={14} />
-                        <Text style={styles.legendText}>Swipe in both directions to browse the full table.</Text>
-                    </View>
-                </Card>
-
-                <Card style={styles.chartCard}>
-                    <View style={styles.chartShell}>
+                <Card style={[styles.chartCard, isWebDesktop && styles.chartCardDesktop]}>
+                    <View style={[styles.chartShell, isWebDesktop && styles.chartShellDesktop]}>
                         <View style={styles.leftPane}>
                             <View style={[styles.cell, styles.cornerCell]}>
                                 <Text style={styles.cornerText}>Init.</Text>
@@ -161,7 +195,7 @@ const PinyinChartScreen = () => {
     );
 };
 
-const createStyles = (colors, radii, typography) =>
+const createStyles = (colors, radii, typography, layout) =>
     StyleSheet.create({
         container: {
             flex: 1,
@@ -173,8 +207,35 @@ const createStyles = (colors, radii, typography) =>
             paddingBottom: 120,
             gap: 18,
         },
+        scrollContentWeb: {
+            width: '100%',
+            maxWidth: layout.contentMaxWidth,
+            alignSelf: 'center',
+            paddingHorizontal: 24,
+            paddingTop: 24,
+            paddingBottom: 148,
+            gap: 22,
+        },
+        scrollContentDesktop: {
+            paddingTop: 34,
+            paddingHorizontal: 28,
+            gap: 24,
+        },
+        overviewRow: {
+            gap: 18,
+        },
+        overviewRowDesktop: {
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            gap: 24,
+        },
         hero: {
             gap: 8,
+        },
+        heroDesktop: {
+            flex: 1,
+            justifyContent: 'center',
+            maxWidth: 620,
         },
         eyebrow: {
             color: colors.primaryStrong,
@@ -189,13 +250,26 @@ const createStyles = (colors, radii, typography) =>
             fontSize: 34,
             lineHeight: 39,
         },
+        heroTitleDesktop: {
+            fontSize: 46,
+            lineHeight: 52,
+        },
         heroSubtitle: {
             color: colors.textSecondary,
             fontSize: 16,
             lineHeight: 24,
         },
+        heroSubtitleDesktop: {
+            fontSize: 17,
+            lineHeight: 26,
+            maxWidth: 560,
+        },
         legendCard: {
             gap: 10,
+        },
+        legendCardDesktop: {
+            width: 360,
+            justifyContent: 'center',
         },
         legendItem: {
             flexDirection: 'row',
@@ -211,10 +285,16 @@ const createStyles = (colors, radii, typography) =>
         chartCard: {
             padding: 0,
         },
+        chartCardDesktop: {
+            overflow: 'hidden',
+        },
         chartShell: {
             flexDirection: 'row',
             borderRadius: radii.lg,
             overflow: 'hidden',
+        },
+        chartShellDesktop: {
+            minHeight: 760,
         },
         leftPane: {
             width: LEFT_COL_WIDTH,

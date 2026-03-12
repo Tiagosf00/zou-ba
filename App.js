@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import PracticeScreen from './src/screens/PracticeScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import PinyinChartScreen from './src/screens/PinyinChartScreen';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeProvider';
+import { getFloatingTabMetrics, getResponsiveLayout } from './src/utils/layout';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,7 +31,13 @@ const TAB_ICONS = {
 
 const RootNavigator = ({ settings, updateSettings }) => {
     const { colors, shadows, typography, mode } = useAppTheme();
-    const styles = useMemo(() => createStyles(colors, shadows, typography), [colors, shadows, typography]);
+    const { width } = useWindowDimensions();
+    const layout = getResponsiveLayout(width);
+    const tabMetrics = getFloatingTabMetrics(width);
+    const styles = useMemo(
+        () => createStyles(colors, shadows, typography, layout, tabMetrics),
+        [colors, shadows, typography, layout, tabMetrics],
+    );
     const navigationTheme = useMemo(
         () => ({
             ...DefaultTheme,
@@ -115,25 +122,35 @@ export default function App() {
     );
 }
 
-const createStyles = (colors, shadows, typography) =>
+const createStyles = (colors, shadows, typography, layout, tabMetrics) =>
     StyleSheet.create({
         scene: {
             backgroundColor: colors.background,
         },
         tabBar: {
-            height: 74,
-            paddingTop: 8,
-            paddingBottom: 10,
+            height: layout.isWebDesktop ? 78 : 74,
+            width: layout.isWebDesktop ? tabMetrics.tabBarWidth : undefined,
+            left: layout.isWebDesktop ? tabMetrics.tabBarLeft : undefined,
+            bottom: layout.isWebDesktop ? 24 : undefined,
+            position: layout.isWebDesktop ? 'absolute' : 'relative',
+            paddingTop: layout.isWebDesktop ? 10 : 8,
+            paddingBottom: layout.isWebDesktop ? 10 : 10,
+            paddingHorizontal: layout.isWebDesktop ? 12 : 0,
             backgroundColor: colors.surface,
             borderTopWidth: 1,
+            borderWidth: layout.isWebDesktop ? 1 : 0,
+            borderColor: colors.border,
             borderTopColor: colors.border,
-            ...shadows.sm,
+            borderRadius: layout.isWebDesktop ? 28 : 0,
+            ...shadows[layout.isWebDesktop ? 'md' : 'sm'],
         },
         tabBarItem: {
-            gap: 2,
+            gap: layout.isWebDesktop ? 4 : 2,
+            borderRadius: 18,
+            marginHorizontal: layout.isWebDesktop ? 6 : 0,
         },
         tabBarLabel: {
-            fontSize: 12,
+            fontSize: layout.isWebDesktop ? 13 : 12,
             fontWeight: '700',
             fontFamily: typography.headingFont,
         },

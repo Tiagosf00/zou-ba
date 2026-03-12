@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -8,6 +8,7 @@ import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppTheme } from '../theme/ThemeProvider';
+import { getResponsiveLayout } from '../utils/layout';
 import {
     buildRound,
     createPracticeScheduler,
@@ -21,16 +22,30 @@ import {
 import hskData from '../../assets/hsk.json';
 
 const PracticeScreen = ({ settings }) => {
+    const { width, height } = useWindowDimensions();
+    const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
-        () => createStyles(colors, radii, shadows, typography),
-        [colors, radii, shadows, typography],
+        () =>
+            createStyles(colors, radii, shadows, typography, {
+                isWebWide,
+                isWebDesktop,
+                contentMaxWidth,
+            }),
+        [colors, radii, shadows, typography, isWebWide, isWebDesktop, contentMaxWidth],
     );
-    const { height } = useWindowDimensions();
-    const compactLayout = height < 780;
-    const tightLayout = height < 700;
-    const veryTightLayout = height < 640;
-    const optionButtonHeight = veryTightLayout ? 72 : tightLayout ? 80 : compactLayout ? 88 : 96;
+    const compactLayout = !isWebDesktop && height < 780;
+    const tightLayout = !isWebDesktop && height < 700;
+    const veryTightLayout = !isWebDesktop && height < 640;
+    const optionButtonHeight = isWebDesktop
+        ? 112
+        : veryTightLayout
+          ? 72
+          : tightLayout
+            ? 80
+            : compactLayout
+              ? 88
+              : 96;
     const [round, setRound] = useState(null);
     const [selectedOption, setSelectedOption] = useState(null);
     const [isCorrect, setIsCorrect] = useState(null);
@@ -125,8 +140,8 @@ const PracticeScreen = ({ settings }) => {
         return (
             <SafeAreaView style={styles.container}>
                 <BackdropOrbs />
-                <View style={styles.emptyState}>
-                    <Card style={styles.emptyCard}>
+                <View style={[styles.emptyState, isWebWide && styles.emptyStateWeb]}>
+                    <Card style={[styles.emptyCard, isWebWide && styles.emptyCardWeb]}>
                         <Text style={styles.emptyEyebrow}>Practice</Text>
                         <Text style={styles.emptyTitle}>Not enough words for a round yet.</Text>
                         <Text style={styles.emptyText}>
@@ -139,228 +154,329 @@ const PracticeScreen = ({ settings }) => {
     }
 
     const { question, options } = round;
+    const hasAnswered = !!selectedOption;
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
     const meaningSummary = meaningLines.join(', ');
     const selectedMeaningSummary = selectedOption ? getMeaningSummary(selectedOption) : '';
+    const optionGrid = (
+        <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
+            {options.map((item) => {
+                const isSelected = selectedOption?.id === item.id;
+                const isAnswer = item.id === question.id;
+                let variant = 'secondary';
+
+                if (selectedOption) {
+                    if (isAnswer) {
+                        variant = 'success';
+                    } else if (isSelected) {
+                        variant = 'danger';
+                    }
+                }
+
+                return (
+                    <View
+                        key={item.id}
+                        style={[styles.optionWrapper, isWebDesktop && styles.optionWrapperDesktop]}
+                    >
+                        <ModernButton
+                            title={getDisplayLines(item, settings.outputMode)}
+                            onPress={() => handleSelection(item)}
+                            variant={variant}
+                            multiline
+                            disabled={!!selectedOption}
+                            style={[
+                                styles.optionButton,
+                                { minHeight: optionButtonHeight },
+                                compactLayout && styles.optionButtonCompact,
+                                isWebDesktop && styles.optionButtonDesktop,
+                            ]}
+                            textStyle={[
+                                styles.optionText,
+                                compactLayout && styles.optionTextCompact,
+                                isWebDesktop && styles.optionTextDesktop,
+                            ]}
+                        />
+                    </View>
+                );
+            })}
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
             <BackdropOrbs />
-            <View style={[styles.content, compactLayout && styles.contentCompact]}>
-                <View style={styles.topSection}>
-                    <View style={styles.hero}>
-                        <View style={styles.heroCopy}>
-                            <Text style={styles.eyebrow}>Daily practice</Text>
-                            <Text
-                                style={[
-                                    styles.heroTitle,
-                                    compactLayout && styles.heroTitleCompact,
-                                    veryTightLayout && styles.heroTitleVeryCompact,
-                                ]}
-                            >
-                                Quick recognition drills.
-                            </Text>
-                            <Text
-                                numberOfLines={selectedOption ? 1 : compactLayout ? 2 : 3}
-                                style={[
-                                    styles.heroSubtitle,
-                                    compactLayout && styles.heroSubtitleCompact,
-                                ]}
-                            >
-                                See {inputMode.chipLabel.toLowerCase()}, answer with{' '}
-                                {outputMode.chipLabel.toLowerCase()}, across {levelSummary}.
-                            </Text>
-                        </View>
-
-                        <View style={[styles.streakBadge, compactLayout && styles.streakBadgeCompact]}>
-                            <Ionicons color={colors.primaryStrong} name="flame" size={compactLayout ? 16 : 18} />
-                            <Text style={[styles.streakValue, compactLayout && styles.streakValueCompact]}>
-                                {streak}
-                            </Text>
-                            <Text style={styles.streakLabel}>streak</Text>
-                        </View>
-                    </View>
-
-                    <Card
+            <ScrollView
+                style={styles.scrollView}
+                contentContainerStyle={[
+                    styles.content,
+                    compactLayout && styles.contentCompact,
+                    isWebWide && styles.contentWeb,
+                    isWebDesktop && styles.contentDesktop,
+                ]}
+                showsVerticalScrollIndicator={false}
+            >
+                <View
+                    style={[
+                        styles.practiceLayout,
+                        isWebDesktop && styles.practiceLayoutDesktop,
+                    ]}
+                >
+                    <View
                         style={[
-                            styles.questionCard,
-                            compactLayout && styles.questionCardCompact,
-                            veryTightLayout && styles.questionCardVeryCompact,
-                            isCorrect === true && styles.questionCardCorrect,
-                            isCorrect === false && styles.questionCardWrong,
+                            styles.topSection,
+                            isWebDesktop && styles.topSectionDesktop,
                         ]}
                     >
-                        <View style={styles.chipRow}>
-                            <View style={[styles.modeChip, compactLayout && styles.modeChipCompact]}>
-                                <Ionicons color={colors.primaryStrong} name="eye" size={13} />
-                                <Text style={styles.modeChipText}>See {inputMode.label}</Text>
+                        <View style={styles.hero}>
+                            <View style={styles.heroCopy}>
+                                <Text style={styles.eyebrow}>Daily practice</Text>
+                                <Text
+                                    style={[
+                                        styles.heroTitle,
+                                        isWebDesktop && styles.heroTitleDesktop,
+                                        compactLayout && styles.heroTitleCompact,
+                                        veryTightLayout && styles.heroTitleVeryCompact,
+                                    ]}
+                                >
+                                    Quick recognition drills.
+                                </Text>
+                                <Text
+                                    numberOfLines={
+                                        isWebDesktop ? 3 : selectedOption ? 1 : compactLayout ? 2 : 3
+                                    }
+                                    style={[
+                                        styles.heroSubtitle,
+                                        isWebDesktop && styles.heroSubtitleDesktop,
+                                        compactLayout && styles.heroSubtitleCompact,
+                                    ]}
+                                >
+                                    See {inputMode.chipLabel.toLowerCase()}, answer with{' '}
+                                    {outputMode.chipLabel.toLowerCase()}, across {levelSummary}.
+                                </Text>
                             </View>
 
                             <View
                                 style={[
-                                    styles.modeChip,
-                                    styles.modeChipAccent,
-                                    compactLayout && styles.modeChipCompact,
+                                    styles.streakBadge,
+                                    compactLayout && styles.streakBadgeCompact,
+                                    isWebDesktop && styles.streakBadgeDesktop,
                                 ]}
                             >
-                                <Ionicons color={colors.accent} name="checkmark-circle" size={13} />
-                                <Text style={[styles.modeChipText, styles.modeChipTextAccent]}>
-                                    Answer {outputMode.label}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <Text style={styles.questionLabel}>Pick the matching answer</Text>
-
-                        {settings.inputMode === 'eng' ? (
-                            <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
-                                {meaningLines.map((line) => (
-                                    <Text
-                                        key={line}
-                                        style={[
-                                            styles.meaningLine,
-                                            compactLayout && styles.meaningLineCompact,
-                                            veryTightLayout && styles.meaningLineVeryCompact,
-                                        ]}
-                                    >
-                                        {line}
-                                    </Text>
-                                ))}
-                            </View>
-                        ) : (
-                            <Text
-                                adjustsFontSizeToFit
-                                minimumFontScale={0.72}
-                                numberOfLines={settings.inputMode === 'pinyin' ? 2 : 1}
-                                style={[
-                                    styles.questionText,
-                                    settings.inputMode === 'pinyin' && styles.questionTextPinyin,
-                                    compactLayout && styles.questionTextCompact,
-                                    compactLayout &&
-                                        settings.inputMode === 'pinyin' &&
-                                        styles.questionTextPinyinCompact,
-                                    veryTightLayout && styles.questionTextVeryCompact,
-                                ]}
-                            >
-                                {getDisplayText(question, settings.inputMode)}
-                            </Text>
-                        )}
-
-                        <View style={styles.questionFooter}>
-                            <View style={styles.levelTag}>
-                                <Text style={styles.levelTagText}>HSK {question.level}</Text>
-                            </View>
-                            {!tightLayout ? (
-                                <Text style={styles.helperText}>
-                                    {selectedOption
-                                        ? 'Review the word details, then move to the next card.'
-                                        : 'Choose from six options.'}
-                                </Text>
-                            ) : null}
-                        </View>
-                    </Card>
-
-                    {selectedOption ? (
-                        <Card
-                            style={[styles.answerCard, compactLayout && styles.answerCardCompact]}
-                            tone={isCorrect ? 'accent' : 'muted'}
-                        >
-                            <View style={styles.answerCopy}>
+                                <Ionicons
+                                    color={colors.primaryStrong}
+                                    name="flame"
+                                    size={compactLayout ? 16 : 18}
+                                />
                                 <Text
                                     style={[
-                                        styles.answerEyebrow,
-                                        isCorrect && styles.answerEyebrowSuccess,
+                                        styles.streakValue,
+                                        compactLayout && styles.streakValueCompact,
+                                        isWebDesktop && styles.streakValueDesktop,
                                     ]}
                                 >
-                                    {isCorrect ? 'Word details' : 'Review this pair'}
+                                    {streak}
                                 </Text>
-                                <View style={styles.answerRow}>
-                                    <Text style={styles.answerLabel}>
-                                        {isCorrect ? 'Picked word' : 'Your choice'}
-                                    </Text>
-                                    <Text style={styles.answerSummary}>
-                                        {selectedOption.hanzi} · {selectedOption.pinyin}
-                                    </Text>
-                                    <Text style={styles.answerTranslation}>
-                                        {selectedMeaningSummary}
-                                    </Text>
+                                <Text
+                                    style={[
+                                        styles.streakLabel,
+                                        isWebDesktop && styles.streakLabelDesktop,
+                                    ]}
+                                >
+                                    streak
+                                </Text>
+                            </View>
+                        </View>
+
+                        <Card
+                            style={[
+                                styles.questionCard,
+                                isWebDesktop && styles.questionCardDesktop,
+                                compactLayout && styles.questionCardCompact,
+                                veryTightLayout && styles.questionCardVeryCompact,
+                                isCorrect === true && styles.questionCardCorrect,
+                                isCorrect === false && styles.questionCardWrong,
+                            ]}
+                        >
+                            <View style={styles.chipRow}>
+                                <View style={[styles.modeChip, compactLayout && styles.modeChipCompact]}>
+                                    <Ionicons color={colors.primaryStrong} name="eye" size={13} />
+                                    <Text style={styles.modeChipText}>See {inputMode.label}</Text>
                                 </View>
 
-                                {!isCorrect ? (
-                                    <View style={[styles.answerRow, styles.answerRowSecondary]}>
-                                        <Text style={[styles.answerLabel, styles.answerLabelSuccess]}>
-                                            Correct answer
-                                        </Text>
-                                        <Text style={styles.answerSummary}>
-                                            {question.hanzi} · {question.pinyin}
-                                        </Text>
-                                        <Text style={styles.answerTranslation}>{meaningSummary}</Text>
-                                    </View>
-                                ) : null}
+                                <View
+                                    style={[
+                                        styles.modeChip,
+                                        styles.modeChipAccent,
+                                        compactLayout && styles.modeChipCompact,
+                                    ]}
+                                >
+                                    <Ionicons color={colors.accent} name="checkmark-circle" size={13} />
+                                    <Text style={[styles.modeChipText, styles.modeChipTextAccent]}>
+                                        Answer {outputMode.label}
+                                    </Text>
+                                </View>
                             </View>
 
-                            <ModernButton
-                                title={tightLayout ? 'Next' : 'Next card'}
-                                onPress={handleNextCard}
-                                style={styles.nextButton}
-                                variant="primary"
-                            />
-                        </Card>
-                    ) : null}
-                </View>
+                            <Text style={styles.questionLabel}>Pick the matching answer</Text>
 
-                <View style={styles.optionsSection}>
-                    <View style={styles.optionsGrid}>
-                        {options.map((item) => {
-                            const isSelected = selectedOption?.id === item.id;
-                            const isAnswer = item.id === question.id;
-                            let variant = 'secondary';
-
-                            if (selectedOption) {
-                                if (isAnswer) {
-                                    variant = 'success';
-                                } else if (isSelected) {
-                                    variant = 'danger';
-                                }
-                            }
-
-                            return (
-                                <View key={item.id} style={styles.optionWrapper}>
-                                    <ModernButton
-                                        title={getDisplayLines(item, settings.outputMode)}
-                                        onPress={() => handleSelection(item)}
-                                        variant={variant}
-                                        multiline
-                                        disabled={!!selectedOption}
-                                        style={[
-                                            styles.optionButton,
-                                            { minHeight: optionButtonHeight },
-                                            compactLayout && styles.optionButtonCompact,
-                                        ]}
-                                        textStyle={[
-                                            styles.optionText,
-                                            compactLayout && styles.optionTextCompact,
-                                        ]}
-                                    />
+                            {settings.inputMode === 'eng' ? (
+                                <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
+                                    {meaningLines.map((line) => (
+                                        <Text
+                                            key={line}
+                                            style={[
+                                                styles.meaningLine,
+                                                isWebDesktop && styles.meaningLineDesktop,
+                                                compactLayout && styles.meaningLineCompact,
+                                                veryTightLayout && styles.meaningLineVeryCompact,
+                                            ]}
+                                        >
+                                            {line}
+                                        </Text>
+                                    ))}
                                 </View>
-                            );
-                        })}
+                            ) : (
+                                <Text
+                                    adjustsFontSizeToFit
+                                    minimumFontScale={0.72}
+                                    numberOfLines={settings.inputMode === 'pinyin' ? 2 : 1}
+                                    style={[
+                                        styles.questionText,
+                                        settings.inputMode === 'pinyin' && styles.questionTextPinyin,
+                                        isWebDesktop && styles.questionTextDesktop,
+                                        isWebDesktop &&
+                                            settings.inputMode === 'pinyin' &&
+                                            styles.questionTextPinyinDesktop,
+                                        compactLayout && styles.questionTextCompact,
+                                        compactLayout &&
+                                            settings.inputMode === 'pinyin' &&
+                                            styles.questionTextPinyinCompact,
+                                        veryTightLayout && styles.questionTextVeryCompact,
+                                    ]}
+                                >
+                                    {getDisplayText(question, settings.inputMode)}
+                                </Text>
+                            )}
+
+                            <View style={styles.questionFooter}>
+                                <View style={styles.levelTag}>
+                                    <Text style={styles.levelTagText}>HSK {question.level}</Text>
+                                </View>
+                                {!tightLayout ? (
+                                    <Text style={styles.helperText}>
+                                        {selectedOption
+                                            ? 'Review the word details, then move to the next card.'
+                                            : 'Choose from six options.'}
+                                    </Text>
+                                ) : null}
+                            </View>
+                        </Card>
+
+                        {selectedOption ? (
+                            <Card
+                                style={[
+                                    styles.answerCard,
+                                    compactLayout && styles.answerCardCompact,
+                                    isWebDesktop && styles.answerCardDesktop,
+                                ]}
+                                tone={isCorrect ? 'accent' : 'muted'}
+                            >
+                                <View style={styles.answerCopy}>
+                                    <Text
+                                        style={[
+                                            styles.answerEyebrow,
+                                            isCorrect && styles.answerEyebrowSuccess,
+                                        ]}
+                                    >
+                                        {isCorrect ? 'Word details' : 'Review this pair'}
+                                    </Text>
+                                    <View style={styles.answerRow}>
+                                        <Text style={styles.answerLabel}>
+                                            {isCorrect ? 'Picked word' : 'Your choice'}
+                                        </Text>
+                                        <Text style={styles.answerSummary}>
+                                            {selectedOption.hanzi} · {selectedOption.pinyin}
+                                        </Text>
+                                        <Text style={styles.answerTranslation}>
+                                            {selectedMeaningSummary}
+                                        </Text>
+                                    </View>
+
+                                    {!isCorrect ? (
+                                        <View style={[styles.answerRow, styles.answerRowSecondary]}>
+                                            <Text
+                                                style={[
+                                                    styles.answerLabel,
+                                                    styles.answerLabelSuccess,
+                                                ]}
+                                            >
+                                                Correct answer
+                                            </Text>
+                                            <Text style={styles.answerSummary}>
+                                                {question.hanzi} · {question.pinyin}
+                                            </Text>
+                                            <Text style={styles.answerTranslation}>
+                                                {meaningSummary}
+                                            </Text>
+                                        </View>
+                                    ) : null}
+                                </View>
+
+                                <ModernButton
+                                    title={tightLayout ? 'Next' : 'Next card'}
+                                    onPress={handleNextCard}
+                                    style={[
+                                        styles.nextButton,
+                                        compactLayout && styles.nextButtonCompact,
+                                        isWebDesktop && styles.nextButtonDesktop,
+                                    ]}
+                                    variant="primary"
+                                />
+                            </Card>
+                        ) : null}
                     </View>
+
+                    {isWebDesktop ? (
+                        <Card style={styles.optionsPanel}>
+                            <View style={styles.optionsPanelHeader}>
+                                <Text style={styles.optionsEyebrow}>Answer choices</Text>
+                                <Text style={styles.optionsTitle}>
+                                    {hasAnswered
+                                        ? 'Review the result, then keep the streak moving.'
+                                        : 'Choose the matching word from the grid.'}
+                                </Text>
+                            </View>
+
+                            {optionGrid}
+                        </Card>
+                    ) : (
+                        <View
+                            style={[
+                                styles.optionsSection,
+                                hasAnswered && styles.optionsSectionAnswered,
+                            ]}
+                        >
+                            {optionGrid}
+                        </View>
+                    )}
                 </View>
-            </View>
+            </ScrollView>
         </SafeAreaView>
     );
 };
 
-const createStyles = (colors, radii, shadows, typography) =>
+const createStyles = (colors, radii, shadows, typography, layout) =>
     StyleSheet.create({
         container: {
             flex: 1,
             backgroundColor: colors.background,
         },
-        content: {
+        scrollView: {
             flex: 1,
+        },
+        content: {
+            flexGrow: 1,
             paddingHorizontal: 16,
             paddingTop: 8,
             paddingBottom: 12,
@@ -370,8 +486,34 @@ const createStyles = (colors, radii, shadows, typography) =>
             gap: 10,
             paddingTop: 6,
         },
+        contentWeb: {
+            width: '100%',
+            maxWidth: layout.contentMaxWidth,
+            alignSelf: 'center',
+            paddingHorizontal: 24,
+            paddingTop: 24,
+            paddingBottom: 148,
+            gap: 18,
+        },
+        contentDesktop: {
+            paddingTop: 34,
+            paddingHorizontal: 28,
+            gap: 24,
+        },
+        practiceLayout: {
+            gap: 12,
+        },
+        practiceLayoutDesktop: {
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 24,
+        },
         topSection: {
             gap: 10,
+        },
+        topSectionDesktop: {
+            width: 430,
+            gap: 16,
         },
         hero: {
             flexDirection: 'row',
@@ -395,6 +537,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontSize: 30,
             lineHeight: 34,
         },
+        heroTitleDesktop: {
+            fontSize: 46,
+            lineHeight: 50,
+        },
         heroTitleCompact: {
             fontSize: 25,
             lineHeight: 28,
@@ -407,6 +553,11 @@ const createStyles = (colors, radii, shadows, typography) =>
             color: colors.textSecondary,
             fontSize: 14,
             lineHeight: 20,
+        },
+        heroSubtitleDesktop: {
+            fontSize: 17,
+            lineHeight: 26,
+            maxWidth: 320,
         },
         heroSubtitleCompact: {
             fontSize: 13,
@@ -429,6 +580,12 @@ const createStyles = (colors, radii, shadows, typography) =>
             minWidth: 70,
             paddingVertical: 8,
         },
+        streakBadgeDesktop: {
+            minWidth: 96,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderRadius: radii.lg,
+        },
         streakValue: {
             color: colors.text,
             fontSize: 24,
@@ -439,6 +596,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontSize: 22,
             lineHeight: 24,
         },
+        streakValueDesktop: {
+            fontSize: 30,
+            lineHeight: 34,
+        },
         streakLabel: {
             color: colors.textSecondary,
             fontSize: 10,
@@ -446,9 +607,18 @@ const createStyles = (colors, radii, shadows, typography) =>
             textTransform: 'uppercase',
             letterSpacing: 1,
         },
+        streakLabelDesktop: {
+            fontSize: 11,
+            letterSpacing: 1.2,
+        },
         questionCard: {
             gap: 12,
             padding: 18,
+        },
+        questionCardDesktop: {
+            gap: 18,
+            padding: 22,
+            minHeight: 360,
         },
         questionCardCompact: {
             gap: 10,
@@ -511,6 +681,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             lineHeight: 54,
             textAlign: 'center',
         },
+        questionTextDesktop: {
+            fontSize: 68,
+            lineHeight: 74,
+        },
         questionTextCompact: {
             fontSize: 42,
             lineHeight: 46,
@@ -522,6 +696,10 @@ const createStyles = (colors, radii, shadows, typography) =>
         questionTextPinyin: {
             fontSize: 32,
             lineHeight: 38,
+        },
+        questionTextPinyinDesktop: {
+            fontSize: 42,
+            lineHeight: 48,
         },
         questionTextPinyinCompact: {
             fontSize: 28,
@@ -539,6 +717,10 @@ const createStyles = (colors, radii, shadows, typography) =>
             fontSize: 24,
             lineHeight: 29,
             textAlign: 'center',
+        },
+        meaningLineDesktop: {
+            fontSize: 29,
+            lineHeight: 34,
         },
         meaningLineCompact: {
             fontSize: 21,
@@ -583,7 +765,12 @@ const createStyles = (colors, radii, shadows, typography) =>
             paddingHorizontal: 14,
         },
         answerCardCompact: {
+            flexDirection: 'column',
             gap: 10,
+        },
+        answerCardDesktop: {
+            flexDirection: 'column',
+            gap: 14,
         },
         answerCopy: {
             flex: 1,
@@ -636,9 +823,44 @@ const createStyles = (colors, radii, shadows, typography) =>
             paddingVertical: 10,
             alignSelf: 'center',
         },
+        nextButtonCompact: {
+            minWidth: 0,
+            alignSelf: 'stretch',
+        },
+        nextButtonDesktop: {
+            minWidth: 0,
+            alignSelf: 'stretch',
+        },
         optionsSection: {
-            flex: 1,
+            flexGrow: 1,
             justifyContent: 'center',
+        },
+        optionsSectionAnswered: {
+            flexGrow: 0,
+            justifyContent: 'flex-start',
+        },
+        optionsPanel: {
+            flex: 1,
+            gap: 20,
+            padding: 22,
+            minHeight: 640,
+        },
+        optionsPanelHeader: {
+            gap: 8,
+        },
+        optionsEyebrow: {
+            color: colors.primaryStrong,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+        },
+        optionsTitle: {
+            color: colors.text,
+            fontFamily: typography.headingFont,
+            fontSize: 32,
+            lineHeight: 36,
+            maxWidth: 420,
         },
         optionsGrid: {
             flexDirection: 'row',
@@ -646,8 +868,14 @@ const createStyles = (colors, radii, shadows, typography) =>
             justifyContent: 'space-between',
             rowGap: 10,
         },
+        optionsGridDesktop: {
+            rowGap: 16,
+        },
         optionWrapper: {
             width: '48%',
+        },
+        optionWrapperDesktop: {
+            width: '48.7%',
         },
         optionButton: {
             paddingHorizontal: 10,
@@ -655,9 +883,17 @@ const createStyles = (colors, radii, shadows, typography) =>
         optionButtonCompact: {
             paddingHorizontal: 8,
         },
+        optionButtonDesktop: {
+            borderRadius: radii.lg,
+            paddingHorizontal: 18,
+        },
         optionText: {
             fontSize: 18,
             lineHeight: 20,
+        },
+        optionTextDesktop: {
+            fontSize: 20,
+            lineHeight: 24,
         },
         optionTextCompact: {
             fontSize: 16,
@@ -668,8 +904,16 @@ const createStyles = (colors, radii, shadows, typography) =>
             justifyContent: 'center',
             paddingHorizontal: 20,
         },
+        emptyStateWeb: {
+            width: '100%',
+            maxWidth: 760,
+            alignSelf: 'center',
+        },
         emptyCard: {
             gap: 10,
+        },
+        emptyCardWeb: {
+            padding: 28,
         },
         emptyEyebrow: {
             color: colors.primaryStrong,
