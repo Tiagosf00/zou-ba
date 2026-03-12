@@ -6,6 +6,19 @@ const headingFont = Platform.select({
     default: 'serif',
 });
 
+const uiFont = Platform.select({
+    ios: 'System',
+    android: 'sans-serif',
+    default: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
+});
+
+const studyFont = Platform.select({
+    ios: 'System',
+    android: 'sans-serif-medium',
+    default:
+        '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Segoe UI", sans-serif',
+});
+
 export const lightColors = {
     primary: '#C56C49',
     primaryStrong: '#A55335',
@@ -80,6 +93,8 @@ export const spacing = {
 
 export const typography = {
     headingFont,
+    uiFont,
+    studyFont,
 };
 
 export const createShadows = (colors) => ({

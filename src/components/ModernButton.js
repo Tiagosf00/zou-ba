@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useAppTheme } from '../theme/ThemeProvider';
 
@@ -12,10 +12,10 @@ const ModernButton = ({
     variant = 'primary',
     multiline = false,
 }) => {
-    const { colors, radii, shadows } = useAppTheme();
+    const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
-        () => createStyles(colors, radii),
-        [colors, radii],
+        () => createStyles(colors, radii, typography),
+        [colors, radii, typography],
     );
     const variantStyles = useMemo(
         () => ({
@@ -81,7 +81,7 @@ const ModernButton = ({
     );
 };
 
-const createStyles = (colors, radii) =>
+const createStyles = (colors, radii, typography) =>
     StyleSheet.create({
         button: {
             minHeight: 84,
@@ -99,20 +99,23 @@ const createStyles = (colors, radii) =>
         },
         content: {
             width: '100%',
-            gap: 3,
+            gap: 4,
             alignItems: 'center',
             justifyContent: 'center',
+            paddingVertical: Platform.OS === 'web' ? 2 : 0,
         },
         text: {
-            fontSize: 17,
+            fontFamily: typography.studyFont,
+            fontSize: 18,
             fontWeight: '700',
-            lineHeight: 21,
+            lineHeight: 25,
             textAlign: 'center',
             flexShrink: 1,
+            paddingBottom: Platform.OS === 'web' ? 2 : 0,
         },
         secondaryLine: {
-            fontSize: 14,
-            lineHeight: 18,
+            fontSize: 15,
+            lineHeight: 22,
             opacity: 0.88,
         },
     });

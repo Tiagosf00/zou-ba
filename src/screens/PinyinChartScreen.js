@@ -409,8 +409,10 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         cornerText: {
             color: colors.onPrimary,
+            fontFamily: typography.uiFont,
             fontSize: 11,
             fontWeight: '800',
+            lineHeight: 14,
             letterSpacing: 0.6,
             textTransform: 'uppercase',
         },
@@ -423,8 +425,10 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         headerText: {
             color: colors.textSecondary,
+            fontFamily: typography.studyFont,
             fontSize: 11,
             fontWeight: '800',
+            lineHeight: 15,
         },
         contentCell: {
             backgroundColor: colors.surface,
@@ -434,8 +438,10 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         cellText: {
             color: colors.primaryStrong,
+            fontFamily: typography.studyFont,
             fontSize: 11,
             fontWeight: '700',
+            lineHeight: 15,
         },
         scrollSpacer: {
             height: 40,

@@ -570,8 +570,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         contentDesktop: {
             paddingTop: 34,
-            paddingHorizontal: 28,
-            gap: 24,
+            paddingHorizontal: 36,
+            gap: 28,
         },
         practiceLayout: {
             gap: 12,
@@ -579,7 +579,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         practiceLayoutDesktop: {
             flexDirection: 'row',
             alignItems: 'flex-start',
-            gap: 24,
+            gap: 28,
         },
         topSection: {
             gap: 10,
@@ -926,11 +926,14 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionsPanel: {
             flex: 1,
             gap: 20,
-            padding: 22,
-            minHeight: 640,
+            padding: 26,
+            minHeight: 660,
         },
         optionsPanelHeader: {
             gap: 8,
+            width: '100%',
+            maxWidth: 1120,
+            alignSelf: 'center',
         },
         optionsEyebrow: {
             color: colors.primaryStrong,
@@ -942,9 +945,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionsTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: 32,
-            lineHeight: 36,
-            maxWidth: 420,
+            fontSize: 36,
+            lineHeight: 40,
+            maxWidth: 520,
         },
         optionsGrid: {
             flexDirection: 'row',
@@ -953,7 +956,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             rowGap: 10,
         },
         optionsGridDesktop: {
-            rowGap: 16,
+            width: '100%',
+            maxWidth: 1120,
+            alignSelf: 'center',
+            rowGap: 18,
         },
         optionWrapper: {
             width: '48%',
@@ -969,23 +975,23 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         optionButtonDesktop: {
             borderRadius: radii.lg,
-            paddingHorizontal: 18,
+            paddingHorizontal: 22,
         },
         optionText: {
             fontSize: 18,
             lineHeight: 20,
         },
         optionTextDesktop: {
-            fontSize: 20,
-            lineHeight: 24,
+            fontSize: 23,
+            lineHeight: 30,
         },
         optionTextHanziDesktop: {
-            fontSize: 28,
-            lineHeight: 34,
+            fontSize: 32,
+            lineHeight: 38,
         },
         optionTextPinyinWeb: {
-            fontSize: 19,
-            lineHeight: 22,
+            fontSize: 21,
+            lineHeight: 28,
         },
         optionTextCompact: {
             fontSize: 16,
