@@ -1,2 +1,2 @@
-# zou-ba
-App for Chinese practicing
+# zou-ba (走吧）
+App for Chinese Practicing
