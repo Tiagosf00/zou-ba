@@ -24,9 +24,11 @@ import hskData from '../../assets/hsk.json';
 const PracticeScreen = ({ settings }) => {
     const { width, height } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
+    const desktopScale = isWebDesktop ? Math.min(Math.max((width - 1120) / 720, 0), 1) : 0;
     const desktopSidebarWidth = isWebDesktop
-        ? Math.min(Math.max(width * 0.31, 440), 560)
+        ? Math.min(Math.max(width * 0.35, 500), 680)
         : 430;
+    const desktopContentMinHeight = isWebDesktop ? Math.max(height - 40, 680) : height;
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
         () =>
@@ -34,6 +36,8 @@ const PracticeScreen = ({ settings }) => {
                 isWebWide,
                 isWebDesktop,
                 contentMaxWidth,
+                desktopContentMinHeight,
+                desktopScale,
                 desktopSidebarWidth,
             }),
         [
@@ -44,6 +48,8 @@ const PracticeScreen = ({ settings }) => {
             isWebWide,
             isWebDesktop,
             contentMaxWidth,
+            desktopContentMinHeight,
+            desktopScale,
             desktopSidebarWidth,
         ],
     );
@@ -51,7 +57,7 @@ const PracticeScreen = ({ settings }) => {
     const tightLayout = !isWebDesktop && height < 700;
     const veryTightLayout = !isWebDesktop && height < 640;
     const optionButtonHeight = isWebDesktop
-        ? Math.min(Math.max(width * 0.065, 112), 136)
+        ? Math.min(Math.max(width * 0.07, 120), 156)
         : veryTightLayout
           ? 72
           : tightLayout
@@ -339,7 +345,14 @@ const PracticeScreen = ({ settings }) => {
                                 </View>
                             </View>
 
-                            <Text style={styles.questionLabel}>Pick the matching answer</Text>
+                            <Text
+                                style={[
+                                    styles.questionLabel,
+                                    isWebDesktop && styles.questionLabelDesktop,
+                                ]}
+                            >
+                                Pick the matching answer
+                            </Text>
 
                             {settings.inputMode === 'eng' ? (
                                 <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
@@ -569,7 +582,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 18,
         },
         contentDesktop: {
-            paddingTop: 34,
+            minHeight: layout.desktopContentMinHeight,
+            justifyContent: 'center',
+            paddingTop: 32,
+            paddingBottom: 108,
             paddingHorizontal: 36,
             gap: 28,
         },
@@ -578,15 +594,15 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         practiceLayoutDesktop: {
             flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 28,
+            alignItems: 'center',
+            gap: 32,
         },
         topSection: {
             gap: 10,
         },
         topSectionDesktop: {
             width: layout.desktopSidebarWidth,
-            gap: 14,
+            gap: 18,
         },
         hero: {
             flexDirection: 'row',
@@ -611,8 +627,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 34,
         },
         heroTitleDesktop: {
-            fontSize: 40,
-            lineHeight: 44,
+            fontSize: 40 + Math.round(layout.desktopScale * 6),
+            lineHeight: 44 + Math.round(layout.desktopScale * 8),
         },
         heroTitleCompact: {
             fontSize: 25,
@@ -628,9 +644,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 20,
         },
         heroSubtitleDesktop: {
-            fontSize: 15,
-            lineHeight: 23,
-            maxWidth: 320,
+            fontSize: 16,
+            lineHeight: 24,
+            maxWidth: 360,
         },
         heroSubtitleCompact: {
             fontSize: 13,
@@ -654,9 +670,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             paddingVertical: 8,
         },
         streakBadgeDesktop: {
-            minWidth: 96,
-            paddingHorizontal: 16,
-            paddingVertical: 14,
+            minWidth: 104,
+            paddingHorizontal: 18,
+            paddingVertical: 16,
             borderRadius: radii.lg,
         },
         streakValue: {
@@ -670,8 +686,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 24,
         },
         streakValueDesktop: {
-            fontSize: 30,
-            lineHeight: 34,
+            fontSize: 30 + Math.round(layout.desktopScale * 4),
+            lineHeight: 34 + Math.round(layout.desktopScale * 4),
         },
         streakLabel: {
             color: colors.textSecondary,
@@ -689,9 +705,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             padding: 18,
         },
         questionCardDesktop: {
-            gap: 16,
-            padding: 22,
-            minHeight: 330,
+            gap: 18,
+            padding: 26,
+            minHeight: 390,
+            justifyContent: 'center',
         },
         questionCardCompact: {
             gap: 10,
@@ -747,6 +764,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             letterSpacing: 1.1,
             textTransform: 'uppercase',
         },
+        questionLabelDesktop: {
+            fontSize: 15,
+            letterSpacing: 1.6,
+        },
         questionText: {
             color: colors.text,
             fontFamily: typography.headingFont,
@@ -755,8 +776,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             textAlign: 'center',
         },
         questionTextDesktop: {
-            fontSize: 68,
-            lineHeight: 74,
+            fontSize: 70 + Math.round(layout.desktopScale * 10),
+            lineHeight: 76 + Math.round(layout.desktopScale * 12),
         },
         questionTextCompact: {
             fontSize: 42,
@@ -771,8 +792,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 38,
         },
         questionTextPinyinDesktop: {
-            fontSize: 42,
-            lineHeight: 48,
+            fontSize: 44 + Math.round(layout.desktopScale * 6),
+            lineHeight: 50 + Math.round(layout.desktopScale * 8),
         },
         questionTextPinyinCompact: {
             fontSize: 28,
@@ -792,8 +813,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             textAlign: 'center',
         },
         meaningLineDesktop: {
-            fontSize: 29,
-            lineHeight: 34,
+            fontSize: 30 + Math.round(layout.desktopScale * 4),
+            lineHeight: 36 + Math.round(layout.desktopScale * 4),
         },
         meaningLineCompact: {
             fontSize: 21,
@@ -925,19 +946,18 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         optionsPanel: {
             flex: 1,
-            gap: 20,
-            padding: 26,
-            minHeight: 660,
+            gap: 18,
+            padding: 24,
         },
         optionsPanelHeader: {
-            gap: 8,
+            gap: 10,
             width: '100%',
             maxWidth: 1120,
             alignSelf: 'center',
         },
         optionsEyebrow: {
             color: colors.primaryStrong,
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: '800',
             letterSpacing: 1.2,
             textTransform: 'uppercase',
@@ -945,9 +965,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionsTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: 36,
-            lineHeight: 40,
-            maxWidth: 520,
+            fontSize: 38 + Math.round(layout.desktopScale * 4),
+            lineHeight: 42 + Math.round(layout.desktopScale * 6),
+            maxWidth: 600,
         },
         optionsGrid: {
             flexDirection: 'row',
@@ -959,7 +979,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             width: '100%',
             maxWidth: 1120,
             alignSelf: 'center',
-            rowGap: 18,
+            rowGap: 14,
         },
         optionWrapper: {
             width: '48%',
@@ -975,19 +995,19 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         optionButtonDesktop: {
             borderRadius: radii.lg,
-            paddingHorizontal: 22,
+            paddingHorizontal: 24,
         },
         optionText: {
             fontSize: 18,
             lineHeight: 20,
         },
         optionTextDesktop: {
-            fontSize: 23,
-            lineHeight: 30,
+            fontSize: 24 + Math.round(layout.desktopScale * 2),
+            lineHeight: 31 + Math.round(layout.desktopScale * 2),
         },
         optionTextHanziDesktop: {
-            fontSize: 32,
-            lineHeight: 38,
+            fontSize: 34 + Math.round(layout.desktopScale * 4),
+            lineHeight: 40 + Math.round(layout.desktopScale * 4),
         },
         optionTextPinyinWeb: {
             fontSize: 21,
