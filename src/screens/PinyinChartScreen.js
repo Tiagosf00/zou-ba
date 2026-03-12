@@ -10,24 +10,35 @@ import { initials, finals } from '../data/pinyinData';
 import { validSyllables } from '../data/validPinyin';
 import { getResponsiveLayout } from '../utils/layout';
 
-const CELL_WIDTH = 68;
-const CELL_HEIGHT = 54;
-const LEFT_COL_WIDTH = 68;
+const CELL_WIDTH = 56;
+const CELL_HEIGHT = 46;
+const LEFT_COL_WIDTH = 86;
+
+const FINAL_LOOKUP_MAP = {
+    iou: 'iu',
+    uei: 'ui',
+    uen: 'un',
+};
 
 const getPinyinSyllable = (initial, final) => {
+    const normalizedFinal = FINAL_LOOKUP_MAP[final] || final;
+
     if (
-        (initial === 'j' || initial === 'q' || initial === 'x' || initial === 'y') &&
-        final.startsWith('ü')
+        (initial === 'j' || initial === 'q' || initial === 'x') &&
+        normalizedFinal.startsWith('ü')
     ) {
-        return `${initial}u${final.slice(1)}`;
+        return `${initial}u${normalizedFinal.slice(1)}`;
     }
 
-    return `${initial}${final}`;
+    return `${initial}${normalizedFinal}`;
 };
 
 const PinyinChartScreen = () => {
     const { width } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
+    const desktopAsideWidth = isWebDesktop
+        ? Math.min(Math.max(width * 0.23, 360), 460)
+        : 360;
     const { colors, radii, typography } = useAppTheme();
     const styles = useMemo(
         () =>
@@ -35,43 +46,88 @@ const PinyinChartScreen = () => {
                 isWebWide,
                 isWebDesktop,
                 contentMaxWidth,
+                desktopAsideWidth,
             }),
-        [colors, radii, typography, isWebWide, isWebDesktop, contentMaxWidth],
+        [
+            colors,
+            radii,
+            typography,
+            isWebWide,
+            isWebDesktop,
+            contentMaxWidth,
+            desktopAsideWidth,
+        ],
     );
-    const leftColRef = useRef(null);
-    const rightGridRef = useRef(null);
-    const isSyncingLeft = useRef(false);
-    const isSyncingRight = useRef(false);
+    const finalsColRef = useRef(null);
+    const headerRowRef = useRef(null);
+    const gridVerticalRef = useRef(null);
+    const gridHorizontalRef = useRef(null);
+    const isSyncingFinals = useRef(false);
+    const isSyncingGridY = useRef(false);
+    const isSyncingHeader = useRef(false);
+    const isSyncingGridX = useRef(false);
 
-    const handleLeftScroll = (event) => {
-        if (isSyncingLeft.current) {
+    const handleFinalsScroll = (event) => {
+        if (isSyncingFinals.current) {
             return;
         }
 
-        isSyncingRight.current = true;
-        rightGridRef.current?.scrollTo({
+        isSyncingGridY.current = true;
+        gridVerticalRef.current?.scrollTo({
             y: event.nativeEvent.contentOffset.y,
             animated: false,
         });
 
         setTimeout(() => {
-            isSyncingRight.current = false;
+            isSyncingGridY.current = false;
         }, 50);
     };
 
-    const handleRightScroll = (event) => {
-        if (isSyncingRight.current) {
+    const handleGridVerticalScroll = (event) => {
+        if (isSyncingGridY.current) {
             return;
         }
 
-        isSyncingLeft.current = true;
-        leftColRef.current?.scrollTo({
+        isSyncingFinals.current = true;
+        finalsColRef.current?.scrollTo({
             y: event.nativeEvent.contentOffset.y,
             animated: false,
         });
 
         setTimeout(() => {
-            isSyncingLeft.current = false;
+            isSyncingFinals.current = false;
+        }, 50);
+    };
+
+    const handleHeaderScroll = (event) => {
+        if (isSyncingHeader.current) {
+            return;
+        }
+
+        isSyncingGridX.current = true;
+        gridHorizontalRef.current?.scrollTo({
+            x: event.nativeEvent.contentOffset.x,
+            animated: false,
+        });
+
+        setTimeout(() => {
+            isSyncingGridX.current = false;
+        }, 50);
+    };
+
+    const handleGridHorizontalScroll = (event) => {
+        if (isSyncingGridX.current) {
+            return;
+        }
+
+        isSyncingHeader.current = true;
+        headerRowRef.current?.scrollTo({
+            x: event.nativeEvent.contentOffset.x,
+            animated: false,
+        });
+
+        setTimeout(() => {
+            isSyncingHeader.current = false;
         }, 50);
     };
 
@@ -90,7 +146,7 @@ const PinyinChartScreen = () => {
                     <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
                         <Text style={styles.eyebrow}>Reference chart</Text>
                         <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Explore initials and finals together.
+                            Explore initials across the top and finals down the side.
                         </Text>
                         <Text
                             style={[
@@ -98,8 +154,8 @@ const PinyinChartScreen = () => {
                                 isWebDesktop && styles.heroSubtitleDesktop,
                             ]}
                         >
-                            Scroll sideways for finals and vertically for initials. Filled cells
-                            mark valid Mandarin syllables.
+                            Scroll sideways for initials and vertically for finals. Filled cells
+                            show valid Mandarin syllables in the new study order.
                         </Text>
                     </View>
 
@@ -118,7 +174,7 @@ const PinyinChartScreen = () => {
                                 size={14}
                             />
                             <Text style={styles.legendText}>
-                                Swipe in both directions to browse the full table.
+                                Horizontal scroll moves initials. Vertical scroll moves finals.
                             </Text>
                         </View>
                     </Card>
@@ -128,66 +184,90 @@ const PinyinChartScreen = () => {
                     <View style={[styles.chartShell, isWebDesktop && styles.chartShellDesktop]}>
                         <View style={styles.leftPane}>
                             <View style={[styles.cell, styles.cornerCell]}>
-                                <Text style={styles.cornerText}>Init.</Text>
+                                <Text style={styles.cornerText}>Final</Text>
                             </View>
 
                             <ScrollView
-                                ref={leftColRef}
+                                ref={finalsColRef}
                                 showsVerticalScrollIndicator={false}
                                 scrollEventThrottle={16}
-                                onScroll={handleLeftScroll}
+                                onScroll={handleFinalsScroll}
                             >
-                                {initials.map((initial) => (
-                                    <View key={initial || 'empty'} style={[styles.cell, styles.leftHeaderCell]}>
-                                        <Text style={styles.headerText}>{initial || 'Ø'}</Text>
+                                {finals.map((final, index) => (
+                                    <View
+                                        key={`${final}-${index}`}
+                                        style={[styles.cell, styles.leftHeaderCell]}
+                                    >
+                                        <Text style={styles.headerText}>{final}</Text>
                                     </View>
                                 ))}
                                 <View style={styles.scrollSpacer} />
                             </ScrollView>
                         </View>
 
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.rightPane}>
-                            <View>
+                        <View style={styles.rightPane}>
+                            <ScrollView
+                                ref={headerRowRef}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                scrollEventThrottle={16}
+                                onScroll={handleHeaderScroll}
+                                style={styles.topHeaderStrip}
+                            >
                                 <View style={styles.row}>
-                                    {finals.map((final) => (
-                                        <View key={final} style={[styles.cell, styles.headerCell]}>
-                                            <Text style={styles.headerText}>{final}</Text>
+                                    {initials.map((initial) => (
+                                        <View key={initial} style={[styles.cell, styles.headerCell]}>
+                                            <Text style={styles.headerText}>{initial}</Text>
                                         </View>
                                     ))}
                                 </View>
+                            </ScrollView>
 
+                            <ScrollView
+                                ref={gridVerticalRef}
+                                showsVerticalScrollIndicator={false}
+                                scrollEventThrottle={16}
+                                onScroll={handleGridVerticalScroll}
+                            >
                                 <ScrollView
-                                    ref={rightGridRef}
-                                    showsVerticalScrollIndicator={false}
+                                    ref={gridHorizontalRef}
+                                    horizontal
+                                    showsHorizontalScrollIndicator={false}
                                     scrollEventThrottle={16}
-                                    onScroll={handleRightScroll}
+                                    onScroll={handleGridHorizontalScroll}
                                 >
-                                    {initials.map((initial) => (
-                                        <View key={initial || 'row-empty'} style={styles.row}>
-                                            {finals.map((final) => {
-                                                const syllable = getPinyinSyllable(initial, final);
-                                                const isValid = validSyllables.has(syllable);
+                                    <View>
+                                        {finals.map((final, finalIndex) => (
+                                            <View key={`${final}-${finalIndex}`} style={styles.row}>
+                                                {initials.map((initial) => {
+                                                    const syllable = getPinyinSyllable(initial, final);
+                                                    const isValid = validSyllables.has(syllable);
 
-                                                return (
-                                                    <View
-                                                        key={`${initial}-${final}`}
-                                                        style={[
-                                                            styles.cell,
-                                                            isValid ? styles.contentCell : styles.emptyCell,
-                                                        ]}
-                                                    >
-                                                        {isValid ? (
-                                                            <Text style={styles.cellText}>{syllable}</Text>
-                                                        ) : null}
-                                                    </View>
-                                                );
-                                            })}
-                                        </View>
-                                    ))}
-                                    <View style={styles.scrollSpacer} />
+                                                    return (
+                                                        <View
+                                                            key={`${final}-${initial}`}
+                                                            style={[
+                                                                styles.cell,
+                                                                isValid
+                                                                    ? styles.contentCell
+                                                                    : styles.emptyCell,
+                                                            ]}
+                                                        >
+                                                            {isValid ? (
+                                                                <Text style={styles.cellText}>
+                                                                    {syllable}
+                                                                </Text>
+                                                            ) : null}
+                                                        </View>
+                                                    );
+                                                })}
+                                            </View>
+                                        ))}
+                                        <View style={styles.scrollSpacer} />
+                                    </View>
                                 </ScrollView>
-                            </View>
-                        </ScrollView>
+                            </ScrollView>
+                        </View>
                     </View>
                 </Card>
             </ScrollView>
@@ -235,7 +315,7 @@ const createStyles = (colors, radii, typography, layout) =>
         heroDesktop: {
             flex: 1,
             justifyContent: 'center',
-            maxWidth: 620,
+            maxWidth: 760,
         },
         eyebrow: {
             color: colors.primaryStrong,
@@ -262,13 +342,13 @@ const createStyles = (colors, radii, typography, layout) =>
         heroSubtitleDesktop: {
             fontSize: 17,
             lineHeight: 26,
-            maxWidth: 560,
+            maxWidth: 620,
         },
         legendCard: {
             gap: 10,
         },
         legendCardDesktop: {
-            width: 360,
+            width: layout.desktopAsideWidth,
             justifyContent: 'center',
         },
         legendItem: {
@@ -294,7 +374,7 @@ const createStyles = (colors, radii, typography, layout) =>
             overflow: 'hidden',
         },
         chartShellDesktop: {
-            minHeight: 760,
+            minHeight: 720,
         },
         leftPane: {
             width: LEFT_COL_WIDTH,
@@ -305,6 +385,11 @@ const createStyles = (colors, radii, typography, layout) =>
         rightPane: {
             flex: 1,
             backgroundColor: colors.surface,
+        },
+        topHeaderStrip: {
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border,
+            backgroundColor: colors.surfaceMuted,
         },
         row: {
             flexDirection: 'row',
@@ -324,7 +409,7 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         cornerText: {
             color: colors.onPrimary,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '800',
             letterSpacing: 0.6,
             textTransform: 'uppercase',
@@ -338,7 +423,7 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         headerText: {
             color: colors.textSecondary,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '800',
         },
         contentCell: {
@@ -349,11 +434,11 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         cellText: {
             color: colors.primaryStrong,
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: '700',
         },
         scrollSpacer: {
-            height: 48,
+            height: 40,
         },
     });
 

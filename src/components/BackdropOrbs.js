@@ -1,11 +1,17 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { useAppTheme } from '../theme/ThemeProvider';
+import { getResponsiveLayout } from '../utils/layout';
 
 const BackdropOrbs = () => {
+    const { width } = useWindowDimensions();
+    const { backgroundScale, isWebWide } = getResponsiveLayout(width);
     const { colors, mode } = useAppTheme();
-    const styles = useMemo(() => createStyles(colors, mode), [colors, mode]);
+    const styles = useMemo(
+        () => createStyles(colors, mode, { backgroundScale, isWebWide }),
+        [backgroundScale, colors, isWebWide, mode],
+    );
 
     return (
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
@@ -38,9 +44,10 @@ const BackdropOrbs = () => {
     );
 };
 
-const createStyles = (colors, mode) => {
+const createStyles = (colors, mode, layout) => {
     const skylineFill = mode === 'dark' ? colors.surfaceMuted : colors.primarySoft;
     const skylineAccent = colors.primaryStrong;
+    const scale = (value) => (layout.isWebWide ? Math.round(value * layout.backgroundScale) : value);
 
     return StyleSheet.create({
         orb: {
@@ -48,27 +55,27 @@ const createStyles = (colors, mode) => {
             borderRadius: 999,
         },
         primaryOrb: {
-            width: 220,
-            height: 220,
-            top: -80,
-            right: -40,
+            width: scale(220),
+            height: scale(220),
+            top: -scale(80),
+            right: -scale(40),
             backgroundColor: colors.primarySoft,
             opacity: mode === 'dark' ? 0.42 : 0.65,
         },
         accentOrb: {
-            width: 180,
-            height: 180,
-            top: 120,
-            left: -70,
+            width: scale(180),
+            height: scale(180),
+            top: scale(120),
+            left: -scale(70),
             backgroundColor: colors.accentSoft,
             opacity: mode === 'dark' ? 0.5 : 0.7,
         },
         sealMark: {
             position: 'absolute',
-            top: 92,
-            right: 26,
-            width: 58,
-            height: 58,
+            top: scale(92),
+            right: scale(26),
+            width: scale(58),
+            height: scale(58),
             borderWidth: 1.5,
             borderColor: skylineAccent,
             opacity: mode === 'dark' ? 0.16 : 0.12,
@@ -76,19 +83,19 @@ const createStyles = (colors, mode) => {
         },
         sealInner: {
             position: 'absolute',
-            top: 10,
-            left: 10,
-            right: 10,
-            bottom: 10,
+            top: scale(10),
+            left: scale(10),
+            right: scale(10),
+            bottom: scale(10),
             borderWidth: 1,
             borderColor: skylineAccent,
         },
         skyline: {
             position: 'absolute',
-            left: 14,
-            right: 14,
-            bottom: 12,
-            height: 92,
+            left: scale(14),
+            right: scale(14),
+            bottom: scale(12),
+            height: scale(92),
             opacity: mode === 'dark' ? 0.18 : 0.14,
         },
         horizon: {
@@ -96,122 +103,122 @@ const createStyles = (colors, mode) => {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 12,
+            height: scale(12),
             borderRadius: 999,
             backgroundColor: skylineFill,
         },
         building: {
             position: 'absolute',
-            bottom: 12,
-            borderTopLeftRadius: 8,
-            borderTopRightRadius: 8,
+            bottom: scale(12),
+            borderTopLeftRadius: scale(8),
+            borderTopRightRadius: scale(8),
             backgroundColor: skylineFill,
         },
         buildingOne: {
-            left: 12,
-            width: 30,
-            height: 34,
+            left: scale(12),
+            width: scale(30),
+            height: scale(34),
         },
         buildingTwo: {
-            left: 48,
-            width: 22,
-            height: 52,
+            left: scale(48),
+            width: scale(22),
+            height: scale(52),
         },
         buildingThree: {
-            right: 74,
-            width: 34,
-            height: 42,
+            right: scale(74),
+            width: scale(34),
+            height: scale(42),
         },
         buildingFour: {
-            right: 28,
-            width: 24,
-            height: 30,
+            right: scale(28),
+            width: scale(24),
+            height: scale(30),
         },
         pearlStem: {
             position: 'absolute',
-            left: 92,
-            bottom: 12,
-            width: 10,
-            height: 58,
+            left: scale(92),
+            bottom: scale(12),
+            width: scale(10),
+            height: scale(58),
             borderRadius: 999,
             backgroundColor: skylineAccent,
         },
         pearlSphere: {
             position: 'absolute',
-            left: 85,
+            left: scale(85),
             borderRadius: 999,
             backgroundColor: skylineAccent,
         },
         pearlSphereLarge: {
-            bottom: 28,
-            width: 24,
-            height: 24,
+            bottom: scale(28),
+            width: scale(24),
+            height: scale(24),
         },
         pearlSphereSmall: {
-            bottom: 56,
-            left: 89,
-            width: 16,
-            height: 16,
+            bottom: scale(56),
+            left: scale(89),
+            width: scale(16),
+            height: scale(16),
         },
         pearlTip: {
             position: 'absolute',
-            left: 95,
-            bottom: 72,
-            width: 4,
-            height: 18,
+            left: scale(95),
+            bottom: scale(72),
+            width: scale(4),
+            height: scale(18),
             borderRadius: 999,
             backgroundColor: skylineAccent,
         },
         modernTowerCluster: {
             position: 'absolute',
-            left: 126,
-            bottom: 12,
+            left: scale(126),
+            bottom: scale(12),
             flexDirection: 'row',
             alignItems: 'flex-end',
-            gap: 10,
+            gap: scale(10),
         },
         financialTower: {
-            width: 18,
-            height: 62,
-            borderTopLeftRadius: 6,
-            borderTopRightRadius: 6,
+            width: scale(18),
+            height: scale(62),
+            borderTopLeftRadius: scale(6),
+            borderTopRightRadius: scale(6),
             backgroundColor: skylineAccent,
             transform: [{ skewX: '-2deg' }],
         },
         financialTowerSpire: {
             position: 'absolute',
-            top: -10,
-            left: 7,
-            width: 3,
-            height: 12,
+            top: -scale(10),
+            left: scale(7),
+            width: scale(3),
+            height: scale(12),
             borderRadius: 999,
             backgroundColor: skylineAccent,
         },
         shanghaiTower: {
-            width: 22,
-            height: 78,
-            borderTopLeftRadius: 12,
-            borderTopRightRadius: 7,
+            width: scale(22),
+            height: scale(78),
+            borderTopLeftRadius: scale(12),
+            borderTopRightRadius: scale(7),
             backgroundColor: skylineAccent,
             overflow: 'hidden',
             transform: [{ skewX: '-7deg' }],
         },
         shanghaiTowerRidge: {
             position: 'absolute',
-            top: 10,
-            right: 4,
-            width: 6,
-            height: 54,
+            top: scale(10),
+            right: scale(4),
+            width: scale(6),
+            height: scale(54),
             borderRadius: 999,
             backgroundColor: skylineFill,
             opacity: mode === 'dark' ? 0.52 : 0.42,
         },
         shanghaiTowerSpire: {
             position: 'absolute',
-            top: -12,
-            right: 5,
-            width: 3,
-            height: 14,
+            top: -scale(12),
+            right: scale(5),
+            width: scale(3),
+            height: scale(14),
             borderRadius: 999,
             backgroundColor: skylineAccent,
         },

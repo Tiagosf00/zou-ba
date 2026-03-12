@@ -35,6 +35,9 @@ const THEME_OPTIONS = [
 const SettingsScreen = ({ settings, updateSettings }) => {
     const { width } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
+    const desktopAsideWidth = isWebDesktop
+        ? Math.min(Math.max(width * 0.24, 380), 480)
+        : 380;
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
         () =>
@@ -42,8 +45,18 @@ const SettingsScreen = ({ settings, updateSettings }) => {
                 isWebWide,
                 isWebDesktop,
                 contentMaxWidth,
+                desktopAsideWidth,
             }),
-        [colors, radii, shadows, typography, isWebWide, isWebDesktop, contentMaxWidth],
+        [
+            colors,
+            radii,
+            shadows,
+            typography,
+            isWebWide,
+            isWebDesktop,
+            contentMaxWidth,
+            desktopAsideWidth,
+        ],
     );
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
@@ -369,7 +382,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 12,
         },
         summaryCardDesktop: {
-            width: 380,
+            width: layout.desktopAsideWidth,
             gap: 16,
             padding: 26,
         },

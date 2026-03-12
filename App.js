@@ -104,8 +104,8 @@ const RootNavigator = ({ settings, updateSettings }) => {
 export default function App() {
     const [settings, setSettings] = useState({
         hskLevels: [1],
-        inputMode: 'pinyin',
-        outputMode: 'hanzi',
+        inputMode: 'hanzi',
+        outputMode: 'pinyin',
         themeMode: 'light',
     });
 

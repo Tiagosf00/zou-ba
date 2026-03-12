@@ -24,6 +24,9 @@ import hskData from '../../assets/hsk.json';
 const PracticeScreen = ({ settings }) => {
     const { width, height } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
+    const desktopSidebarWidth = isWebDesktop
+        ? Math.min(Math.max(width * 0.31, 440), 560)
+        : 430;
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
         () =>
@@ -31,14 +34,24 @@ const PracticeScreen = ({ settings }) => {
                 isWebWide,
                 isWebDesktop,
                 contentMaxWidth,
+                desktopSidebarWidth,
             }),
-        [colors, radii, shadows, typography, isWebWide, isWebDesktop, contentMaxWidth],
+        [
+            colors,
+            radii,
+            shadows,
+            typography,
+            isWebWide,
+            isWebDesktop,
+            contentMaxWidth,
+            desktopSidebarWidth,
+        ],
     );
     const compactLayout = !isWebDesktop && height < 780;
     const tightLayout = !isWebDesktop && height < 700;
     const veryTightLayout = !isWebDesktop && height < 640;
     const optionButtonHeight = isWebDesktop
-        ? 112
+        ? Math.min(Math.max(width * 0.065, 112), 136)
         : veryTightLayout
           ? 72
           : tightLayout
@@ -156,6 +169,7 @@ const PracticeScreen = ({ settings }) => {
     const { question, options } = round;
     const hasAnswered = !!selectedOption;
     const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
+    const singleLinePinyinAnswers = isWebWide && settings.outputMode === 'pinyin';
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
     const meaningSummary = meaningLines.join(', ');
@@ -181,10 +195,14 @@ const PracticeScreen = ({ settings }) => {
                         style={[styles.optionWrapper, isWebDesktop && styles.optionWrapperDesktop]}
                     >
                         <ModernButton
-                            title={getDisplayLines(item, settings.outputMode)}
+                            title={
+                                singleLinePinyinAnswers
+                                    ? getDisplayText(item, settings.outputMode)
+                                    : getDisplayLines(item, settings.outputMode)
+                            }
                             onPress={() => handleSelection(item)}
                             variant={variant}
-                            multiline
+                            multiline={!singleLinePinyinAnswers}
                             disabled={!!selectedOption}
                             style={[
                                 styles.optionButton,
@@ -197,6 +215,7 @@ const PracticeScreen = ({ settings }) => {
                                 compactLayout && styles.optionTextCompact,
                                 isWebDesktop && styles.optionTextDesktop,
                                 isDesktopHanziAnswers && styles.optionTextHanziDesktop,
+                                singleLinePinyinAnswers && styles.optionTextPinyinWeb,
                             ]}
                         />
                     </View>
@@ -566,7 +585,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 10,
         },
         topSectionDesktop: {
-            width: 430,
+            width: layout.desktopSidebarWidth,
             gap: 14,
         },
         hero: {
@@ -963,6 +982,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionTextHanziDesktop: {
             fontSize: 28,
             lineHeight: 34,
+        },
+        optionTextPinyinWeb: {
+            fontSize: 19,
+            lineHeight: 22,
         },
         optionTextCompact: {
             fontSize: 16,
