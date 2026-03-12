@@ -363,7 +363,7 @@ const PracticeScreen = ({ settings }) => {
                                 <View style={styles.levelTag}>
                                     <Text style={styles.levelTagText}>HSK {question.level}</Text>
                                 </View>
-                                {!tightLayout ? (
+                                {!tightLayout && !isWebDesktop ? (
                                     <Text style={styles.helperText}>
                                         {selectedOption
                                             ? 'Review the word details, then move to the next card.'
@@ -371,9 +371,61 @@ const PracticeScreen = ({ settings }) => {
                                     </Text>
                                 ) : null}
                             </View>
+
+                            {selectedOption && isWebDesktop ? (
+                                <View style={styles.desktopFeedbackPanel}>
+                                    <View style={styles.answerCopy}>
+                                        <Text
+                                            style={[
+                                                styles.answerEyebrow,
+                                                isCorrect && styles.answerEyebrowSuccess,
+                                            ]}
+                                        >
+                                            {isCorrect ? 'Word details' : 'Review this pair'}
+                                        </Text>
+                                        <View style={styles.answerRow}>
+                                            <Text style={styles.answerLabel}>
+                                                {isCorrect ? 'Picked word' : 'Your choice'}
+                                            </Text>
+                                            <Text style={styles.answerSummary}>
+                                                {selectedOption.hanzi} · {selectedOption.pinyin}
+                                            </Text>
+                                            <Text style={styles.answerTranslation}>
+                                                {selectedMeaningSummary}
+                                            </Text>
+                                        </View>
+
+                                        {!isCorrect ? (
+                                            <View style={[styles.answerRow, styles.answerRowSecondary]}>
+                                                <Text
+                                                    style={[
+                                                        styles.answerLabel,
+                                                        styles.answerLabelSuccess,
+                                                    ]}
+                                                >
+                                                    Correct answer
+                                                </Text>
+                                                <Text style={styles.answerSummary}>
+                                                    {question.hanzi} · {question.pinyin}
+                                                </Text>
+                                                <Text style={styles.answerTranslation}>
+                                                    {meaningSummary}
+                                                </Text>
+                                            </View>
+                                        ) : null}
+                                    </View>
+
+                                    <ModernButton
+                                        title="Next card"
+                                        onPress={handleNextCard}
+                                        style={styles.desktopFeedbackButton}
+                                        variant="primary"
+                                    />
+                                </View>
+                            ) : null}
                         </Card>
 
-                        {selectedOption ? (
+                        {selectedOption && !isWebDesktop ? (
                             <Card
                                 style={[
                                     styles.answerCard,
@@ -513,7 +565,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         topSectionDesktop: {
             width: 430,
-            gap: 16,
+            gap: 14,
         },
         hero: {
             flexDirection: 'row',
@@ -538,8 +590,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 34,
         },
         heroTitleDesktop: {
-            fontSize: 46,
-            lineHeight: 50,
+            fontSize: 40,
+            lineHeight: 44,
         },
         heroTitleCompact: {
             fontSize: 25,
@@ -555,8 +607,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 20,
         },
         heroSubtitleDesktop: {
-            fontSize: 17,
-            lineHeight: 26,
+            fontSize: 15,
+            lineHeight: 23,
             maxWidth: 320,
         },
         heroSubtitleCompact: {
@@ -616,9 +668,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             padding: 18,
         },
         questionCardDesktop: {
-            gap: 18,
+            gap: 16,
             padding: 22,
-            minHeight: 360,
+            minHeight: 330,
         },
         questionCardCompact: {
             gap: 10,
@@ -772,6 +824,13 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             flexDirection: 'column',
             gap: 14,
         },
+        desktopFeedbackPanel: {
+            marginTop: 6,
+            gap: 14,
+            paddingTop: 14,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+        },
         answerCopy: {
             flex: 1,
             gap: 8,
@@ -829,6 +888,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         nextButtonDesktop: {
             minWidth: 0,
+            alignSelf: 'stretch',
+        },
+        desktopFeedbackButton: {
+            minHeight: 50,
             alignSelf: 'stretch',
         },
         optionsSection: {
