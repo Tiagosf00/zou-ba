@@ -175,7 +175,7 @@ const PracticeScreen = ({ settings }) => {
     const { question, options } = round;
     const hasAnswered = !!selectedOption;
     const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
-    const singleLinePinyinAnswers = isWebWide && settings.outputMode === 'pinyin';
+    const singleLinePinyinAnswers = settings.outputMode === 'pinyin';
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
     const meaningSummary = meaningLines.join(', ');
@@ -209,6 +209,8 @@ const PracticeScreen = ({ settings }) => {
                             onPress={() => handleSelection(item)}
                             variant={variant}
                             multiline={!singleLinePinyinAnswers}
+                            fitText={singleLinePinyinAnswers}
+                            minimumFontScale={isWebWide ? 0.86 : 0.78}
                             disabled={!!selectedOption}
                             style={[
                                 styles.optionButton,
@@ -219,9 +221,10 @@ const PracticeScreen = ({ settings }) => {
                             textStyle={[
                                 styles.optionText,
                                 compactLayout && styles.optionTextCompact,
+                                singleLinePinyinAnswers && styles.optionTextPinyin,
                                 isWebDesktop && styles.optionTextDesktop,
                                 isDesktopHanziAnswers && styles.optionTextHanziDesktop,
-                                singleLinePinyinAnswers && styles.optionTextPinyinWeb,
+                                isWebWide && singleLinePinyinAnswers && styles.optionTextPinyinWeb,
                             ]}
                         />
                     </View>
@@ -413,36 +416,77 @@ const PracticeScreen = ({ settings }) => {
                                             style={[
                                                 styles.answerEyebrow,
                                                 isCorrect && styles.answerEyebrowSuccess,
+                                                isWebDesktop && styles.answerEyebrowDesktop,
                                             ]}
                                         >
                                             {isCorrect ? 'Word details' : 'Review this pair'}
                                         </Text>
-                                        <View style={styles.answerRow}>
-                                            <Text style={styles.answerLabel}>
+                                        <View
+                                            style={[
+                                                styles.answerRow,
+                                                isWebDesktop && styles.answerRowDesktop,
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.answerLabel,
+                                                    isWebDesktop && styles.answerLabelDesktop,
+                                                ]}
+                                            >
                                                 {isCorrect ? 'Picked word' : 'Your choice'}
                                             </Text>
-                                            <Text style={styles.answerSummary}>
+                                            <Text
+                                                style={[
+                                                    styles.answerSummary,
+                                                    isWebDesktop && styles.answerSummaryDesktop,
+                                                ]}
+                                            >
                                                 {selectedOption.hanzi} · {selectedOption.pinyin}
                                             </Text>
-                                            <Text style={styles.answerTranslation}>
+                                            <Text
+                                                style={[
+                                                    styles.answerTranslation,
+                                                    isWebDesktop &&
+                                                        styles.answerTranslationDesktop,
+                                                ]}
+                                            >
                                                 {selectedMeaningSummary}
                                             </Text>
                                         </View>
 
                                         {!isCorrect ? (
-                                            <View style={[styles.answerRow, styles.answerRowSecondary]}>
+                                            <View
+                                                style={[
+                                                    styles.answerRow,
+                                                    styles.answerRowSecondary,
+                                                    isWebDesktop && styles.answerRowDesktop,
+                                                ]}
+                                            >
                                                 <Text
                                                     style={[
                                                         styles.answerLabel,
                                                         styles.answerLabelSuccess,
+                                                        isWebDesktop && styles.answerLabelDesktop,
                                                     ]}
                                                 >
                                                     Correct answer
                                                 </Text>
-                                                <Text style={styles.answerSummary}>
+                                                <Text
+                                                    style={[
+                                                        styles.answerSummary,
+                                                        isWebDesktop &&
+                                                            styles.answerSummaryDesktop,
+                                                    ]}
+                                                >
                                                     {question.hanzi} · {question.pinyin}
                                                 </Text>
-                                                <Text style={styles.answerTranslation}>
+                                                <Text
+                                                    style={[
+                                                        styles.answerTranslation,
+                                                        isWebDesktop &&
+                                                            styles.answerTranslationDesktop,
+                                                    ]}
+                                                >
                                                     {meaningSummary}
                                                 </Text>
                                             </View>
@@ -759,9 +803,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         questionLabel: {
             color: colors.textSecondary,
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: '800',
-            letterSpacing: 1.1,
+            letterSpacing: 1.2,
             textTransform: 'uppercase',
         },
         questionLabelDesktop: {
@@ -868,8 +912,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         desktopFeedbackPanel: {
             marginTop: 6,
-            gap: 14,
-            paddingTop: 14,
+            gap: 18,
+            paddingTop: 18,
             borderTopWidth: 1,
             borderTopColor: colors.border,
         },
@@ -884,11 +928,18 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             letterSpacing: 1,
             textTransform: 'uppercase',
         },
+        answerEyebrowDesktop: {
+            fontSize: 14,
+            letterSpacing: 1.3,
+        },
         answerEyebrowSuccess: {
             color: colors.success,
         },
         answerRow: {
             gap: 2,
+        },
+        answerRowDesktop: {
+            gap: 8,
         },
         answerRowSecondary: {
             marginTop: 2,
@@ -903,6 +954,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             letterSpacing: 0.9,
             textTransform: 'uppercase',
         },
+        answerLabelDesktop: {
+            fontSize: 12,
+            letterSpacing: 1.1,
+        },
         answerLabelSuccess: {
             color: colors.success,
         },
@@ -912,10 +967,18 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 19,
             fontWeight: '700',
         },
+        answerSummaryDesktop: {
+            fontSize: 24,
+            lineHeight: 30,
+        },
         answerTranslation: {
             color: colors.textSecondary,
             fontSize: 13,
             lineHeight: 17,
+        },
+        answerTranslationDesktop: {
+            fontSize: 18,
+            lineHeight: 27,
         },
         nextButton: {
             minHeight: 48,
@@ -999,7 +1062,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         optionText: {
             fontSize: 18,
-            lineHeight: 20,
+            lineHeight: 24,
+        },
+        optionTextPinyin: {
+            fontSize: 17,
+            lineHeight: 24,
         },
         optionTextDesktop: {
             fontSize: 24 + Math.round(layout.desktopScale * 2),
@@ -1011,11 +1078,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         optionTextPinyinWeb: {
             fontSize: 21,
-            lineHeight: 28,
+            lineHeight: 30,
         },
         optionTextCompact: {
             fontSize: 16,
-            lineHeight: 18,
+            lineHeight: 22,
         },
         emptyState: {
             flex: 1,

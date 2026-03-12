@@ -13,6 +13,8 @@ import { getResponsiveLayout } from '../utils/layout';
 const CELL_WIDTH = 56;
 const CELL_HEIGHT = 46;
 const LEFT_COL_WIDTH = 86;
+const CHART_GRID_WIDTH = initials.length * CELL_WIDTH;
+const CHART_TOTAL_WIDTH = LEFT_COL_WIDTH + CHART_GRID_WIDTH + 2;
 
 const FINAL_LOOKUP_MAP = {
     iou: 'iu',
@@ -201,7 +203,6 @@ const PinyinChartScreen = () => {
                                         <Text style={styles.headerText}>{final}</Text>
                                     </View>
                                 ))}
-                                <View style={styles.scrollSpacer} />
                             </ScrollView>
                         </View>
 
@@ -263,7 +264,6 @@ const PinyinChartScreen = () => {
                                                 })}
                                             </View>
                                         ))}
-                                        <View style={styles.scrollSpacer} />
                                     </View>
                                 </ScrollView>
                             </ScrollView>
@@ -367,6 +367,9 @@ const createStyles = (colors, radii, typography, layout) =>
         },
         chartCardDesktop: {
             overflow: 'hidden',
+            width: '100%',
+            maxWidth: CHART_TOTAL_WIDTH,
+            alignSelf: 'center',
         },
         chartShell: {
             flexDirection: 'row',
@@ -442,9 +445,6 @@ const createStyles = (colors, radii, typography, layout) =>
             fontSize: 11,
             fontWeight: '700',
             lineHeight: 15,
-        },
-        scrollSpacer: {
-            height: 40,
         },
     });
 

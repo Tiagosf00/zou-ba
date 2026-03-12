@@ -11,6 +11,8 @@ const ModernButton = ({
     disabled,
     variant = 'primary',
     multiline = false,
+    fitText = false,
+    minimumFontScale = 0.82,
 }) => {
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
@@ -44,6 +46,7 @@ const ModernButton = ({
     );
     const resolvedVariant = variantStyles[variant] || variantStyles.primary;
     const lines = Array.isArray(title) ? title : [title];
+    const resolvedNumberOfLines = Array.isArray(title) ? 1 : multiline ? 3 : 1;
 
     return (
         <Pressable
@@ -64,8 +67,12 @@ const ModernButton = ({
             <View style={styles.content}>
                 {lines.map((line, index) => (
                     <Text
+                        adjustsFontSizeToFit={fitText && resolvedNumberOfLines === 1}
                         key={`${line}-${index}`}
-                        numberOfLines={Array.isArray(title) ? 1 : multiline ? 3 : 1}
+                        minimumFontScale={
+                            fitText && resolvedNumberOfLines === 1 ? minimumFontScale : undefined
+                        }
+                        numberOfLines={resolvedNumberOfLines}
                         style={[
                             styles.text,
                             { color: resolvedVariant.textColor },
@@ -86,7 +93,7 @@ const createStyles = (colors, radii, typography) =>
         button: {
             minHeight: 84,
             paddingHorizontal: 16,
-            paddingVertical: 14,
+            paddingVertical: 15,
             borderRadius: radii.md,
             borderWidth: 1,
             justifyContent: 'center',
@@ -102,20 +109,21 @@ const createStyles = (colors, radii, typography) =>
             gap: 4,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingVertical: Platform.OS === 'web' ? 2 : 0,
+            paddingVertical: Platform.OS === 'web' ? 3 : 2,
         },
         text: {
             fontFamily: typography.studyFont,
             fontSize: 18,
             fontWeight: '700',
-            lineHeight: 25,
+            lineHeight: 26,
             textAlign: 'center',
             flexShrink: 1,
-            paddingBottom: Platform.OS === 'web' ? 2 : 0,
+            paddingTop: 1,
+            paddingBottom: Platform.OS === 'web' ? 3 : 2,
         },
         secondaryLine: {
             fontSize: 15,
-            lineHeight: 22,
+            lineHeight: 23,
             opacity: 0.88,
         },
     });
