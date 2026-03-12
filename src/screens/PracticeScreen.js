@@ -155,6 +155,7 @@ const PracticeScreen = ({ settings }) => {
 
     const { question, options } = round;
     const hasAnswered = !!selectedOption;
+    const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
     const meaningSummary = meaningLines.join(', ');
@@ -195,6 +196,7 @@ const PracticeScreen = ({ settings }) => {
                                 styles.optionText,
                                 compactLayout && styles.optionTextCompact,
                                 isWebDesktop && styles.optionTextDesktop,
+                                isDesktopHanziAnswers && styles.optionTextHanziDesktop,
                             ]}
                         />
                     </View>
@@ -957,6 +959,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionTextDesktop: {
             fontSize: 20,
             lineHeight: 24,
+        },
+        optionTextHanziDesktop: {
+            fontSize: 28,
+            lineHeight: 34,
         },
         optionTextCompact: {
             fontSize: 16,
