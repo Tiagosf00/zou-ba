@@ -1,5 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import {
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+    useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -17,6 +25,7 @@ import {
     getDisplayLines,
     getDisplayText,
     getMeaningLines,
+    getTrainingSnapshot,
     MINIMUM_ITEMS_PER_ROUND,
     pickNextQuestion,
     recordRoundResult,
@@ -75,6 +84,7 @@ const PracticeScreen = ({ settings }) => {
     const [isCorrect, setIsCorrect] = useState(null);
     const [streak, setStreak] = useState(0);
     const [isHydrated, setIsHydrated] = useState(false);
+    const [isSnapshotVisible, setIsSnapshotVisible] = useState(false);
     const progressRef = useRef(createPracticeProgress(PROFILE_ID));
     const recentQuestionIdsRef = useRef([]);
 
@@ -202,6 +212,136 @@ const PracticeScreen = ({ settings }) => {
     const handleNextCard = () => {
         loadRound(progressRef.current.cards);
     };
+    const openTrainingSnapshot = () => {
+        setIsSnapshotVisible(true);
+    };
+    const closeTrainingSnapshot = () => {
+        setIsSnapshotVisible(false);
+    };
+
+    const trainingSnapshot =
+        isHydrated && filteredData.length > 0
+            ? getTrainingSnapshot(filteredData, progressRef.current.cards, new Date())
+            : null;
+    const reviewLadderMax = trainingSnapshot
+        ? Math.max(1, ...trainingSnapshot.boxCounts)
+        : 1;
+    const trainingSnapshotTrigger = trainingSnapshot ? (
+        <Pressable
+            onPress={openTrainingSnapshot}
+            style={({ pressed }) => [
+                styles.snapshotTrigger,
+                pressed && styles.snapshotTriggerPressed,
+            ]}
+        >
+            <Ionicons color={colors.accent} name="stats-chart" size={16} />
+            <View style={styles.snapshotTriggerCopy}>
+                <Text style={styles.snapshotTriggerLabel}>Progress</Text>
+                <Text style={styles.snapshotTriggerValue}>
+                    {trainingSnapshot.readyNowCount} ready now
+                </Text>
+            </View>
+            <Ionicons color={colors.textMuted} name="chevron-forward" size={16} />
+        </Pressable>
+    ) : null;
+    const trainingSnapshotContent = trainingSnapshot ? (
+        <View style={styles.snapshotContent}>
+            <View style={styles.snapshotHeader}>
+                <Text style={styles.snapshotEyebrow}>Training snapshot</Text>
+                <Text style={[styles.snapshotTitle, isWebDesktop && styles.snapshotTitleDesktop]}>
+                    {trainingSnapshot.studiedCount}/{trainingSnapshot.totalCount} words introduced
+                </Text>
+                <Text style={styles.snapshotSubtitle}>
+                    {trainingSnapshot.readyNowCount} ready now, {trainingSnapshot.scheduledCount}{' '}
+                    scheduled later.
+                </Text>
+            </View>
+
+            <View style={styles.snapshotProgressTrack}>
+                <View
+                    style={[
+                        styles.snapshotProgressFill,
+                        {
+                            width: `${Math.max(
+                                trainingSnapshot.completionRatio * 100,
+                                trainingSnapshot.studiedCount > 0 ? 8 : 0,
+                            )}%`,
+                        },
+                    ]}
+                />
+            </View>
+
+            <View style={styles.snapshotMetricsGrid}>
+                {[
+                    {
+                        id: 'ready',
+                        label: 'Ready now',
+                        value: trainingSnapshot.readyNowCount,
+                    },
+                    {
+                        id: 'new',
+                        label: 'New',
+                        value: trainingSnapshot.newCount,
+                    },
+                    {
+                        id: 'scheduled',
+                        label: 'Scheduled',
+                        value: trainingSnapshot.scheduledCount,
+                    },
+                    {
+                        id: 'mastered',
+                        label: 'Mastered',
+                        value: trainingSnapshot.masteredCount,
+                    },
+                ].map((metric) => (
+                    <View key={metric.id} style={styles.snapshotMetric}>
+                        <Text style={styles.snapshotMetricValue}>{metric.value}</Text>
+                        <Text style={styles.snapshotMetricLabel}>{metric.label}</Text>
+                    </View>
+                ))}
+            </View>
+
+            <View style={styles.snapshotSectionHeader}>
+                <Text style={styles.snapshotSectionTitle}>Review ladder</Text>
+                <Text style={styles.snapshotSectionHint}>Words currently in each stage</Text>
+            </View>
+
+            <View style={[styles.ladderGrid, isWebDesktop && styles.ladderGridDesktop]}>
+                {trainingSnapshot.boxCounts.map((count, index) => (
+                    <View
+                        key={`box-${index + 1}`}
+                        style={[styles.ladderCard, isWebDesktop && styles.ladderCardDesktop]}
+                    >
+                        <Text style={styles.ladderLabel}>Box {index + 1}</Text>
+                        <Text
+                            style={[
+                                styles.ladderValue,
+                                index === trainingSnapshot.boxCounts.length - 1 &&
+                                    styles.ladderValueMastered,
+                            ]}
+                        >
+                            {count}
+                        </Text>
+                        <View style={styles.ladderTrack}>
+                            <View
+                                style={[
+                                    styles.ladderFill,
+                                    {
+                                        width: `${Math.max(
+                                            (count / reviewLadderMax) * 100,
+                                            count > 0 ? 16 : 0,
+                                        )}%`,
+                                    },
+                                    index === trainingSnapshot.boxCounts.length - 1 &&
+                                        styles.ladderFillMastered,
+                                ]}
+                            />
+                        </View>
+                    </View>
+                ))}
+            </View>
+        </View>
+    ) : null;
 
     if (!round) {
         const showRefreshButton =
@@ -232,6 +372,7 @@ const PracticeScreen = ({ settings }) => {
                         <Text style={styles.emptyEyebrow}>{emptyState.eyebrow}</Text>
                         <Text style={styles.emptyTitle}>{emptyState.title}</Text>
                         <Text style={styles.emptyText}>{emptyState.text}</Text>
+                        {trainingSnapshotTrigger}
                         {showRefreshButton ? (
                             <ModernButton
                                 title="Check again"
@@ -241,6 +382,63 @@ const PracticeScreen = ({ settings }) => {
                         ) : null}
                     </Card>
                 </View>
+                {trainingSnapshot ? (
+                    <Modal
+                        animationType="fade"
+                        onRequestClose={closeTrainingSnapshot}
+                        transparent
+                        visible={isSnapshotVisible}
+                    >
+                        <View style={styles.snapshotModalRoot}>
+                            <Pressable
+                                onPress={closeTrainingSnapshot}
+                                style={styles.snapshotBackdrop}
+                            />
+                            <ScrollView
+                                contentContainerStyle={styles.snapshotModalScroll}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                <Card
+                                    style={[
+                                        styles.snapshotCard,
+                                        styles.snapshotModalCard,
+                                        isWebDesktop && styles.snapshotCardDesktop,
+                                        isWebDesktop && styles.snapshotModalCardDesktop,
+                                    ]}
+                                >
+                                    <View style={styles.snapshotModalTopRow}>
+                                        <View style={styles.snapshotModalBadge}>
+                                            <Ionicons
+                                                color={colors.accent}
+                                                name="stats-chart"
+                                                size={15}
+                                            />
+                                            <Text style={styles.snapshotModalBadgeText}>
+                                                Progress
+                                            </Text>
+                                        </View>
+
+                                        <Pressable
+                                            onPress={closeTrainingSnapshot}
+                                            style={({ pressed }) => [
+                                                styles.snapshotCloseButton,
+                                                pressed && styles.snapshotCloseButtonPressed,
+                                            ]}
+                                        >
+                                            <Ionicons
+                                                color={colors.textSecondary}
+                                                name="close"
+                                                size={18}
+                                            />
+                                        </Pressable>
+                                    </View>
+
+                                    {trainingSnapshotContent}
+                                </Card>
+                            </ScrollView>
+                        </View>
+                    </Modal>
+                ) : null}
             </SafeAreaView>
         );
     }
@@ -357,6 +555,7 @@ const PracticeScreen = ({ settings }) => {
                                     See {inputMode.chipLabel.toLowerCase()}, answer with{' '}
                                     {outputMode.chipLabel.toLowerCase()}, across {levelSummary}.
                                 </Text>
+                                {trainingSnapshotTrigger}
                             </View>
 
                             <View
@@ -400,7 +599,7 @@ const PracticeScreen = ({ settings }) => {
                                 isCorrect === true && styles.questionCardCorrect,
                                 isCorrect === false && styles.questionCardWrong,
                             ]}
-                        >
+            >
                             <View style={styles.chipRow}>
                                 <View style={[styles.modeChip, compactLayout && styles.modeChipCompact]}>
                                     <Ionicons color={colors.primaryStrong} name="eye" size={13} />
@@ -665,6 +864,58 @@ const PracticeScreen = ({ settings }) => {
                     )}
                 </View>
             </ScrollView>
+            {trainingSnapshot ? (
+                <Modal
+                    animationType="fade"
+                    onRequestClose={closeTrainingSnapshot}
+                    transparent
+                    visible={isSnapshotVisible}
+                >
+                    <View style={styles.snapshotModalRoot}>
+                        <Pressable onPress={closeTrainingSnapshot} style={styles.snapshotBackdrop} />
+                        <ScrollView
+                            contentContainerStyle={styles.snapshotModalScroll}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <Card
+                                style={[
+                                    styles.snapshotCard,
+                                    styles.snapshotModalCard,
+                                    isWebDesktop && styles.snapshotCardDesktop,
+                                    isWebDesktop && styles.snapshotModalCardDesktop,
+                                ]}
+                            >
+                                <View style={styles.snapshotModalTopRow}>
+                                    <View style={styles.snapshotModalBadge}>
+                                        <Ionicons
+                                            color={colors.accent}
+                                            name="stats-chart"
+                                            size={15}
+                                        />
+                                        <Text style={styles.snapshotModalBadgeText}>Progress</Text>
+                                    </View>
+
+                                    <Pressable
+                                        onPress={closeTrainingSnapshot}
+                                        style={({ pressed }) => [
+                                            styles.snapshotCloseButton,
+                                            pressed && styles.snapshotCloseButtonPressed,
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            color={colors.textSecondary}
+                                            name="close"
+                                            size={18}
+                                        />
+                                    </Pressable>
+                                </View>
+
+                                {trainingSnapshotContent}
+                            </Card>
+                        </ScrollView>
+                    </View>
+                </Modal>
+            ) : null}
         </SafeAreaView>
     );
 };
@@ -816,6 +1067,237 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         streakLabelDesktop: {
             fontSize: 11,
             letterSpacing: 1.2,
+        },
+        snapshotTrigger: {
+            marginTop: 8,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            alignSelf: 'flex-start',
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            borderRadius: radii.md,
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+            ...shadows.sm,
+        },
+        snapshotTriggerPressed: {
+            transform: [{ scale: 0.985 }],
+        },
+        snapshotTriggerCopy: {
+            gap: 1,
+        },
+        snapshotTriggerLabel: {
+            color: colors.textSecondary,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
+        },
+        snapshotTriggerValue: {
+            color: colors.text,
+            fontSize: 13,
+            lineHeight: 17,
+            fontWeight: '700',
+        },
+        snapshotCard: {
+            gap: 14,
+            padding: 18,
+        },
+        snapshotCardDesktop: {
+            gap: 18,
+            padding: 22,
+        },
+        snapshotContent: {
+            gap: 14,
+        },
+        snapshotHeader: {
+            gap: 4,
+        },
+        snapshotEyebrow: {
+            color: colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
+        },
+        snapshotTitle: {
+            color: colors.text,
+            fontFamily: typography.headingFont,
+            fontSize: 24,
+            lineHeight: 28,
+        },
+        snapshotTitleDesktop: {
+            fontSize: 28,
+            lineHeight: 32,
+        },
+        snapshotSubtitle: {
+            color: colors.textSecondary,
+            fontSize: 14,
+            lineHeight: 20,
+        },
+        snapshotProgressTrack: {
+            height: 10,
+            borderRadius: radii.pill,
+            backgroundColor: colors.surfaceMuted,
+            overflow: 'hidden',
+        },
+        snapshotProgressFill: {
+            height: '100%',
+            borderRadius: radii.pill,
+            backgroundColor: colors.primaryStrong,
+        },
+        snapshotMetricsGrid: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 8,
+        },
+        snapshotMetric: {
+            width: '48%',
+            gap: 2,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        snapshotMetricValue: {
+            color: colors.text,
+            fontSize: 22,
+            lineHeight: 26,
+            fontWeight: '800',
+        },
+        snapshotMetricLabel: {
+            color: colors.textSecondary,
+            fontSize: 11,
+            fontWeight: '700',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
+        },
+        snapshotSectionHeader: {
+            gap: 2,
+        },
+        snapshotSectionTitle: {
+            color: colors.text,
+            fontSize: 15,
+            lineHeight: 20,
+            fontWeight: '800',
+        },
+        snapshotSectionHint: {
+            color: colors.textMuted,
+            fontSize: 12,
+            lineHeight: 17,
+        },
+        ladderGrid: {
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap: 8,
+        },
+        ladderGridDesktop: {
+            gap: 10,
+        },
+        ladderCard: {
+            width: '31%',
+            gap: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        ladderCardDesktop: {
+            width: '15.4%',
+        },
+        ladderLabel: {
+            color: colors.textMuted,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.8,
+            textTransform: 'uppercase',
+        },
+        ladderValue: {
+            color: colors.text,
+            fontSize: 22,
+            lineHeight: 26,
+            fontWeight: '800',
+        },
+        ladderValueMastered: {
+            color: colors.success,
+        },
+        ladderTrack: {
+            height: 7,
+            borderRadius: radii.pill,
+            backgroundColor: colors.backgroundMuted,
+            overflow: 'hidden',
+        },
+        ladderFill: {
+            height: '100%',
+            borderRadius: radii.pill,
+            backgroundColor: colors.accent,
+        },
+        ladderFillMastered: {
+            backgroundColor: colors.success,
+        },
+        snapshotModalRoot: {
+            flex: 1,
+            justifyContent: 'center',
+        },
+        snapshotBackdrop: {
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: colors.overlay,
+        },
+        snapshotModalScroll: {
+            flexGrow: 1,
+            justifyContent: 'center',
+            paddingHorizontal: 18,
+            paddingVertical: 28,
+        },
+        snapshotModalCard: {
+            width: '100%',
+            maxWidth: 760,
+            alignSelf: 'center',
+        },
+        snapshotModalCardDesktop: {
+            maxWidth: 820,
+        },
+        snapshotModalTopRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+        },
+        snapshotModalBadge: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: radii.pill,
+            backgroundColor: colors.accentSoft,
+            alignSelf: 'flex-start',
+        },
+        snapshotModalBadgeText: {
+            color: colors.accent,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+        },
+        snapshotCloseButton: {
+            width: 36,
+            height: 36,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: radii.pill,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        snapshotCloseButtonPressed: {
+            transform: [{ scale: 0.96 }],
         },
         questionCard: {
             gap: 12,
@@ -1161,6 +1643,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             flex: 1,
             justifyContent: 'center',
             paddingHorizontal: 20,
+            gap: 12,
         },
         emptyStateWeb: {
             width: '100%',

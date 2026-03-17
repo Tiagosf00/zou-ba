@@ -260,6 +260,50 @@ export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [])
         compareQuestionPriority(firstItem, secondItem, cards, recentIds))[0];
 };
 
+export const getTrainingSnapshot = (items, cards, now = new Date()) => {
+    const nowTimestamp = now instanceof Date ? now.getTime() : new Date(now).getTime();
+    const boxCounts = Array.from({ length: MAX_BOX + 1 }, () => 0);
+    let studiedCount = 0;
+    let newCount = 0;
+    let dueCount = 0;
+    let scheduledCount = 0;
+    let masteredCount = 0;
+
+    (items || []).forEach((item) => {
+        const entry = getCardProgress(cards, item.id);
+
+        if (!entry) {
+            newCount += 1;
+            return;
+        }
+
+        studiedCount += 1;
+        boxCounts[entry.box] += 1;
+
+        if (isDue(entry, nowTimestamp)) {
+            dueCount += 1;
+        } else {
+            scheduledCount += 1;
+        }
+
+        if (entry.box === MAX_BOX && entry.lastResult === 'correct') {
+            masteredCount += 1;
+        }
+    });
+
+    return {
+        totalCount: items?.length || 0,
+        studiedCount,
+        newCount,
+        dueCount,
+        scheduledCount,
+        masteredCount,
+        readyNowCount: dueCount + newCount,
+        boxCounts,
+        completionRatio: items?.length ? studiedCount / items.length : 0,
+    };
+};
+
 export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date()) => {
     if (!item) {
         return cards;
