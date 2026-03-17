@@ -9,17 +9,22 @@ import ModernButton from '../components/ModernButton';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
+import { loadProgress, saveProgress } from '../utils/progressStore';
 import {
     buildRound,
-    createPracticeScheduler,
+    createPracticeProgress,
+    DEFAULT_PROFILE_ID,
     getDisplayLines,
     getDisplayText,
     getMeaningLines,
+    MINIMUM_ITEMS_PER_ROUND,
     pickNextQuestion,
     recordRoundResult,
 } from '../utils/practice';
 
 import hskData from '../../assets/hsk.json';
+
+const PROFILE_ID = DEFAULT_PROFILE_ID;
 
 const PracticeScreen = ({ settings }) => {
     const { width, height } = useWindowDimensions();
@@ -69,8 +74,8 @@ const PracticeScreen = ({ settings }) => {
     const [selectedOption, setSelectedOption] = useState(null);
     const [isCorrect, setIsCorrect] = useState(null);
     const [streak, setStreak] = useState(0);
-    const schedulerRef = useRef({});
-    const reviewStepRef = useRef(0);
+    const [isHydrated, setIsHydrated] = useState(false);
+    const progressRef = useRef(createPracticeProgress(PROFILE_ID));
     const recentQuestionIdsRef = useRef([]);
 
     const inputMode = getPracticeMode(settings.inputMode);
@@ -101,11 +106,30 @@ const PracticeScreen = ({ settings }) => {
         ].slice(0, recentQuestionLimit);
     };
 
-    const loadRound = (step = reviewStepRef.current) => {
+    const persistProgress = async (cards) => {
+        try {
+            progressRef.current = await saveProgress(PROFILE_ID, {
+                ...progressRef.current,
+                cards,
+            });
+        } catch (error) {
+            progressRef.current = createPracticeProgress(PROFILE_ID, cards);
+            console.warn('Unable to save practice progress.', error);
+        }
+    };
+
+    const loadRound = (cards = progressRef.current.cards) => {
+        if (filteredData.length < MINIMUM_ITEMS_PER_ROUND) {
+            setRound(null);
+            setSelectedOption(null);
+            setIsCorrect(null);
+            return;
+        }
+
         const nextQuestion = pickNextQuestion(
             filteredData,
-            schedulerRef.current,
-            step,
+            cards,
+            new Date(),
             recentQuestionIdsRef.current,
         );
 
@@ -113,34 +137,59 @@ const PracticeScreen = ({ settings }) => {
             rememberQuestion(nextQuestion.id);
         }
 
-        setRound(buildRound(filteredData, nextQuestion));
+        setRound(nextQuestion ? buildRound(filteredData, nextQuestion) : null);
         setSelectedOption(null);
         setIsCorrect(null);
     };
 
     useEffect(() => {
-        schedulerRef.current = createPracticeScheduler(filteredData);
-        reviewStepRef.current = 0;
+        let isActive = true;
+
+        const hydrateProgress = async () => {
+            const progress = await loadProgress(PROFILE_ID);
+
+            if (!isActive) {
+                return;
+            }
+
+            progressRef.current = progress;
+            setIsHydrated(true);
+        };
+
+        hydrateProgress();
+
+        return () => {
+            isActive = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!isHydrated) {
+            return;
+        }
+
         recentQuestionIdsRef.current = [];
         setStreak(0);
-        loadRound(0);
-    }, [levelKey]);
+        loadRound(progressRef.current.cards);
+    }, [isHydrated, levelKey]);
 
     const handleSelection = (item) => {
-        if (!round || selectedOption) {
+        if (!round || selectedOption || !isHydrated) {
             return;
         }
 
         const answerIsCorrect = item.id === round.question.id;
+        const nextCards = recordRoundResult(
+            progressRef.current.cards,
+            round.question,
+            answerIsCorrect,
+            new Date(),
+        );
 
         setSelectedOption(item);
         setIsCorrect(answerIsCorrect);
-        schedulerRef.current = recordRoundResult(
-            schedulerRef.current,
-            round.question,
-            answerIsCorrect,
-            reviewStepRef.current,
-        );
+        progressRef.current = createPracticeProgress(PROFILE_ID, nextCards);
+        void persistProgress(nextCards);
 
         if (answerIsCorrect) {
             setStreak((current) => current + 1);
@@ -151,21 +200,45 @@ const PracticeScreen = ({ settings }) => {
     };
 
     const handleNextCard = () => {
-        reviewStepRef.current += 1;
-        loadRound(reviewStepRef.current);
+        loadRound(progressRef.current.cards);
     };
 
     if (!round) {
+        const showRefreshButton =
+            isHydrated && filteredData.length >= MINIMUM_ITEMS_PER_ROUND;
+        const emptyState = !isHydrated
+            ? {
+                  eyebrow: 'Practice',
+                  title: 'Restoring your review memory.',
+                  text: 'Loading the words you have already studied so your next cards stay meaningful.',
+              }
+            : filteredData.length < MINIMUM_ITEMS_PER_ROUND
+              ? {
+                    eyebrow: 'Practice',
+                    title: 'Not enough words for a round yet.',
+                    text: 'Choose a few HSK levels in settings so we can build six answer choices.',
+                }
+              : {
+                    eyebrow: 'Caught up',
+                    title: "You're done for now.",
+                    text: `No review or new cards are due across ${levelSummary}. Come back a little later or switch HSK levels to study a different pool.`,
+                };
+
         return (
             <SafeAreaView style={styles.container}>
                 <BackdropOrbs />
                 <View style={[styles.emptyState, isWebWide && styles.emptyStateWeb]}>
                     <Card style={[styles.emptyCard, isWebWide && styles.emptyCardWeb]}>
-                        <Text style={styles.emptyEyebrow}>Practice</Text>
-                        <Text style={styles.emptyTitle}>Not enough words for a round yet.</Text>
-                        <Text style={styles.emptyText}>
-                            Choose a few HSK levels in settings so we can build six answer choices.
-                        </Text>
+                        <Text style={styles.emptyEyebrow}>{emptyState.eyebrow}</Text>
+                        <Text style={styles.emptyTitle}>{emptyState.title}</Text>
+                        <Text style={styles.emptyText}>{emptyState.text}</Text>
+                        {showRefreshButton ? (
+                            <ModernButton
+                                title="Check again"
+                                onPress={handleNextCard}
+                                style={styles.emptyAction}
+                            />
+                        ) : null}
                     </Card>
                 </View>
             </SafeAreaView>
@@ -1099,6 +1172,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         emptyCardWeb: {
             padding: 28,
+        },
+        emptyAction: {
+            marginTop: 6,
         },
         emptyEyebrow: {
             color: colors.primaryStrong,
