@@ -610,10 +610,12 @@ const PracticeScreen = () => {
                         styles.optionButton,
                         styles.revealButton,
                         styles.revealButtonCompact,
+                        styles.revealButtonWidth,
                         compactLayout && styles.optionButtonCompact,
                         compactLayout && styles.revealButtonCompactMobile,
                         isWebDesktop && styles.optionButtonDesktop,
                         isWebDesktop && styles.revealButtonDesktop,
+                        isWebDesktop && styles.revealButtonWidthDesktop,
                     ]}
                     textStyle={[
                         styles.optionText,
@@ -1751,11 +1753,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             width: '48.7%',
         },
         revealOptionWrapper: {
-            width: '48%',
-            alignSelf: 'center',
+            width: '100%',
+            alignItems: 'center',
         },
         revealOptionWrapperDesktop: {
-            width: '32%',
+            width: '100%',
         },
         optionButton: {
             paddingHorizontal: 10,
@@ -1767,11 +1769,17 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         revealButtonCompact: {
             minHeight: 62,
         },
+        revealButtonWidth: {
+            width: '48%',
+        },
         revealButtonCompactMobile: {
             minHeight: 56,
         },
         revealButtonDesktop: {
             minHeight: 82,
+        },
+        revealButtonWidthDesktop: {
+            width: '32%',
         },
         optionButtonCompact: {
             paddingHorizontal: 8,

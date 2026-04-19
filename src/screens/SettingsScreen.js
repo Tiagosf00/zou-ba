@@ -337,8 +337,8 @@ const SettingsScreen = () => {
                 </View>
 
                 <View style={[styles.sectionsGrid, isWebDesktop && styles.sectionsGridDesktop]}>
-                    <View style={styles.sectionSlot}>
-                        <Card style={styles.card}>
+                    <View style={[styles.sectionSlot, styles.accountSectionSlot]}>
+                        <Card style={[styles.card, styles.accountCard]}>
                             <View style={styles.accountHeaderRow}>
                                 <View style={styles.accountHeaderCopy}>
                                     <Text style={styles.sectionTitle}>Account & cloud backup</Text>
@@ -764,11 +764,19 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         sectionSlot: {
             width: '100%',
         },
+        accountSectionSlot: {
+            alignItems: 'center',
+        },
         sectionSlotHalf: {
             width: '48.8%',
         },
         card: {
             gap: 16,
+        },
+        accountCard: {
+            width: '94%',
+            maxWidth: layout.isWebDesktop ? 920 : 760,
+            alignSelf: 'center',
         },
         sectionTitle: {
             color: colors.text,
