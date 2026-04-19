@@ -7,6 +7,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import PracticeScreen from './src/screens/PracticeScreen';
+import ExamScreen from './src/screens/ExamScreen';
+import RankingScreen from './src/screens/RankingScreen';
 import StatsScreen from './src/screens/StatsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import { AppStateProvider, useAppState } from './src/context/AppStateContext';
@@ -19,6 +21,14 @@ const TAB_ICONS = {
     Practice: {
         active: 'flash',
         inactive: 'flash-outline',
+    },
+    Exam: {
+        active: 'school',
+        inactive: 'school-outline',
+    },
+    Ranking: {
+        active: 'trophy',
+        inactive: 'trophy-outline',
     },
     Stats: {
         active: 'stats-chart',
@@ -83,6 +93,10 @@ const RootNavigator = () => {
                 }}
             >
                 <Tab.Screen name="Practice" component={PracticeScreen} />
+
+                <Tab.Screen name="Exam" component={ExamScreen} />
+
+                <Tab.Screen name="Ranking" component={RankingScreen} />
 
                 <Tab.Screen name="Stats" component={StatsScreen} />
 

@@ -1,3 +1,5 @@
+import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json' with { type: 'json' };
+
 const JSON_HEADERS = {
     'Content-Type': 'application/json; charset=utf-8',
     'Cache-Control': 'no-store',
@@ -17,6 +19,9 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 const encoder = new TextEncoder();
+const HSK_LEVEL_BY_CARD_ID = Object.fromEntries(
+    hskData.map((item) => [String(item.id), Number(item.level) || 1]),
+);
 
 const getNowIso = () => new Date().toISOString();
 
@@ -168,6 +173,43 @@ export const normalizeStatePayload = (value) => {
         serialized,
         state: value,
     };
+};
+
+export const getCardLevelWeight = (cardId) => {
+    const level = HSK_LEVEL_BY_CARD_ID[String(cardId)];
+    return Number.isInteger(level) && level >= 1 ? level : 1;
+};
+
+export const calculateLeaderboardScore = (state) => {
+    const cards =
+        state && typeof state === 'object' && !Array.isArray(state)
+            ? state.progress?.cards || {}
+            : {};
+
+    return Object.entries(cards).reduce(
+        (summary, [cardId, entry]) => {
+            if (!entry || typeof entry !== 'object') {
+                return summary;
+            }
+
+            const weight = getCardLevelWeight(cardId);
+            const correctCount = Number.isFinite(entry.correctCount) ? entry.correctCount : 0;
+            const wrongCount = Number.isFinite(entry.wrongCount) ? entry.wrongCount : 0;
+
+            return {
+                score: summary.score + (correctCount - wrongCount) * weight,
+                correctCount: summary.correctCount + correctCount,
+                wrongCount: summary.wrongCount + wrongCount,
+                studiedCount: summary.studiedCount + 1,
+            };
+        },
+        {
+            score: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            studiedCount: 0,
+        },
+    );
 };
 
 const getAllowedOrigins = (env) =>
@@ -563,6 +605,76 @@ const handlePutState = async (request, env, authenticatedSession) => {
     });
 };
 
+const compareLeaderboardEntries = (left, right) => {
+    if (left.score !== right.score) {
+        return right.score - left.score;
+    }
+
+    if (left.correctCount !== right.correctCount) {
+        return right.correctCount - left.correctCount;
+    }
+
+    if (left.wrongCount !== right.wrongCount) {
+        return left.wrongCount - right.wrongCount;
+    }
+
+    if ((left.updatedAt || '') !== (right.updatedAt || '')) {
+        return (right.updatedAt || '').localeCompare(left.updatedAt || '');
+    }
+
+    return left.username.localeCompare(right.username);
+};
+
+const handleLeaderboard = async (request, env) => {
+    const rows = await env.DB.prepare(
+        `
+            SELECT
+                users.id AS user_id,
+                users.username AS username,
+                user_states.state_json AS state_json,
+                user_states.updated_at AS state_updated_at
+            FROM users
+            LEFT JOIN user_states ON user_states.user_id = users.id
+        `,
+    ).all();
+
+    const leaderboard = (rows?.results || [])
+        .map((row) => {
+            let state = null;
+
+            if (row?.state_json) {
+                try {
+                    state = JSON.parse(row.state_json);
+                } catch (error) {
+                    state = null;
+                }
+            }
+
+            const summary = calculateLeaderboardScore(state);
+
+            return {
+                userId: row.user_id,
+                username: row.username,
+                score: summary.score,
+                correctCount: summary.correctCount,
+                wrongCount: summary.wrongCount,
+                studiedCount: summary.studiedCount,
+                updatedAt: row.state_updated_at || null,
+            };
+        })
+        .sort(compareLeaderboardEntries)
+        .map((entry, index) => ({
+            ...entry,
+            rank: index + 1,
+        }));
+
+    return jsonResponse(request, env, {
+        leaderboard,
+        totalUsers: leaderboard.length,
+        generatedAt: getNowIso(),
+    });
+};
+
 export const handleRequest = async (request, env) => {
     if (request.method === 'OPTIONS') {
         return new Response(null, {
@@ -583,6 +695,10 @@ export const handleRequest = async (request, env) => {
 
     if (url.pathname === '/auth/login' && request.method === 'POST') {
         return handleLogin(request, env);
+    }
+
+    if (url.pathname === '/leaderboard' && request.method === 'GET') {
+        return handleLeaderboard(request, env);
     }
 
     const authenticatedSession = await getAuthenticatedSession(request, env);
