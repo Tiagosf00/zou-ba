@@ -1,11 +1,22 @@
-import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import {
+    ActivityIndicator,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+    useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
+import ModernButton from '../components/ModernButton';
 import { getPracticeMode, PRACTICE_MODES } from '../constants/practiceModes';
+import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
 
@@ -32,7 +43,61 @@ const THEME_OPTIONS = [
     },
 ];
 
-const SettingsScreen = ({ settings, updateSettings }) => {
+const getSyncBadge = (syncState) => {
+    if (!syncState) {
+        return {
+            icon: 'cloud-offline-outline',
+            label: 'Local only',
+            tone: 'muted',
+        };
+    }
+
+    if (syncState.kind === 'synced') {
+        return {
+            icon: 'cloud-done-outline',
+            label: 'Cloud synced',
+            tone: 'success',
+        };
+    }
+
+    if (syncState.kind === 'syncing') {
+        return {
+            icon: 'sync-outline',
+            label: 'Syncing',
+            tone: 'accent',
+        };
+    }
+
+    if (syncState.kind === 'error') {
+        return {
+            icon: 'alert-circle-outline',
+            label: 'Sync issue',
+            tone: 'error',
+        };
+    }
+
+    if (syncState.kind === 'disabled') {
+        return {
+            icon: 'cloud-offline-outline',
+            label: 'Backend missing',
+            tone: 'muted',
+        };
+    }
+
+    return {
+        icon: 'cloud-outline',
+        label: 'Local only',
+        tone: 'muted',
+    };
+};
+
+const SettingsScreen = () => {
+    const {
+        settings,
+        updateSettings,
+        auth,
+        cloud,
+    } = useAppState();
     const { width } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const desktopAsideWidth = isWebDesktop
@@ -58,6 +123,10 @@ const SettingsScreen = ({ settings, updateSettings }) => {
             desktopAsideWidth,
         ],
     );
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [feedback, setFeedback] = useState(null);
+
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
     const themeMode = settings.themeMode || 'light';
@@ -65,6 +134,10 @@ const SettingsScreen = ({ settings, updateSettings }) => {
         settings.hskLevels.length === 6
             ? 'HSK 1-6'
             : settings.hskLevels.map((level) => `HSK ${level}`).join(' · ');
+    const syncBadge = getSyncBadge(cloud.syncState);
+    const trimmedUsername = username.trim().toLowerCase();
+    const canSubmitCredentials =
+        trimmedUsername.length >= 3 && password.length >= 6 && auth.action === 'idle';
 
     const toggleLevel = (level) => {
         const currentLevels = settings.hskLevels;
@@ -81,6 +154,79 @@ const SettingsScreen = ({ settings, updateSettings }) => {
 
     const setMode = (type, modeId) => {
         updateSettings({ [type]: modeId });
+    };
+
+    const handleAuthError = (error) => {
+        setFeedback({
+            tone: 'error',
+            message: error?.message || 'Something went wrong while contacting the backend.',
+        });
+    };
+
+    const handleSignUp = async () => {
+        if (!canSubmitCredentials || !cloud.isConfigured) {
+            return;
+        }
+
+        setFeedback(null);
+
+        try {
+            await cloud.signUp(trimmedUsername, password);
+            setPassword('');
+            setFeedback({
+                tone: 'success',
+                message: `Account @${trimmedUsername} created. Your local progress is now backed up to the cloud.`,
+            });
+        } catch (error) {
+            handleAuthError(error);
+        }
+    };
+
+    const handleLogIn = async () => {
+        if (!canSubmitCredentials || !cloud.isConfigured) {
+            return;
+        }
+
+        setFeedback(null);
+
+        try {
+            await cloud.logIn(trimmedUsername, password);
+            setPassword('');
+            setFeedback({
+                tone: 'success',
+                message: `Signed in as @${trimmedUsername}. Your latest saved state has been restored.`,
+            });
+        } catch (error) {
+            handleAuthError(error);
+        }
+    };
+
+    const handleLogOut = async () => {
+        setFeedback(null);
+
+        try {
+            await cloud.logOut();
+            setFeedback({
+                tone: 'success',
+                message: 'Signed out. This browser is back in local-only guest mode.',
+            });
+        } catch (error) {
+            handleAuthError(error);
+        }
+    };
+
+    const handleSyncNow = async () => {
+        setFeedback(null);
+
+        try {
+            await cloud.syncNow();
+            setFeedback({
+                tone: 'success',
+                message: 'Cloud backup refreshed.',
+            });
+        } catch (error) {
+            handleAuthError(error);
+        }
     };
 
     const renderModeRow = (type, selectedModeId) => {
@@ -136,9 +282,9 @@ const SettingsScreen = ({ settings, updateSettings }) => {
             >
                 <View style={[styles.heroRow, isWebDesktop && styles.heroRowDesktop]}>
                     <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
-                        <Text style={styles.eyebrow}>Practice setup</Text>
+                        <Text style={styles.eyebrow}>Settings</Text>
                         <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Tune the study flow to match your pace.
+                            Settings
                         </Text>
                         <Text
                             style={[
@@ -182,11 +328,192 @@ const SettingsScreen = ({ settings, updateSettings }) => {
                                     {themeMode === 'dark' ? 'Night mode' : 'Day mode'}
                                 </Text>
                             </View>
+                            <View style={styles.summaryChip}>
+                                <Ionicons color={colors.accent} name={syncBadge.icon} size={14} />
+                                <Text style={styles.summaryChipText}>{syncBadge.label}</Text>
+                            </View>
                         </View>
                     </Card>
                 </View>
 
                 <View style={[styles.sectionsGrid, isWebDesktop && styles.sectionsGridDesktop]}>
+                    <View style={styles.sectionSlot}>
+                        <Card style={styles.card}>
+                            <View style={styles.accountHeaderRow}>
+                                <View style={styles.accountHeaderCopy}>
+                                    <Text style={styles.sectionTitle}>Account & cloud backup</Text>
+                                    <Text style={styles.sectionSubtitle}>
+                                        Keep practicing locally, then sign in to back up your
+                                        settings and training history to the backend.
+                                    </Text>
+                                </View>
+
+                                <View
+                                    style={[
+                                        styles.syncBadge,
+                                        styles[`syncBadge${capitalize(syncBadge.tone)}`],
+                                    ]}
+                                >
+                                    <Ionicons
+                                        color={styles[`syncBadge${capitalize(syncBadge.tone)}`].color}
+                                        name={syncBadge.icon}
+                                        size={15}
+                                    />
+                                    <Text
+                                        style={[
+                                            styles.syncBadgeText,
+                                            styles[
+                                                `syncBadgeText${capitalize(syncBadge.tone)}`
+                                            ],
+                                        ]}
+                                    >
+                                        {syncBadge.label}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.accountStatusCard}>
+                                <View style={styles.accountStatusRow}>
+                                    <View style={styles.accountIdentity}>
+                                        <Text style={styles.accountEyebrow}>
+                                            {auth.isAuthenticated ? 'Signed in' : 'Guest mode'}
+                                        </Text>
+                                        <Text style={styles.accountTitle}>
+                                            {auth.isAuthenticated
+                                                ? `@${auth.session.user.username}`
+                                                : 'Using local-only storage'}
+                                        </Text>
+                                    </View>
+
+                                    {auth.action !== 'idle' || cloud.syncState.kind === 'syncing' ? (
+                                        <ActivityIndicator
+                                            color={colors.primaryStrong}
+                                            size="small"
+                                        />
+                                    ) : null}
+                                </View>
+
+                                <Text style={styles.accountDescription}>
+                                    {cloud.syncState.message}
+                                </Text>
+                                <Text style={styles.accountNote}>
+                                    Password recovery is not implemented yet, so remember the
+                                    password you create here.
+                                </Text>
+                            </View>
+
+                            {!cloud.isConfigured ? (
+                                <View style={styles.feedbackCardMuted}>
+                                    <Text style={styles.feedbackTitleMuted}>
+                                        Backend not configured
+                                    </Text>
+                                    <Text style={styles.feedbackTextMuted}>
+                                        Set `EXPO_PUBLIC_API_BASE_URL` before using signup or login.
+                                    </Text>
+                                </View>
+                            ) : auth.isAuthenticated ? (
+                                <View style={styles.accountActions}>
+                                    <ModernButton
+                                        onPress={handleSyncNow}
+                                        style={styles.accountButton}
+                                        title={cloud.syncState.kind === 'syncing' ? 'Syncing…' : 'Sync now'}
+                                        variant="secondary"
+                                    />
+                                    <ModernButton
+                                        onPress={handleLogOut}
+                                        style={styles.accountButton}
+                                        title={
+                                            auth.action === 'logging-out' ? 'Signing out…' : 'Sign out'
+                                        }
+                                        variant="danger"
+                                    />
+                                </View>
+                            ) : (
+                                <View style={styles.authForm}>
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Username</Text>
+                                        <TextInput
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onChangeText={setUsername}
+                                            placeholder="Choose a username"
+                                            placeholderTextColor={colors.textMuted}
+                                            style={styles.textInput}
+                                            value={username}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputGroup}>
+                                        <Text style={styles.inputLabel}>Password</Text>
+                                        <TextInput
+                                            autoCapitalize="none"
+                                            autoCorrect={false}
+                                            onChangeText={setPassword}
+                                            placeholder="At least 6 characters"
+                                            placeholderTextColor={colors.textMuted}
+                                            secureTextEntry
+                                            style={styles.textInput}
+                                            value={password}
+                                        />
+                                    </View>
+
+                                    <View style={styles.accountActions}>
+                                        <ModernButton
+                                            disabled={!canSubmitCredentials}
+                                            onPress={handleSignUp}
+                                            style={styles.accountButton}
+                                            title={
+                                                auth.action === 'signing-up'
+                                                    ? 'Creating account…'
+                                                    : 'Sign up'
+                                            }
+                                        />
+                                        <ModernButton
+                                            disabled={!canSubmitCredentials}
+                                            onPress={handleLogIn}
+                                            style={styles.accountButton}
+                                            title={
+                                                auth.action === 'logging-in'
+                                                    ? 'Signing in…'
+                                                    : 'Log in'
+                                            }
+                                            variant="secondary"
+                                        />
+                                    </View>
+                                </View>
+                            )}
+
+                            {feedback ? (
+                                <View
+                                    style={[
+                                        feedback.tone === 'error'
+                                            ? styles.feedbackCardError
+                                            : styles.feedbackCardSuccess,
+                                    ]}
+                                >
+                                    <Text
+                                        style={[
+                                            feedback.tone === 'error'
+                                                ? styles.feedbackTitleError
+                                                : styles.feedbackTitleSuccess,
+                                        ]}
+                                    >
+                                        {feedback.tone === 'error' ? 'Action needed' : 'Saved'}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            feedback.tone === 'error'
+                                                ? styles.feedbackTextError
+                                                : styles.feedbackTextSuccess,
+                                        ]}
+                                    >
+                                        {feedback.message}
+                                    </Text>
+                                </View>
+                            ) : null}
+                        </Card>
+                    </View>
+
                     <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
                         <Card style={styles.card}>
                             <Text style={styles.sectionTitle}>Appearance</Text>
@@ -308,6 +635,8 @@ const SettingsScreen = ({ settings, updateSettings }) => {
         </SafeAreaView>
     );
 };
+
+const capitalize = (value) => value.charAt(0).toUpperCase() + value.slice(1);
 
 const createStyles = (colors, radii, shadows, typography, layout) =>
     StyleSheet.create({
@@ -452,6 +781,172 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             fontSize: 15,
             lineHeight: 22,
             marginTop: -6,
+        },
+        accountHeaderRow: {
+            gap: 14,
+        },
+        accountHeaderCopy: {
+            gap: 8,
+        },
+        syncBadge: {
+            alignSelf: 'flex-start',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: radii.pill,
+        },
+        syncBadgeAccent: {
+            backgroundColor: colors.accentSoft,
+            color: colors.accent,
+        },
+        syncBadgeSuccess: {
+            backgroundColor: colors.successSoft,
+            color: colors.success,
+        },
+        syncBadgeError: {
+            backgroundColor: colors.errorSoft,
+            color: colors.error,
+        },
+        syncBadgeMuted: {
+            backgroundColor: colors.surfaceMuted,
+            color: colors.textSecondary,
+        },
+        syncBadgeText: {
+            fontSize: 13,
+            fontWeight: '800',
+        },
+        syncBadgeTextAccent: {
+            color: colors.accent,
+        },
+        syncBadgeTextSuccess: {
+            color: colors.success,
+        },
+        syncBadgeTextError: {
+            color: colors.error,
+        },
+        syncBadgeTextMuted: {
+            color: colors.textSecondary,
+        },
+        accountStatusCard: {
+            gap: 10,
+            padding: 18,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        accountStatusRow: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 12,
+        },
+        accountIdentity: {
+            gap: 4,
+            flex: 1,
+        },
+        accountEyebrow: {
+            color: colors.primaryStrong,
+            fontSize: 12,
+            fontWeight: '800',
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+        },
+        accountTitle: {
+            color: colors.text,
+            fontFamily: typography.headingFont,
+            fontSize: 24,
+            lineHeight: 28,
+        },
+        accountDescription: {
+            color: colors.text,
+            fontSize: 15,
+            lineHeight: 22,
+        },
+        accountNote: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 19,
+        },
+        authForm: {
+            gap: 14,
+        },
+        inputGroup: {
+            gap: 8,
+        },
+        inputLabel: {
+            color: colors.text,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        textInput: {
+            minHeight: 52,
+            borderRadius: radii.md,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surfaceMuted,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            color: colors.text,
+            fontSize: 16,
+        },
+        accountActions: {
+            flexDirection: layout.isWebDesktop ? 'row' : 'column',
+            gap: 12,
+        },
+        accountButton: {
+            flex: 1,
+            minHeight: 64,
+        },
+        feedbackCardSuccess: {
+            gap: 6,
+            padding: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.successSoft,
+        },
+        feedbackCardError: {
+            gap: 6,
+            padding: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.errorSoft,
+        },
+        feedbackCardMuted: {
+            gap: 6,
+            padding: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+        },
+        feedbackTitleSuccess: {
+            color: colors.success,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        feedbackTitleError: {
+            color: colors.error,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        feedbackTitleMuted: {
+            color: colors.text,
+            fontSize: 14,
+            fontWeight: '800',
+        },
+        feedbackTextSuccess: {
+            color: colors.text,
+            fontSize: 14,
+            lineHeight: 20,
+        },
+        feedbackTextError: {
+            color: colors.text,
+            fontSize: 14,
+            lineHeight: 20,
+        },
+        feedbackTextMuted: {
+            color: colors.textSecondary,
+            fontSize: 14,
+            lineHeight: 20,
         },
         themeRow: {
             flexDirection: 'row',

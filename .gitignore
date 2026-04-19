@@ -5,6 +5,7 @@ node_modules/
 
 # Expo
 .expo/
+.wrangler/
 dist/
 web-build/
 expo-env.d.ts
@@ -43,6 +44,7 @@ Thumbs.db
 
 # local env files
 .env*.local
+.codex
 
 # typescript
 *.tsbuildinfo

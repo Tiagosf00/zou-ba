@@ -175,6 +175,12 @@ export const getMeaningLines = (item) => {
         .filter(Boolean);
 };
 
+export const getDetailedMeaning = (item) => {
+    const detailedMeaning = item?.detailedEnglishTranslation?.trim();
+
+    return detailedMeaning || null;
+};
+
 export const getPinyinSyllables = (item) => {
     if (!item?.pinyin) {
         return ['...'];
@@ -214,6 +220,47 @@ export const getDisplayText = (item, mode) => {
     }
 
     return item.hanzi;
+};
+
+const getOptionDisplayKey = (item, mode) => {
+    if (!item) {
+        return '';
+    }
+
+    if (mode === 'pinyin') {
+        return (item.pinyin || '').trim().toLowerCase();
+    }
+
+    if (mode === 'eng') {
+        return getDisplayLines(item, mode)
+            .join('\n')
+            .trim()
+            .toLowerCase();
+    }
+
+    return (item.hanzi || '').trim();
+};
+
+const pickUniqueDistractors = (candidates, question, answerMode) => {
+    const usedKeys = new Set([getOptionDisplayKey(question, answerMode)]);
+    const distractors = [];
+
+    candidates.forEach((candidate) => {
+        if (distractors.length >= OPTION_COUNT - 1) {
+            return;
+        }
+
+        const displayKey = getOptionDisplayKey(candidate, answerMode);
+
+        if (!displayKey || usedKeys.has(displayKey)) {
+            return;
+        }
+
+        distractors.push(candidate);
+        usedKeys.add(displayKey);
+    });
+
+    return distractors;
 };
 
 export const pickNextQuestion = (items, cards, now = new Date(), recentIds = []) => {
@@ -304,6 +351,92 @@ export const getTrainingSnapshot = (items, cards, now = new Date()) => {
     };
 };
 
+const compareWordStats = (firstWord, secondWord) => {
+    const firstHasAttempts = firstWord.attemptCount > 0 ? 1 : 0;
+    const secondHasAttempts = secondWord.attemptCount > 0 ? 1 : 0;
+
+    if (firstHasAttempts !== secondHasAttempts) {
+        return secondHasAttempts - firstHasAttempts;
+    }
+
+    if (firstWord.correctCount !== secondWord.correctCount) {
+        return secondWord.correctCount - firstWord.correctCount;
+    }
+
+    if (firstWord.wrongCount !== secondWord.wrongCount) {
+        return secondWord.wrongCount - firstWord.wrongCount;
+    }
+
+    const hanziComparison = (firstWord.hanzi || '').localeCompare(secondWord.hanzi || '');
+
+    if (hanziComparison !== 0) {
+        return hanziComparison;
+    }
+
+    return (firstWord.id || 0) - (secondWord.id || 0);
+};
+
+export const getWordStatsSnapshot = (items, cards) => {
+    const words = (items || []).map((item) => {
+        const entry = getCardProgress(cards, item.id);
+        const correctCount = entry?.correctCount || 0;
+        const wrongCount = entry?.wrongCount || 0;
+        const attemptCount = correctCount + wrongCount;
+        const meaningLines = getMeaningLines(item);
+
+        return {
+            ...item,
+            correctCount,
+            wrongCount,
+            attemptCount,
+            isStudied: !!entry,
+            isMastered: entry?.box === MAX_BOX && entry?.lastResult === 'correct',
+            meaningSummary:
+                meaningLines.length > 0
+                    ? meaningLines.slice(0, 2).join(', ')
+                    : 'No meaning available.',
+        };
+    });
+
+    const levels = Array.from(new Set(words.map((word) => word.level)))
+        .sort((firstLevel, secondLevel) => firstLevel - secondLevel)
+        .map((level) => {
+            const levelWords = words
+                .filter((word) => word.level === level)
+                .sort(compareWordStats);
+            const studiedCount = levelWords.filter((word) => word.isStudied).length;
+            const totalCorrectCount = levelWords.reduce(
+                (total, word) => total + word.correctCount,
+                0,
+            );
+            const totalWrongCount = levelWords.reduce(
+                (total, word) => total + word.wrongCount,
+                0,
+            );
+            const masteredCount = levelWords.filter((word) => word.isMastered).length;
+
+            return {
+                level,
+                words: levelWords,
+                totalWords: levelWords.length,
+                studiedCount,
+                totalCorrectCount,
+                totalWrongCount,
+                masteredCount,
+            };
+        });
+
+    return {
+        totalWords: words.length,
+        studiedCount: words.filter((word) => word.isStudied).length,
+        totalCorrectCount: words.reduce((total, word) => total + word.correctCount, 0),
+        totalWrongCount: words.reduce((total, word) => total + word.wrongCount, 0),
+        masteredCount: words.filter((word) => word.isMastered).length,
+        activeLevelCount: levels.filter((level) => level.studiedCount > 0).length,
+        levels,
+    };
+};
+
 export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date()) => {
     if (!item) {
         return cards;
@@ -347,7 +480,7 @@ export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date
     };
 };
 
-export const buildRound = (items, preferredQuestion = null) => {
+export const buildRound = (items, preferredQuestion = null, answerMode = 'hanzi') => {
     if (!items || items.length < OPTION_COUNT) {
         return null;
     }
@@ -364,9 +497,10 @@ export const buildRound = (items, preferredQuestion = null) => {
         ),
     );
     const fallbackDistractors = shuffle(items.filter((item) => item.id !== question.id));
-    const distractors = uniqueById([...sameLengthDistractors, ...fallbackDistractors]).slice(
-        0,
-        OPTION_COUNT - 1,
+    const distractors = pickUniqueDistractors(
+        uniqueById([...sameLengthDistractors, ...fallbackDistractors]),
+        question,
+        answerMode,
     );
 
     if (distractors.length < OPTION_COUNT - 1) {

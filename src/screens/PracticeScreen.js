@@ -15,15 +15,16 @@ import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
 import { getPracticeMode } from '../constants/practiceModes';
+import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
-import { loadProgress, saveProgress } from '../utils/progressStore';
 import {
     buildRound,
     createPracticeProgress,
     DEFAULT_PROFILE_ID,
     getDisplayLines,
     getDisplayText,
+    getDetailedMeaning,
     getMeaningLines,
     getTrainingSnapshot,
     MINIMUM_ITEMS_PER_ROUND,
@@ -31,11 +32,12 @@ import {
     recordRoundResult,
 } from '../utils/practice';
 
-import hskData from '../../assets/hsk.json';
+import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
 
 const PROFILE_ID = DEFAULT_PROFILE_ID;
 
-const PracticeScreen = ({ settings }) => {
+const PracticeScreen = () => {
+    const { settings, progress, updateProgress, isHydrated } = useAppState();
     const { width, height } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const desktopScale = isWebDesktop ? Math.min(Math.max((width - 1120) / 720, 0), 1) : 0;
@@ -83,8 +85,12 @@ const PracticeScreen = ({ settings }) => {
     const [selectedOption, setSelectedOption] = useState(null);
     const [isCorrect, setIsCorrect] = useState(null);
     const [streak, setStreak] = useState(0);
-    const [isHydrated, setIsHydrated] = useState(false);
     const [isSnapshotVisible, setIsSnapshotVisible] = useState(false);
+    const [detailVisibility, setDetailVisibility] = useState({
+        question: false,
+        selected: false,
+        correct: false,
+    });
     const progressRef = useRef(createPracticeProgress(PROFILE_ID));
     const recentQuestionIdsRef = useRef([]);
 
@@ -116,16 +122,12 @@ const PracticeScreen = ({ settings }) => {
         ].slice(0, recentQuestionLimit);
     };
 
-    const persistProgress = async (cards) => {
-        try {
-            progressRef.current = await saveProgress(PROFILE_ID, {
-                ...progressRef.current,
-                cards,
-            });
-        } catch (error) {
-            progressRef.current = createPracticeProgress(PROFILE_ID, cards);
-            console.warn('Unable to save practice progress.', error);
-        }
+    const resetDetailVisibility = () => {
+        setDetailVisibility({
+            question: false,
+            selected: false,
+            correct: false,
+        });
     };
 
     const loadRound = (cards = progressRef.current.cards) => {
@@ -133,6 +135,7 @@ const PracticeScreen = ({ settings }) => {
             setRound(null);
             setSelectedOption(null);
             setIsCorrect(null);
+            resetDetailVisibility();
             return;
         }
 
@@ -147,31 +150,17 @@ const PracticeScreen = ({ settings }) => {
             rememberQuestion(nextQuestion.id);
         }
 
-        setRound(nextQuestion ? buildRound(filteredData, nextQuestion) : null);
+        setRound(
+            nextQuestion ? buildRound(filteredData, nextQuestion, settings.outputMode) : null,
+        );
         setSelectedOption(null);
         setIsCorrect(null);
+        resetDetailVisibility();
     };
 
     useEffect(() => {
-        let isActive = true;
-
-        const hydrateProgress = async () => {
-            const progress = await loadProgress(PROFILE_ID);
-
-            if (!isActive) {
-                return;
-            }
-
-            progressRef.current = progress;
-            setIsHydrated(true);
-        };
-
-        hydrateProgress();
-
-        return () => {
-            isActive = false;
-        };
-    }, []);
+        progressRef.current = progress;
+    }, [progress]);
 
     useEffect(() => {
         if (!isHydrated) {
@@ -198,8 +187,10 @@ const PracticeScreen = ({ settings }) => {
 
         setSelectedOption(item);
         setIsCorrect(answerIsCorrect);
-        progressRef.current = createPracticeProgress(PROFILE_ID, nextCards);
-        void persistProgress(nextCards);
+        resetDetailVisibility();
+        const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
+        progressRef.current = nextProgress;
+        updateProgress(nextProgress);
 
         if (answerIsCorrect) {
             setStreak((current) => current + 1);
@@ -221,7 +212,7 @@ const PracticeScreen = ({ settings }) => {
 
     const trainingSnapshot =
         isHydrated && filteredData.length > 0
-            ? getTrainingSnapshot(filteredData, progressRef.current.cards, new Date())
+            ? getTrainingSnapshot(filteredData, progress.cards, new Date())
             : null;
     const reviewLadderMax = trainingSnapshot
         ? Math.max(1, ...trainingSnapshot.boxCounts)
@@ -449,8 +440,98 @@ const PracticeScreen = ({ settings }) => {
     const singleLinePinyinAnswers = settings.outputMode === 'pinyin';
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
-    const meaningSummary = meaningLines.join(', ');
-    const selectedMeaningSummary = selectedOption ? getMeaningSummary(selectedOption) : '';
+    const toggleDetailVisibility = (key) => {
+        setDetailVisibility((current) => ({
+            ...current,
+            [key]: !current[key],
+        }));
+    };
+    const renderDetailedMeaning = (item, detailKey, centered = false) => {
+        const detailedMeaning = getDetailedMeaning(item);
+
+        if (!detailedMeaning) {
+            return null;
+        }
+
+        const isExpanded = detailVisibility[detailKey];
+
+        return (
+            <View style={[styles.detailSection, centered && styles.detailSectionCentered]}>
+                <Pressable
+                    onPress={() => toggleDetailVisibility(detailKey)}
+                    style={({ pressed }) => [
+                        styles.detailToggle,
+                        centered && styles.detailToggleCentered,
+                        pressed && styles.detailTogglePressed,
+                    ]}
+                >
+                    <Ionicons
+                        color={colors.accent}
+                        name={isExpanded ? 'remove' : 'add'}
+                        size={isWebDesktop ? 16 : 14}
+                    />
+                    <Text
+                        style={[
+                            styles.detailToggleLabel,
+                            centered && styles.detailToggleLabelCentered,
+                        ]}
+                    >
+                        {isExpanded ? 'Hide detail' : 'Detailed meaning'}
+                    </Text>
+                </Pressable>
+
+                {isExpanded ? (
+                    <View style={[styles.detailPanel, centered && styles.detailPanelCentered]}>
+                        <Text
+                            style={[
+                                styles.detailText,
+                                centered && styles.detailTextCentered,
+                                isWebDesktop && styles.detailTextDesktop,
+                            ]}
+                        >
+                            {detailedMeaning}
+                        </Text>
+                    </View>
+                ) : null}
+            </View>
+        );
+    };
+    const renderAnswerRow = (item, label, detailKey, isSuccess = false, secondary = false) => (
+        <View
+            style={[
+                styles.answerRow,
+                secondary && styles.answerRowSecondary,
+                isWebDesktop && styles.answerRowDesktop,
+            ]}
+        >
+            <Text
+                style={[
+                    styles.answerLabel,
+                    isSuccess && styles.answerLabelSuccess,
+                    isWebDesktop && styles.answerLabelDesktop,
+                ]}
+            >
+                {label}
+            </Text>
+            <Text
+                style={[
+                    styles.answerSummary,
+                    isWebDesktop && styles.answerSummaryDesktop,
+                ]}
+            >
+                {item.hanzi} · {item.pinyin}
+            </Text>
+            <Text
+                style={[
+                    styles.answerTranslation,
+                    isWebDesktop && styles.answerTranslationDesktop,
+                ]}
+            >
+                {getMeaningSummary(item)}
+            </Text>
+            {renderDetailedMeaning(item, detailKey)}
+        </View>
+    );
     const optionGrid = (
         <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
             {options.map((item) => {
@@ -531,7 +612,7 @@ const PracticeScreen = ({ settings }) => {
                     >
                         <View style={styles.hero}>
                             <View style={styles.heroCopy}>
-                                <Text style={styles.eyebrow}>Daily practice</Text>
+                                <Text style={styles.eyebrow}>Practice</Text>
                                 <Text
                                     style={[
                                         styles.heroTitle,
@@ -540,7 +621,7 @@ const PracticeScreen = ({ settings }) => {
                                         veryTightLayout && styles.heroTitleVeryCompact,
                                     ]}
                                 >
-                                    Quick recognition drills.
+                                    Practice
                                 </Text>
                                 <Text
                                     numberOfLines={
@@ -644,6 +725,7 @@ const PracticeScreen = ({ settings }) => {
                                             {line}
                                         </Text>
                                     ))}
+                                    {renderDetailedMeaning(question, 'question', true)}
                                 </View>
                             ) : (
                                 <Text
@@ -693,75 +775,20 @@ const PracticeScreen = ({ settings }) => {
                                         >
                                             {isCorrect ? 'Word details' : 'Review this pair'}
                                         </Text>
-                                        <View
-                                            style={[
-                                                styles.answerRow,
-                                                isWebDesktop && styles.answerRowDesktop,
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.answerLabel,
-                                                    isWebDesktop && styles.answerLabelDesktop,
-                                                ]}
-                                            >
-                                                {isCorrect ? 'Picked word' : 'Your choice'}
-                                            </Text>
-                                            <Text
-                                                style={[
-                                                    styles.answerSummary,
-                                                    isWebDesktop && styles.answerSummaryDesktop,
-                                                ]}
-                                            >
-                                                {selectedOption.hanzi} · {selectedOption.pinyin}
-                                            </Text>
-                                            <Text
-                                                style={[
-                                                    styles.answerTranslation,
-                                                    isWebDesktop &&
-                                                        styles.answerTranslationDesktop,
-                                                ]}
-                                            >
-                                                {selectedMeaningSummary}
-                                            </Text>
-                                        </View>
+                                        {renderAnswerRow(
+                                            selectedOption,
+                                            isCorrect ? 'Picked word' : 'Your choice',
+                                            'selected',
+                                        )}
 
                                         {!isCorrect ? (
-                                            <View
-                                                style={[
-                                                    styles.answerRow,
-                                                    styles.answerRowSecondary,
-                                                    isWebDesktop && styles.answerRowDesktop,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.answerLabel,
-                                                        styles.answerLabelSuccess,
-                                                        isWebDesktop && styles.answerLabelDesktop,
-                                                    ]}
-                                                >
-                                                    Correct answer
-                                                </Text>
-                                                <Text
-                                                    style={[
-                                                        styles.answerSummary,
-                                                        isWebDesktop &&
-                                                            styles.answerSummaryDesktop,
-                                                    ]}
-                                                >
-                                                    {question.hanzi} · {question.pinyin}
-                                                </Text>
-                                                <Text
-                                                    style={[
-                                                        styles.answerTranslation,
-                                                        isWebDesktop &&
-                                                            styles.answerTranslationDesktop,
-                                                    ]}
-                                                >
-                                                    {meaningSummary}
-                                                </Text>
-                                            </View>
+                                            renderAnswerRow(
+                                                question,
+                                                'Correct answer',
+                                                'correct',
+                                                true,
+                                                true,
+                                            )
                                         ) : null}
                                     </View>
 
@@ -773,6 +800,7 @@ const PracticeScreen = ({ settings }) => {
                                     />
                                 </View>
                             ) : null}
+
                         </Card>
 
                         {selectedOption && !isWebDesktop ? (
@@ -793,35 +821,20 @@ const PracticeScreen = ({ settings }) => {
                                     >
                                         {isCorrect ? 'Word details' : 'Review this pair'}
                                     </Text>
-                                    <View style={styles.answerRow}>
-                                        <Text style={styles.answerLabel}>
-                                            {isCorrect ? 'Picked word' : 'Your choice'}
-                                        </Text>
-                                        <Text style={styles.answerSummary}>
-                                            {selectedOption.hanzi} · {selectedOption.pinyin}
-                                        </Text>
-                                        <Text style={styles.answerTranslation}>
-                                            {selectedMeaningSummary}
-                                        </Text>
-                                    </View>
+                                    {renderAnswerRow(
+                                        selectedOption,
+                                        isCorrect ? 'Picked word' : 'Your choice',
+                                        'selected',
+                                    )}
 
                                     {!isCorrect ? (
-                                        <View style={[styles.answerRow, styles.answerRowSecondary]}>
-                                            <Text
-                                                style={[
-                                                    styles.answerLabel,
-                                                    styles.answerLabelSuccess,
-                                                ]}
-                                            >
-                                                Correct answer
-                                            </Text>
-                                            <Text style={styles.answerSummary}>
-                                                {question.hanzi} · {question.pinyin}
-                                            </Text>
-                                            <Text style={styles.answerTranslation}>
-                                                {meaningSummary}
-                                            </Text>
-                                        </View>
+                                        renderAnswerRow(
+                                            question,
+                                            'Correct answer',
+                                            'correct',
+                                            true,
+                                            true,
+                                        )
                                     ) : null}
                                 </View>
 
@@ -1400,6 +1413,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         meaningStack: {
             gap: 8,
+            alignItems: 'center',
         },
         meaningStackCompact: {
             gap: 6,
@@ -1422,6 +1436,66 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         meaningLineVeryCompact: {
             fontSize: 18,
             lineHeight: 22,
+        },
+        detailSection: {
+            gap: 8,
+            alignItems: 'flex-start',
+        },
+        detailSectionCentered: {
+            width: '100%',
+            alignItems: 'center',
+        },
+        detailToggle: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 10,
+            paddingVertical: 7,
+            borderRadius: radii.pill,
+            backgroundColor: colors.accentSoft,
+            borderWidth: 1,
+            borderColor: 'transparent',
+        },
+        detailToggleCentered: {
+            alignSelf: 'center',
+        },
+        detailTogglePressed: {
+            transform: [{ scale: 0.98 }],
+        },
+        detailToggleLabel: {
+            color: colors.accent,
+            fontSize: 11,
+            lineHeight: 14,
+            fontWeight: '800',
+            letterSpacing: 0.7,
+            textTransform: 'uppercase',
+        },
+        detailToggleLabelCentered: {
+            textAlign: 'center',
+        },
+        detailPanel: {
+            width: '100%',
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        detailPanelCentered: {
+            alignSelf: 'stretch',
+        },
+        detailText: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 19,
+        },
+        detailTextCentered: {
+            textAlign: 'center',
+        },
+        detailTextDesktop: {
+            fontSize: 15,
+            lineHeight: 23,
         },
         questionFooter: {
             flexDirection: 'row',
@@ -1462,7 +1536,6 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 10,
         },
         answerCardDesktop: {
-            flexDirection: 'column',
             gap: 14,
         },
         desktopFeedbackPanel: {

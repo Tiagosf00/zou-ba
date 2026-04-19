@@ -1,0 +1,17 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "zou-ba-backend",
+	"main": "src/index.js",
+	"compatibility_date": "2026-04-19",
+	"vars": {
+		"ALLOWED_ORIGINS": "https://tiagosf00.github.io,http://localhost:8081,http://127.0.0.1:8081"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "zou-ba-db",
+			"database_id": "a45f308d-7809-4e98-8150-2fe372dd4046",
+			"migrations_dir": "migrations"
+		}
+	]
+}

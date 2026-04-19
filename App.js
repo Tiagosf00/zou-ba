@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, useWindowDimensions } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,8 +7,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import PracticeScreen from './src/screens/PracticeScreen';
+import StatsScreen from './src/screens/StatsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
-import PinyinChartScreen from './src/screens/PinyinChartScreen';
+import { AppStateProvider, useAppState } from './src/context/AppStateContext';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeProvider';
 import { getFloatingTabMetrics, getResponsiveLayout } from './src/utils/layout';
 
@@ -19,9 +20,9 @@ const TAB_ICONS = {
         active: 'flash',
         inactive: 'flash-outline',
     },
-    'Pinyin Chart': {
-        active: 'grid',
-        inactive: 'grid-outline',
+    Stats: {
+        active: 'stats-chart',
+        inactive: 'stats-chart-outline',
     },
     Settings: {
         active: 'options',
@@ -29,7 +30,7 @@ const TAB_ICONS = {
     },
 };
 
-const RootNavigator = ({ settings, updateSettings }) => {
+const RootNavigator = () => {
     const { colors, shadows, typography, mode } = useAppTheme();
     const { width } = useWindowDimensions();
     const layout = getResponsiveLayout(width);
@@ -81,43 +82,32 @@ const RootNavigator = ({ settings, updateSettings }) => {
                     };
                 }}
             >
-                <Tab.Screen name="Practice">
-                    {(props) => <PracticeScreen {...props} settings={settings} />}
-                </Tab.Screen>
+                <Tab.Screen name="Practice" component={PracticeScreen} />
 
-                <Tab.Screen name="Pinyin Chart" component={PinyinChartScreen} />
+                <Tab.Screen name="Stats" component={StatsScreen} />
 
-                <Tab.Screen name="Settings">
-                    {(props) => (
-                        <SettingsScreen
-                            {...props}
-                            settings={settings}
-                            updateSettings={updateSettings}
-                        />
-                    )}
-                </Tab.Screen>
+                <Tab.Screen name="Settings" component={SettingsScreen} />
             </Tab.Navigator>
         </NavigationContainer>
     );
 };
 
-export default function App() {
-    const [settings, setSettings] = useState({
-        hskLevels: [1],
-        inputMode: 'hanzi',
-        outputMode: 'pinyin',
-        themeMode: 'light',
-    });
-
-    const updateSettings = (newSettings) => {
-        setSettings((current) => ({ ...current, ...newSettings }));
-    };
+const AppShell = () => {
+    const { settings } = useAppState();
 
     return (
+        <ThemeProvider mode={settings.themeMode}>
+            <RootNavigator />
+        </ThemeProvider>
+    );
+};
+
+export default function App() {
+    return (
         <SafeAreaProvider>
-            <ThemeProvider mode={settings.themeMode}>
-                <RootNavigator settings={settings} updateSettings={updateSettings} />
-            </ThemeProvider>
+            <AppStateProvider>
+                <AppShell />
+            </AppStateProvider>
         </SafeAreaProvider>
     );
 }

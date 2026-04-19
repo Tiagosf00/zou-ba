@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --web",
     "web": "expo start --web",
     "export:web": "node scripts/export-web.js",
     "export:web:github": "node scripts/export-web.js github",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:test": "npm --prefix backend run test",
     "generate:hsk": "python3 fetch_hsk_3_0.py",
+    "generate:pdf-deck": "python3 scripts/build_pdf_dataset_json.py",
     "generate:pinyin": "python3 generateValidPinyin.py",
     "refresh:data": "python3 fetch_hsk_3_0.py && python3 generateValidPinyin.py"
   },

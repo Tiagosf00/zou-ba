@@ -146,9 +146,9 @@ const PinyinChartScreen = () => {
             >
                 <View style={[styles.overviewRow, isWebDesktop && styles.overviewRowDesktop]}>
                     <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
-                        <Text style={styles.eyebrow}>Reference chart</Text>
+                        <Text style={styles.eyebrow}>Pinyin</Text>
                         <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Explore initials across the top and finals down the side.
+                            Pinyin Chart
                         </Text>
                         <Text
                             style={[
