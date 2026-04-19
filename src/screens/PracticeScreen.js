@@ -83,7 +83,7 @@ const PracticeScreen = () => {
               : 96;
     const [round, setRound] = useState(null);
     const [selectedOption, setSelectedOption] = useState(null);
-    const [isCorrect, setIsCorrect] = useState(null);
+    const [answerState, setAnswerState] = useState(null);
     const [streak, setStreak] = useState(0);
     const [isSnapshotVisible, setIsSnapshotVisible] = useState(false);
     const [detailVisibility, setDetailVisibility] = useState({
@@ -134,7 +134,7 @@ const PracticeScreen = () => {
         if (filteredData.length < MINIMUM_ITEMS_PER_ROUND) {
             setRound(null);
             setSelectedOption(null);
-            setIsCorrect(null);
+            setAnswerState(null);
             resetDetailVisibility();
             return;
         }
@@ -154,7 +154,7 @@ const PracticeScreen = () => {
             nextQuestion ? buildRound(filteredData, nextQuestion, settings.outputMode) : null,
         );
         setSelectedOption(null);
-        setIsCorrect(null);
+        setAnswerState(null);
         resetDetailVisibility();
     };
 
@@ -173,7 +173,7 @@ const PracticeScreen = () => {
     }, [isHydrated, levelKey]);
 
     const handleSelection = (item) => {
-        if (!round || selectedOption || !isHydrated) {
+        if (!round || answerState || !isHydrated) {
             return;
         }
 
@@ -186,7 +186,7 @@ const PracticeScreen = () => {
         );
 
         setSelectedOption(item);
-        setIsCorrect(answerIsCorrect);
+        setAnswerState(answerIsCorrect ? 'correct' : 'wrong');
         resetDetailVisibility();
         const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
         progressRef.current = nextProgress;
@@ -198,6 +198,16 @@ const PracticeScreen = () => {
         }
 
         setStreak(0);
+    };
+
+    const handleRevealAnswer = () => {
+        if (!round || answerState || !isHydrated) {
+            return;
+        }
+
+        setSelectedOption(null);
+        setAnswerState('revealed');
+        resetDetailVisibility();
     };
 
     const handleNextCard = () => {
@@ -435,7 +445,9 @@ const PracticeScreen = () => {
     }
 
     const { question, options } = round;
-    const hasAnswered = !!selectedOption;
+    const hasAnswered = answerState !== null;
+    const isCorrect = answerState === 'correct';
+    const didRevealAnswer = answerState === 'revealed';
     const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
     const singleLinePinyinAnswers = settings.outputMode === 'pinyin';
     const meanings = getMeaningLines(question);
@@ -539,7 +551,7 @@ const PracticeScreen = () => {
                 const isAnswer = item.id === question.id;
                 let variant = 'secondary';
 
-                if (selectedOption) {
+                if (hasAnswered) {
                     if (isAnswer) {
                         variant = 'success';
                     } else if (isSelected) {
@@ -563,7 +575,7 @@ const PracticeScreen = () => {
                             multiline={!singleLinePinyinAnswers}
                             fitText={singleLinePinyinAnswers}
                             minimumFontScale={isWebWide ? 0.86 : 0.78}
-                            disabled={!!selectedOption}
+                            disabled={hasAnswered}
                             style={[
                                 styles.optionButton,
                                 { minHeight: optionButtonHeight },
@@ -582,6 +594,32 @@ const PracticeScreen = () => {
                     </View>
                 );
             })}
+
+            <View
+                style={[
+                    styles.optionWrapper,
+                    styles.optionWrapperFull,
+                ]}
+            >
+                <ModernButton
+                    title={["I don't know", 'Reveal the answer without affecting progress']}
+                    onPress={handleRevealAnswer}
+                    variant="secondary"
+                    disabled={hasAnswered}
+                    style={[
+                        styles.optionButton,
+                        styles.revealButton,
+                        compactLayout && styles.optionButtonCompact,
+                        isWebDesktop && styles.optionButtonDesktop,
+                    ]}
+                    textStyle={[
+                        styles.optionText,
+                        styles.revealButtonText,
+                        compactLayout && styles.optionTextCompact,
+                        isWebDesktop && styles.optionTextDesktop,
+                    ]}
+                />
+            </View>
         </View>
     );
 
@@ -625,7 +663,7 @@ const PracticeScreen = () => {
                                 </Text>
                                 <Text
                                     numberOfLines={
-                                        isWebDesktop ? 3 : selectedOption ? 1 : compactLayout ? 2 : 3
+                                        isWebDesktop ? 3 : hasAnswered ? 1 : compactLayout ? 2 : 3
                                     }
                                     style={[
                                         styles.heroSubtitle,
@@ -677,8 +715,8 @@ const PracticeScreen = () => {
                                 isWebDesktop && styles.questionCardDesktop,
                                 compactLayout && styles.questionCardCompact,
                                 veryTightLayout && styles.questionCardVeryCompact,
-                                isCorrect === true && styles.questionCardCorrect,
-                                isCorrect === false && styles.questionCardWrong,
+                                isCorrect && styles.questionCardCorrect,
+                                answerState === 'wrong' && styles.questionCardWrong,
                             ]}
             >
                             <View style={styles.chipRow}>
@@ -756,38 +794,52 @@ const PracticeScreen = () => {
                                 </View>
                                 {!tightLayout && !isWebDesktop ? (
                                     <Text style={styles.helperText}>
-                                        {selectedOption
-                                            ? 'Review the word details, then move to the next card.'
-                                            : 'Choose from six options.'}
+                                        {hasAnswered
+                                            ? 'Review the answer, then move to the next card.'
+                                            : "Choose from six options, or reveal the answer if you're stuck."}
                                     </Text>
                                 ) : null}
                             </View>
 
-                            {selectedOption && isWebDesktop ? (
+                            {hasAnswered && isWebDesktop ? (
                                 <View style={styles.desktopFeedbackPanel}>
                                     <View style={styles.answerCopy}>
                                         <Text
                                             style={[
                                                 styles.answerEyebrow,
                                                 isCorrect && styles.answerEyebrowSuccess,
+                                                didRevealAnswer && styles.answerEyebrowReveal,
                                                 isWebDesktop && styles.answerEyebrowDesktop,
                                             ]}
                                         >
-                                            {isCorrect ? 'Word details' : 'Review this pair'}
+                                            {isCorrect
+                                                ? 'Word details'
+                                                : didRevealAnswer
+                                                  ? 'Answer revealed'
+                                                  : 'Review this pair'}
                                         </Text>
-                                        {renderAnswerRow(
-                                            selectedOption,
-                                            isCorrect ? 'Picked word' : 'Your choice',
-                                            'selected',
-                                        )}
+                                        {selectedOption
+                                            ? renderAnswerRow(
+                                                  selectedOption,
+                                                  isCorrect ? 'Picked word' : 'Your choice',
+                                                  'selected',
+                                              )
+                                            : null}
+
+                                        {didRevealAnswer ? (
+                                            <Text style={styles.revealNote}>
+                                                This card was revealed without counting as correct
+                                                or wrong.
+                                            </Text>
+                                        ) : null}
 
                                         {!isCorrect ? (
                                             renderAnswerRow(
                                                 question,
-                                                'Correct answer',
+                                                didRevealAnswer ? 'Answer' : 'Correct answer',
                                                 'correct',
                                                 true,
-                                                true,
+                                                !!selectedOption,
                                             )
                                         ) : null}
                                     </View>
@@ -803,37 +855,51 @@ const PracticeScreen = () => {
 
                         </Card>
 
-                        {selectedOption && !isWebDesktop ? (
+                        {hasAnswered && !isWebDesktop ? (
                             <Card
                                 style={[
                                     styles.answerCard,
                                     compactLayout && styles.answerCardCompact,
                                     isWebDesktop && styles.answerCardDesktop,
                                 ]}
-                                tone={isCorrect ? 'accent' : 'muted'}
+                                tone={isCorrect ? 'accent' : didRevealAnswer ? 'default' : 'muted'}
                             >
                                 <View style={styles.answerCopy}>
                                     <Text
                                         style={[
                                             styles.answerEyebrow,
                                             isCorrect && styles.answerEyebrowSuccess,
+                                            didRevealAnswer && styles.answerEyebrowReveal,
                                         ]}
                                     >
-                                        {isCorrect ? 'Word details' : 'Review this pair'}
+                                        {isCorrect
+                                            ? 'Word details'
+                                            : didRevealAnswer
+                                              ? 'Answer revealed'
+                                              : 'Review this pair'}
                                     </Text>
-                                    {renderAnswerRow(
-                                        selectedOption,
-                                        isCorrect ? 'Picked word' : 'Your choice',
-                                        'selected',
-                                    )}
+                                    {selectedOption
+                                        ? renderAnswerRow(
+                                              selectedOption,
+                                              isCorrect ? 'Picked word' : 'Your choice',
+                                              'selected',
+                                          )
+                                        : null}
+
+                                    {didRevealAnswer ? (
+                                        <Text style={styles.revealNote}>
+                                            This card was revealed without counting as correct or
+                                            wrong.
+                                        </Text>
+                                    ) : null}
 
                                     {!isCorrect ? (
                                         renderAnswerRow(
                                             question,
-                                            'Correct answer',
+                                            didRevealAnswer ? 'Answer' : 'Correct answer',
                                             'correct',
                                             true,
-                                            true,
+                                            !!selectedOption,
                                         )
                                     ) : null}
                                 </View>
@@ -858,8 +924,10 @@ const PracticeScreen = () => {
                                 <Text style={styles.optionsEyebrow}>Answer choices</Text>
                                 <Text style={styles.optionsTitle}>
                                     {hasAnswered
-                                        ? 'Review the result, then keep the streak moving.'
-                                        : 'Choose the matching word from the grid.'}
+                                        ? didRevealAnswer
+                                            ? 'The answer is revealed. Move on when you are ready.'
+                                            : 'Review the result, then keep the streak moving.'
+                                        : "Choose the matching word, or reveal it if you truly don't know."}
                                 </Text>
                             </View>
 
@@ -1675,11 +1743,18 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionWrapper: {
             width: '48%',
         },
+        optionWrapperFull: {
+            width: '100%',
+        },
         optionWrapperDesktop: {
             width: '48.7%',
         },
         optionButton: {
             paddingHorizontal: 10,
+        },
+        revealButton: {
+            backgroundColor: colors.accentSoft,
+            borderColor: 'transparent',
         },
         optionButtonCompact: {
             paddingHorizontal: 8,
@@ -1708,9 +1783,20 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             fontSize: 21,
             lineHeight: 30,
         },
+        revealButtonText: {
+            color: colors.accent,
+        },
         optionTextCompact: {
             fontSize: 16,
             lineHeight: 22,
+        },
+        answerEyebrowReveal: {
+            color: colors.accent,
+        },
+        revealNote: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 19,
         },
         emptyState: {
             flex: 1,
