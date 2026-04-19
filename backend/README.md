@@ -41,6 +41,7 @@ Cloudflare Worker + D1 backend for:
 - `POST /auth/logout`
 - `GET /state`
 - `PUT /state`
+- `GET /leaderboard`
 
 ## Notes
 

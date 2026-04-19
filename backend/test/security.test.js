@@ -2,7 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+    calculateLeaderboardScore,
     hashPassword,
+    getCardLevelWeight,
     normalizeStatePayload,
     validatePassword,
     validateUsername,
@@ -39,4 +41,37 @@ test('hashPassword and verifyPassword round-trip correctly', async () => {
 test('normalizeStatePayload rejects arrays and oversize values', () => {
     assert.equal(normalizeStatePayload([]).ok, false);
     assert.equal(normalizeStatePayload({ version: 1, settings: {}, progress: {} }).ok, true);
+});
+
+test('getCardLevelWeight resolves HSK weights from card ids', () => {
+    assert.equal(getCardLevelWeight(1), 1);
+    assert.equal(getCardLevelWeight(301), 2);
+});
+
+test('calculateLeaderboardScore applies per-level weights to correct and wrong totals', () => {
+    const summary = calculateLeaderboardScore({
+        progress: {
+            cards: {
+                1: {
+                    correctCount: 3,
+                    wrongCount: 1,
+                },
+                301: {
+                    correctCount: 2,
+                    wrongCount: 1,
+                },
+                501: {
+                    correctCount: 0,
+                    wrongCount: 1,
+                },
+            },
+        },
+    });
+
+    assert.deepEqual(summary, {
+        score: 1,
+        correctCount: 5,
+        wrongCount: 3,
+        studiedCount: 3,
+    });
 });

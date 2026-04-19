@@ -93,3 +93,8 @@ export const saveCloudState = async (token, state) =>
             state: normalizeAppState(state),
         },
     });
+
+export const fetchLeaderboard = async (token) =>
+    request('/leaderboard', {
+        token,
+    });
