@@ -39,8 +39,8 @@ const AppStateContext = createContext(null);
 const DEFAULT_SYNC_STATE = {
     kind: isCloudConfigured ? 'guest' : 'disabled',
     message: isCloudConfigured
-        ? 'Local progress only until you sign in.'
-        : 'Cloud sync is disabled until EXPO_PUBLIC_API_BASE_URL is configured.',
+        ? 'Sign in to back up your progress and settings.'
+        : 'Cloud backup is not available in this build.',
     lastSyncedAt: null,
 };
 
@@ -243,7 +243,7 @@ export const AppStateProvider = ({ children }) => {
                 setSyncState({
                     kind: 'disabled',
                     message:
-                        'Cloud sync is disabled until EXPO_PUBLIC_API_BASE_URL is configured.',
+                        'Cloud backup is not available in this build.',
                     lastSyncedAt: null,
                 });
                 return;

@@ -47,7 +47,7 @@ const getSyncBadge = (syncState) => {
     if (!syncState) {
         return {
             icon: 'cloud-offline-outline',
-            label: 'Local only',
+            label: 'Backup available',
             tone: 'muted',
         };
     }
@@ -79,14 +79,14 @@ const getSyncBadge = (syncState) => {
     if (syncState.kind === 'disabled') {
         return {
             icon: 'cloud-offline-outline',
-            label: 'Backend missing',
+            label: 'Backup unavailable',
             tone: 'muted',
         };
     }
 
     return {
         icon: 'cloud-outline',
-        label: 'Local only',
+        label: 'Backup available',
         tone: 'muted',
     };
 };
@@ -376,12 +376,12 @@ const SettingsScreen = () => {
                                 <View style={styles.accountStatusRow}>
                                     <View style={styles.accountIdentity}>
                                         <Text style={styles.accountEyebrow}>
-                                            {auth.isAuthenticated ? 'Signed in' : 'Guest mode'}
+                                            {auth.isAuthenticated ? 'Signed in' : 'Cloud backup optional'}
                                         </Text>
                                         <Text style={styles.accountTitle}>
                                             {auth.isAuthenticated
                                                 ? `@${auth.session.user.username}`
-                                                : 'Using local-only storage'}
+                                                : 'Progress is saved on this browser'}
                                         </Text>
                                     </View>
 
@@ -397,18 +397,18 @@ const SettingsScreen = () => {
                                     {cloud.syncState.message}
                                 </Text>
                                 <Text style={styles.accountNote}>
-                                    Password recovery is not implemented yet, so remember the
-                                    password you create here.
+                                    Password recovery is not available yet, so choose a password
+                                    you will remember.
                                 </Text>
                             </View>
 
                             {!cloud.isConfigured ? (
                                 <View style={styles.feedbackCardMuted}>
                                     <Text style={styles.feedbackTitleMuted}>
-                                        Backend not configured
+                                        Cloud backup unavailable
                                     </Text>
                                     <Text style={styles.feedbackTextMuted}>
-                                        Set `EXPO_PUBLIC_API_BASE_URL` before using signup or login.
+                                        This build was published without a backend connection.
                                     </Text>
                                 </View>
                             ) : auth.isAuthenticated ? (
