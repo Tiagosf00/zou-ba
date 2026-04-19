@@ -597,26 +597,30 @@ const PracticeScreen = () => {
 
             <View
                 style={[
-                    styles.optionWrapper,
-                    styles.optionWrapperFull,
+                    styles.revealOptionWrapper,
+                    isWebDesktop && styles.revealOptionWrapperDesktop,
                 ]}
             >
                 <ModernButton
-                    title={["I don't know", 'Reveal the answer without affecting progress']}
+                    title="I don't know"
                     onPress={handleRevealAnswer}
                     variant="secondary"
                     disabled={hasAnswered}
                     style={[
                         styles.optionButton,
                         styles.revealButton,
+                        styles.revealButtonCompact,
                         compactLayout && styles.optionButtonCompact,
+                        compactLayout && styles.revealButtonCompactMobile,
                         isWebDesktop && styles.optionButtonDesktop,
+                        isWebDesktop && styles.revealButtonDesktop,
                     ]}
                     textStyle={[
                         styles.optionText,
                         styles.revealButtonText,
                         compactLayout && styles.optionTextCompact,
                         isWebDesktop && styles.optionTextDesktop,
+                        isWebDesktop && styles.revealButtonTextDesktop,
                     ]}
                 />
             </View>
@@ -1743,18 +1747,31 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         optionWrapper: {
             width: '48%',
         },
-        optionWrapperFull: {
-            width: '100%',
-        },
         optionWrapperDesktop: {
             width: '48.7%',
+        },
+        revealOptionWrapper: {
+            width: '48%',
+            alignSelf: 'center',
+        },
+        revealOptionWrapperDesktop: {
+            width: '32%',
         },
         optionButton: {
             paddingHorizontal: 10,
         },
         revealButton: {
-            backgroundColor: colors.accentSoft,
-            borderColor: 'transparent',
+            backgroundColor: colors.surface,
+            borderColor: colors.accentSoft,
+        },
+        revealButtonCompact: {
+            minHeight: 62,
+        },
+        revealButtonCompactMobile: {
+            minHeight: 56,
+        },
+        revealButtonDesktop: {
+            minHeight: 82,
         },
         optionButtonCompact: {
             paddingHorizontal: 8,
@@ -1784,7 +1801,13 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 30,
         },
         revealButtonText: {
-            color: colors.accent,
+            color: colors.text,
+            fontSize: 16,
+            lineHeight: 20,
+        },
+        revealButtonTextDesktop: {
+            fontSize: 19,
+            lineHeight: 24,
         },
         optionTextCompact: {
             fontSize: 16,
