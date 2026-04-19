@@ -53,7 +53,7 @@ const getRankAccent = (rank, colors) => {
 
 const RankingScreen = () => {
     const isFocused = useIsFocused();
-    const { auth, cloud } = useAppState();
+    const { auth, cloud, isHydrated } = useAppState();
     const { width } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const desktopAsideWidth = isWebDesktop
@@ -89,7 +89,7 @@ const RankingScreen = () => {
     });
 
     useEffect(() => {
-        if (!cloud.isConfigured || !isFocused) {
+        if (!cloud.isConfigured || !isFocused || !isHydrated) {
             return;
         }
 
@@ -137,10 +137,10 @@ const RankingScreen = () => {
         return () => {
             isActive = false;
         };
-    }, [auth.session?.token, cloud.isConfigured, isFocused]);
+    }, [auth.session?.token, cloud.isConfigured, isFocused, isHydrated]);
 
     const refreshLeaderboard = async () => {
-        if (!cloud.isConfigured) {
+        if (!cloud.isConfigured || !isHydrated) {
             return;
         }
 
@@ -179,6 +179,25 @@ const RankingScreen = () => {
     const generatedAtLabel = leaderboardState.generatedAt
         ? new Date(leaderboardState.generatedAt).toLocaleString()
         : null;
+    const hasLeaderboardData = leaderboardState.leaderboard.length > 0;
+
+    if (!isHydrated) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <BackdropOrbs />
+                <View style={styles.centeredState}>
+                    <Card style={styles.stateCard}>
+                        <ActivityIndicator color={colors.primaryStrong} size="small" />
+                        <Text style={styles.stateTitle}>Loading ranking</Text>
+                        <Text style={styles.stateText}>
+                            Restoring your session first so the ranking request uses the right
+                            account state.
+                        </Text>
+                    </Card>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     if (!cloud.isConfigured) {
         return (
@@ -272,10 +291,17 @@ const RankingScreen = () => {
                     <Card style={styles.messageCard}>
                         <Text style={styles.messageTitle}>Could not load the ranking</Text>
                         <Text style={styles.messageText}>{leaderboardState.error}</Text>
+                        <ModernButton
+                            title={leaderboardState.refreshing ? 'Refreshing...' : 'Try again'}
+                            onPress={refreshLeaderboard}
+                            variant="secondary"
+                            disabled={leaderboardState.refreshing}
+                            style={styles.messageAction}
+                        />
                     </Card>
                 ) : null}
 
-                {!currentUsername ? (
+                {!leaderboardState.error && !currentUsername ? (
                     <Card style={styles.messageCard}>
                         <Text style={styles.messageTitle}>Guest mode</Text>
                         <Text style={styles.messageText}>
@@ -283,7 +309,7 @@ const RankingScreen = () => {
                             your own synced score to appear here.
                         </Text>
                     </Card>
-                ) : currentUserEntry ? (
+                ) : !leaderboardState.error && currentUserEntry ? (
                     <Card style={styles.currentUserCard}>
                         <Text style={styles.currentUserEyebrow}>Your standing</Text>
                         <Text style={styles.currentUserTitle}>
@@ -294,7 +320,7 @@ const RankingScreen = () => {
                             wrong answers across {currentUserEntry.studiedCount} tracked words.
                         </Text>
                     </Card>
-                ) : (
+                ) : !leaderboardState.error ? (
                     <Card style={styles.messageCard}>
                         <Text style={styles.messageTitle}>You are not ranked yet</Text>
                         <Text style={styles.messageText}>
@@ -302,9 +328,9 @@ const RankingScreen = () => {
                             leaderboard yet. Practice a few cards and let the app sync.
                         </Text>
                     </Card>
-                )}
+                ) : null}
 
-                {leaderboardState.leaderboard.length === 0 ? (
+                {!leaderboardState.error && !hasLeaderboardData ? (
                     <Card style={styles.messageCard}>
                         <Text style={styles.messageTitle}>No users in the ranking yet</Text>
                         <Text style={styles.messageText}>
@@ -312,7 +338,7 @@ const RankingScreen = () => {
                             scores will appear here.
                         </Text>
                     </Card>
-                ) : (
+                ) : hasLeaderboardData ? (
                     <View style={styles.listColumn}>
                         {leaderboardState.leaderboard.map((entry) => {
                             const isCurrentUser = currentUsername === entry.username;
@@ -368,7 +394,7 @@ const RankingScreen = () => {
                             );
                         })}
                     </View>
-                )}
+                ) : null}
             </ScrollView>
         </SafeAreaView>
     );
@@ -551,6 +577,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             fontSize: 15,
             lineHeight: 22,
             color: colors.textSecondary,
+        },
+        messageAction: {
+            marginTop: 4,
+            minHeight: 58,
+            alignSelf: layout.isWebDesktop ? 'flex-start' : 'stretch',
         },
         listColumn: {
             gap: 12,
