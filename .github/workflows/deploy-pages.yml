@@ -39,6 +39,7 @@ jobs:
         run: node scripts/export-web.js github
         env:
           EXPO_BASE_URL: /${{ github.event.repository.name }}
+          EXPO_PUBLIC_API_BASE_URL: https://zou-ba-backend.tiagoo20f.workers.dev
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
