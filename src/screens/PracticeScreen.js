@@ -745,15 +745,6 @@ const PracticeScreen = () => {
                                 </View>
                             </View>
 
-                            <Text
-                                style={[
-                                    styles.questionLabel,
-                                    isWebDesktop && styles.questionLabelDesktop,
-                                ]}
-                            >
-                                Pick the matching answer
-                            </Text>
-
                             {settings.inputMode === 'eng' ? (
                                 <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
                                     {meaningLines.map((line) => (
@@ -798,13 +789,6 @@ const PracticeScreen = () => {
                                 <View style={styles.levelTag}>
                                     <Text style={styles.levelTagText}>HSK {question.level}</Text>
                                 </View>
-                                {!tightLayout && !isWebDesktop ? (
-                                    <Text style={styles.helperText}>
-                                        {hasAnswered
-                                            ? 'Review the answer, then move to the next card.'
-                                            : "Choose from six options, or reveal the answer if you're stuck."}
-                                    </Text>
-                                ) : null}
                             </View>
 
                             {hasAnswered && isWebDesktop ? (
@@ -928,13 +912,6 @@ const PracticeScreen = () => {
                         <Card style={styles.optionsPanel}>
                             <View style={styles.optionsPanelHeader}>
                                 <Text style={styles.optionsEyebrow}>Answer choices</Text>
-                                <Text style={styles.optionsTitle}>
-                                    {hasAnswered
-                                        ? didRevealAnswer
-                                            ? 'The answer is revealed. Move on when you are ready.'
-                                            : 'Review the result, then keep the streak moving.'
-                                        : "Choose the matching word, or reveal it if you truly don't know."}
-                                </Text>
                             </View>
 
                             {optionGrid}

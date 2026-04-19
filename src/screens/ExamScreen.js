@@ -22,6 +22,7 @@ import {
     buildRound,
     createPracticeProgress,
     DEFAULT_PROFILE_ID,
+    getDetailedMeaning,
     getDisplayLines,
     getDisplayText,
     getMeaningLines,
@@ -101,8 +102,13 @@ const createExamRound = (word, outputMode) => {
 
 const ExamScreen = () => {
     const { settings, progress, updateProgress, isHydrated } = useAppState();
-    const { width } = useWindowDimensions();
+    const { width, height } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
+    const desktopScale = isWebDesktop ? Math.min(Math.max((width - 1120) / 720, 0), 1) : 0;
+    const desktopSidebarWidth = isWebDesktop
+        ? Math.min(Math.max(width * 0.35, 500), 680)
+        : 430;
+    const desktopContentMinHeight = isWebDesktop ? Math.max(height - 40, 680) : height;
     const { colors, radii, shadows, typography } = useAppTheme();
     const styles = useMemo(
         () =>
@@ -110,15 +116,37 @@ const ExamScreen = () => {
                 isWebWide,
                 isWebDesktop,
                 contentMaxWidth,
+                desktopScale,
+                desktopSidebarWidth,
+                desktopContentMinHeight,
             }),
-        [colors, radii, shadows, typography, isWebWide, isWebDesktop, contentMaxWidth],
+        [
+            colors,
+            radii,
+            shadows,
+            typography,
+            isWebWide,
+            isWebDesktop,
+            contentMaxWidth,
+            desktopScale,
+            desktopSidebarWidth,
+            desktopContentMinHeight,
+        ],
     );
+    const compactLayout = !isWebDesktop && height < 780;
+    const tightLayout = !isWebDesktop && height < 700;
+    const veryTightLayout = !isWebDesktop && height < 640;
     const [selectedLevel, setSelectedLevel] = useState(settings.hskLevels[0] || 1);
     const [session, setSession] = useState(null);
     const [round, setRound] = useState(null);
     const [selectedOption, setSelectedOption] = useState(null);
     const [answerState, setAnswerState] = useState(null);
     const [report, setReport] = useState(null);
+    const [detailVisibility, setDetailVisibility] = useState({
+        question: false,
+        selected: false,
+        correct: false,
+    });
     const progressRef = useRef(progress);
 
     useEffect(() => {
@@ -144,7 +172,30 @@ const ExamScreen = () => {
     const hasAnswered = answerState !== null;
     const isCorrect = answerState === 'correct';
     const didChooseUnknown = answerState === 'unknown';
-    const optionButtonHeight = isWebDesktop ? 120 : 92;
+    const optionButtonHeight = isWebDesktop
+        ? Math.min(Math.max(width * 0.07, 120), 156)
+        : veryTightLayout
+          ? 72
+          : tightLayout
+            ? 80
+            : compactLayout
+              ? 88
+              : 96;
+    const isDesktopHanziAnswers = isWebDesktop && activeOutputMode.id === 'hanzi';
+    const singleLinePinyinAnswers = activeOutputMode.id === 'pinyin';
+    const meaningLines = currentQuestion
+        ? getMeaningLines(currentQuestion).length > 0
+            ? getMeaningLines(currentQuestion)
+            : ['No meaning available.']
+        : ['No meaning available.'];
+
+    const resetDetailVisibility = () => {
+        setDetailVisibility({
+            question: false,
+            selected: false,
+            correct: false,
+        });
+    };
 
     const startExamForLevel = (level) => {
         const wordsForLevel = wordsByLevel[level] || [];
@@ -169,6 +220,7 @@ const ExamScreen = () => {
         setSelectedOption(null);
         setAnswerState(null);
         setReport(null);
+        resetDetailVisibility();
     };
 
     const startExam = () => {
@@ -183,6 +235,7 @@ const ExamScreen = () => {
         setRound(createExamRound(session.words[session.currentIndex], session.outputMode));
         setSelectedOption(null);
         setAnswerState(null);
+        resetDetailVisibility();
     };
 
     const finishExam = (finishedSession) => {
@@ -197,6 +250,7 @@ const ExamScreen = () => {
         setRound(null);
         setSelectedOption(null);
         setAnswerState(null);
+        resetDetailVisibility();
     };
 
     const recordExamOutcome = (outcome, option = null) => {
@@ -220,6 +274,7 @@ const ExamScreen = () => {
 
         setSelectedOption(option);
         setAnswerState(outcome);
+        resetDetailVisibility();
         setSession((currentSession) =>
             currentSession
                 ? {
@@ -272,6 +327,7 @@ const ExamScreen = () => {
         setRound(createExamRound(session.words[nextIndex], session.outputMode));
         setSelectedOption(null);
         setAnswerState(null);
+        resetDetailVisibility();
     };
 
     const resetReport = () => {
@@ -288,9 +344,17 @@ const ExamScreen = () => {
             const lines = meanings.length > 0 ? meanings : ['No meaning available.'];
 
             return (
-                <View style={styles.meaningStack}>
+                <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
                     {lines.map((line, index) => (
-                        <Text key={`${item.id}-${index}`} style={styles.meaningLine}>
+                        <Text
+                            key={`${item.id}-${index}`}
+                            style={[
+                                styles.meaningLine,
+                                isWebDesktop && styles.meaningLineDesktop,
+                                compactLayout && styles.meaningLineCompact,
+                                veryTightLayout && styles.meaningLineVeryCompact,
+                            ]}
+                        >
                             {line}
                         </Text>
                     ))}
@@ -306,6 +370,15 @@ const ExamScreen = () => {
                 style={[
                     styles.questionText,
                     inputModeId === 'pinyin' && styles.questionTextPinyin,
+                    isWebDesktop && styles.questionTextDesktop,
+                    isWebDesktop &&
+                        inputModeId === 'pinyin' &&
+                        styles.questionTextPinyinDesktop,
+                    compactLayout && styles.questionTextCompact,
+                    compactLayout &&
+                        inputModeId === 'pinyin' &&
+                        styles.questionTextPinyinCompact,
+                    veryTightLayout && styles.questionTextVeryCompact,
                 ]}
             >
                 {getDisplayText(item, inputModeId)}
@@ -313,35 +386,188 @@ const ExamScreen = () => {
         );
     };
 
-    const renderFeedbackRow = (title, item, tone = 'default') => {
-        if (!item) {
+    const toggleDetailVisibility = (key) => {
+        setDetailVisibility((current) => ({
+            ...current,
+            [key]: !current[key],
+        }));
+    };
+
+    const renderDetailedMeaning = (item, detailKey, centered = false) => {
+        const detailedMeaning = getDetailedMeaning(item);
+
+        if (!detailedMeaning) {
             return null;
         }
 
+        const isExpanded = detailVisibility[detailKey];
+
         return (
-            <View
-                style={[
-                    styles.feedbackRow,
-                    tone === 'success' && styles.feedbackRowSuccess,
-                    tone === 'danger' && styles.feedbackRowDanger,
-                ]}
-            >
-                <Text
-                    style={[
-                        styles.feedbackLabel,
-                        tone === 'success' && styles.feedbackLabelSuccess,
-                        tone === 'danger' && styles.feedbackLabelDanger,
+            <View style={[styles.detailSection, centered && styles.detailSectionCentered]}>
+                <Pressable
+                    onPress={() => toggleDetailVisibility(detailKey)}
+                    style={({ pressed }) => [
+                        styles.detailToggle,
+                        centered && styles.detailToggleCentered,
+                        pressed && styles.detailTogglePressed,
                     ]}
                 >
-                    {title}
-                </Text>
-                <Text style={styles.feedbackWord}>
-                    {item.hanzi} · {item.pinyin}
-                </Text>
-                <Text style={styles.feedbackMeaning}>{getMeaningSummary(item)}</Text>
+                    <Ionicons
+                        color={colors.accent}
+                        name={isExpanded ? 'remove' : 'add'}
+                        size={isWebDesktop ? 16 : 14}
+                    />
+                    <Text
+                        style={[
+                            styles.detailToggleLabel,
+                            centered && styles.detailToggleLabelCentered,
+                        ]}
+                    >
+                        {isExpanded ? 'Hide detail' : 'Detailed meaning'}
+                    </Text>
+                </Pressable>
+
+                {isExpanded ? (
+                    <View style={[styles.detailPanel, centered && styles.detailPanelCentered]}>
+                        <Text
+                            style={[
+                                styles.detailText,
+                                centered && styles.detailTextCentered,
+                                isWebDesktop && styles.detailTextDesktop,
+                            ]}
+                        >
+                            {detailedMeaning}
+                        </Text>
+                    </View>
+                ) : null}
             </View>
         );
     };
+
+    const renderAnswerRow = (item, label, detailKey, isSuccess = false, secondary = false) => (
+        <View
+            style={[
+                styles.answerRow,
+                secondary && styles.answerRowSecondary,
+                isWebDesktop && styles.answerRowDesktop,
+            ]}
+        >
+            <Text
+                style={[
+                    styles.answerLabel,
+                    isSuccess && styles.answerLabelSuccess,
+                    isWebDesktop && styles.answerLabelDesktop,
+                ]}
+            >
+                {label}
+            </Text>
+            <Text
+                style={[
+                    styles.answerSummary,
+                    isWebDesktop && styles.answerSummaryDesktop,
+                ]}
+            >
+                {item.hanzi} · {item.pinyin}
+            </Text>
+            <Text
+                style={[
+                    styles.answerTranslation,
+                    isWebDesktop && styles.answerTranslationDesktop,
+                ]}
+            >
+                {getMeaningSummary(item)}
+            </Text>
+            {renderDetailedMeaning(item, detailKey)}
+        </View>
+    );
+
+    const optionGrid = round ? (
+        <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
+            {round.options.map((item) => {
+                const isSelected = selectedOption?.id === item.id;
+                const isAnswer = item.id === currentQuestion?.id;
+                let variant = 'secondary';
+
+                if (hasAnswered) {
+                    if (isAnswer) {
+                        variant = 'success';
+                    } else if (isSelected) {
+                        variant = 'danger';
+                    }
+                }
+
+                return (
+                    <View
+                        key={item.id}
+                        style={[
+                            styles.optionWrapper,
+                            isWebDesktop && styles.optionWrapperDesktop,
+                        ]}
+                    >
+                        <ModernButton
+                            title={
+                                singleLinePinyinAnswers
+                                    ? getDisplayText(item, activeOutputMode.id)
+                                    : getDisplayLines(item, activeOutputMode.id)
+                            }
+                            onPress={() => handleSelection(item)}
+                            variant={variant}
+                            multiline={!singleLinePinyinAnswers}
+                            fitText={singleLinePinyinAnswers}
+                            minimumFontScale={isWebWide ? 0.86 : 0.78}
+                            disabled={hasAnswered}
+                            style={[
+                                styles.optionButton,
+                                { minHeight: optionButtonHeight },
+                                compactLayout && styles.optionButtonCompact,
+                                isWebDesktop && styles.optionButtonDesktop,
+                            ]}
+                            textStyle={[
+                                styles.optionText,
+                                compactLayout && styles.optionTextCompact,
+                                singleLinePinyinAnswers && styles.optionTextPinyin,
+                                isWebDesktop && styles.optionTextDesktop,
+                                isDesktopHanziAnswers && styles.optionTextHanziDesktop,
+                                isWebWide && singleLinePinyinAnswers && styles.optionTextPinyinWeb,
+                            ]}
+                        />
+                    </View>
+                );
+            })}
+
+            <View
+                style={[
+                    styles.revealOptionWrapper,
+                    isWebDesktop && styles.revealOptionWrapperDesktop,
+                ]}
+            >
+                <ModernButton
+                    title="I don't know"
+                    onPress={handleDontKnow}
+                    variant="secondary"
+                    disabled={hasAnswered}
+                    style={[
+                        styles.optionButton,
+                        styles.revealButton,
+                        styles.revealButtonCompact,
+                        styles.revealButtonWidth,
+                        compactLayout && styles.optionButtonCompact,
+                        compactLayout && styles.revealButtonCompactMobile,
+                        isWebDesktop && styles.optionButtonDesktop,
+                        isWebDesktop && styles.revealButtonDesktop,
+                        isWebDesktop && styles.revealButtonWidthDesktop,
+                    ]}
+                    textStyle={[
+                        styles.optionText,
+                        styles.revealButtonText,
+                        compactLayout && styles.optionTextCompact,
+                        isWebDesktop && styles.optionTextDesktop,
+                        isWebDesktop && styles.revealButtonTextDesktop,
+                    ]}
+                />
+            </View>
+        </View>
+    ) : null;
 
     if (!isHydrated) {
         return (
@@ -560,159 +786,243 @@ const ExamScreen = () => {
                             </View>
                         </Card>
 
-                        <View style={[styles.examLayout, isWebDesktop && styles.examLayoutDesktop]}>
-                            <Card style={styles.questionCard}>
-                                <View style={styles.modeChipRow}>
-                                    <View style={styles.modeChip}>
-                                        <Ionicons color={colors.primaryStrong} name="eye" size={13} />
-                                        <Text style={styles.modeChipText}>
-                                            See {activeInputMode.label}
-                                        </Text>
-                                    </View>
-                                    <View style={[styles.modeChip, styles.modeChipAccent]}>
-                                        <Ionicons
-                                            color={colors.accent}
-                                            name="checkmark-circle"
-                                            size={13}
-                                        />
-                                        <Text
-                                            style={[styles.modeChipText, styles.modeChipTextAccent]}
-                                        >
-                                            Answer {activeOutputMode.label}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                <Text style={styles.questionLabel}>Exam word</Text>
-                                {renderQuestionPrompt(currentQuestion, session.inputMode)}
-
-                                <View style={styles.questionFooter}>
-                                    <View style={styles.levelTag}>
-                                        <Text style={styles.levelTagText}>
-                                            HSK {currentQuestion?.level}
-                                        </Text>
-                                    </View>
-                                    <Text style={styles.questionHint}>
-                                        {hasAnswered
-                                            ? 'Review the result, then move to the next word.'
-                                            : 'Choose one answer or mark it as unknown.'}
-                                    </Text>
-                                </View>
-                            </Card>
-
-                            <Card style={styles.optionsCard}>
-                                <Text style={styles.sectionEyebrow}>Answer choices</Text>
-                                <Text style={styles.optionsTitle}>
-                                    {hasAnswered
-                                        ? 'This word is locked in. Move on when you are ready.'
-                                        : 'Pick the matching answer. You only see each word once.'}
-                                </Text>
-
-                                <View style={styles.optionsGrid}>
-                                    {round.options.map((item) => {
-                                        const isSelected = selectedOption?.id === item.id;
-                                        const isAnswer = item.id === currentQuestion?.id;
-                                        let variant = 'secondary';
-
-                                        if (hasAnswered) {
-                                            if (isAnswer) {
-                                                variant = 'success';
-                                            } else if (isSelected) {
-                                                variant = 'danger';
-                                            }
-                                        }
-
-                                        return (
-                                            <View key={item.id} style={styles.optionWrapper}>
-                                                <ModernButton
-                                                    title={
-                                                        activeOutputMode.id === 'pinyin'
-                                                            ? getDisplayText(
-                                                                  item,
-                                                                  activeOutputMode.id,
-                                                              )
-                                                            : getDisplayLines(
-                                                                  item,
-                                                                  activeOutputMode.id,
-                                                              )
-                                                    }
-                                                    onPress={() => handleSelection(item)}
-                                                    variant={variant}
-                                                    multiline={activeOutputMode.id !== 'pinyin'}
-                                                    fitText={activeOutputMode.id === 'pinyin'}
-                                                    minimumFontScale={0.82}
-                                                    disabled={hasAnswered}
-                                                    style={[
-                                                        styles.optionButton,
-                                                        { minHeight: optionButtonHeight },
-                                                    ]}
-                                                    textStyle={styles.optionText}
-                                                />
-                                            </View>
-                                        );
-                                    })}
-                                </View>
-
-                                <ModernButton
-                                    title="I don't know"
-                                    onPress={handleDontKnow}
-                                    variant="secondary"
-                                    disabled={hasAnswered}
-                                    style={styles.unknownButton}
-                                    textStyle={styles.unknownButtonText}
-                                />
-                            </Card>
-                        </View>
-
-                        {hasAnswered ? (
-                            <Card
-                                tone={isCorrect ? 'accent' : 'default'}
-                                style={styles.feedbackCard}
+                        <View
+                            style={[
+                                styles.practiceLayout,
+                                isWebDesktop && styles.practiceLayoutDesktop,
+                            ]}
+                        >
+                            <View
+                                style={[
+                                    styles.topSection,
+                                    isWebDesktop && styles.topSectionDesktop,
+                                ]}
                             >
-                                <Text
+                                <Card
                                     style={[
-                                        styles.feedbackEyebrow,
-                                        isCorrect && styles.feedbackEyebrowSuccess,
-                                        didChooseUnknown && styles.feedbackEyebrowUnknown,
+                                        styles.questionCard,
+                                        isWebDesktop && styles.questionCardDesktop,
+                                        compactLayout && styles.questionCardCompact,
+                                        veryTightLayout && styles.questionCardVeryCompact,
+                                        isCorrect && styles.questionCardCorrect,
+                                        answerState === 'incorrect' && styles.questionCardWrong,
                                     ]}
                                 >
-                                    {isCorrect
-                                        ? 'Correct'
-                                        : didChooseUnknown
-                                          ? "Marked as I don't know"
-                                          : 'Incorrect'}
-                                </Text>
+                                    <View style={styles.chipRow}>
+                                        <View
+                                            style={[
+                                                styles.modeChip,
+                                                compactLayout && styles.modeChipCompact,
+                                            ]}
+                                        >
+                                            <Ionicons
+                                                color={colors.primaryStrong}
+                                                name="eye"
+                                                size={13}
+                                            />
+                                            <Text style={styles.modeChipText}>
+                                                See {activeInputMode.label}
+                                            </Text>
+                                        </View>
 
-                                {selectedOption
-                                    ? renderFeedbackRow(
-                                          isCorrect ? 'Your answer' : 'Your choice',
-                                          selectedOption,
-                                          isCorrect ? 'success' : 'danger',
-                                      )
-                                    : null}
+                                        <View
+                                            style={[
+                                                styles.modeChip,
+                                                styles.modeChipAccent,
+                                                compactLayout && styles.modeChipCompact,
+                                            ]}
+                                        >
+                                            <Ionicons
+                                                color={colors.accent}
+                                                name="checkmark-circle"
+                                                size={13}
+                                            />
+                                            <Text
+                                                style={[
+                                                    styles.modeChipText,
+                                                    styles.modeChipTextAccent,
+                                                ]}
+                                            >
+                                                Answer {activeOutputMode.label}
+                                            </Text>
+                                        </View>
+                                    </View>
 
-                                {!isCorrect
-                                    ? renderFeedbackRow('Correct answer', currentQuestion, 'success')
-                                    : null}
+                                    {renderQuestionPrompt(currentQuestion, session.inputMode)}
+                                    {session.inputMode === 'eng'
+                                        ? renderDetailedMeaning(currentQuestion, 'question', true)
+                                        : null}
 
-                                {didChooseUnknown ? (
-                                    <Text style={styles.feedbackNote}>
-                                        This still counts as a failed review for the practice tab
-                                        so the spaced-repetition schedule stays honest.
-                                    </Text>
+                                    <View style={styles.questionFooter}>
+                                        <View style={styles.levelTag}>
+                                            <Text style={styles.levelTagText}>
+                                                HSK {currentQuestion?.level}
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {hasAnswered && isWebDesktop ? (
+                                        <View style={styles.desktopFeedbackPanel}>
+                                            <View style={styles.answerCopy}>
+                                                <Text
+                                                    style={[
+                                                        styles.answerEyebrow,
+                                                        isCorrect &&
+                                                            styles.answerEyebrowSuccess,
+                                                        didChooseUnknown &&
+                                                            styles.answerEyebrowReveal,
+                                                        isWebDesktop &&
+                                                            styles.answerEyebrowDesktop,
+                                                    ]}
+                                                >
+                                                    {isCorrect
+                                                        ? 'Word details'
+                                                        : didChooseUnknown
+                                                          ? "Marked as I don't know"
+                                                          : 'Review this pair'}
+                                                </Text>
+                                                {selectedOption
+                                                    ? renderAnswerRow(
+                                                          selectedOption,
+                                                          isCorrect
+                                                              ? 'Picked word'
+                                                              : 'Your choice',
+                                                          'selected',
+                                                      )
+                                                    : null}
+
+                                                {didChooseUnknown ? (
+                                                    <Text style={styles.revealNote}>
+                                                        This still counts as a failed review for
+                                                        the practice tab so the spaced-repetition
+                                                        schedule stays honest.
+                                                    </Text>
+                                                ) : null}
+
+                                                {!isCorrect ? (
+                                                    renderAnswerRow(
+                                                        currentQuestion,
+                                                        'Correct answer',
+                                                        'correct',
+                                                        true,
+                                                        !!selectedOption,
+                                                    )
+                                                ) : null}
+                                            </View>
+
+                                            <ModernButton
+                                                title={
+                                                    session.currentIndex + 1 ===
+                                                    session.words.length
+                                                        ? 'See report'
+                                                        : 'Next word'
+                                                }
+                                                onPress={handleNextWord}
+                                                style={styles.desktopFeedbackButton}
+                                                variant="primary"
+                                            />
+                                        </View>
+                                    ) : null}
+                                </Card>
+
+                                {hasAnswered && !isWebDesktop ? (
+                                    <Card
+                                        style={[
+                                            styles.answerCard,
+                                            compactLayout && styles.answerCardCompact,
+                                            isWebDesktop && styles.answerCardDesktop,
+                                        ]}
+                                        tone={
+                                            isCorrect
+                                                ? 'accent'
+                                                : didChooseUnknown
+                                                  ? 'default'
+                                                  : 'muted'
+                                        }
+                                    >
+                                        <View style={styles.answerCopy}>
+                                            <Text
+                                                style={[
+                                                    styles.answerEyebrow,
+                                                    isCorrect && styles.answerEyebrowSuccess,
+                                                    didChooseUnknown &&
+                                                        styles.answerEyebrowReveal,
+                                                ]}
+                                            >
+                                                {isCorrect
+                                                    ? 'Word details'
+                                                    : didChooseUnknown
+                                                      ? "Marked as I don't know"
+                                                      : 'Review this pair'}
+                                            </Text>
+                                            {selectedOption
+                                                ? renderAnswerRow(
+                                                      selectedOption,
+                                                      isCorrect
+                                                          ? 'Picked word'
+                                                          : 'Your choice',
+                                                      'selected',
+                                                  )
+                                                : null}
+
+                                            {didChooseUnknown ? (
+                                                <Text style={styles.revealNote}>
+                                                    This still counts as a failed review for the
+                                                    practice tab so the spaced-repetition schedule
+                                                    stays honest.
+                                                </Text>
+                                            ) : null}
+
+                                            {!isCorrect ? (
+                                                renderAnswerRow(
+                                                    currentQuestion,
+                                                    'Correct answer',
+                                                    'correct',
+                                                    true,
+                                                    !!selectedOption,
+                                                )
+                                            ) : null}
+                                        </View>
+
+                                        <ModernButton
+                                            title={
+                                                session.currentIndex + 1 === session.words.length
+                                                    ? 'See report'
+                                                    : tightLayout
+                                                      ? 'Next'
+                                                      : 'Next word'
+                                            }
+                                            onPress={handleNextWord}
+                                            style={[
+                                                styles.nextButton,
+                                                compactLayout && styles.nextButtonCompact,
+                                                isWebDesktop && styles.nextButtonDesktop,
+                                            ]}
+                                            variant="primary"
+                                        />
+                                    </Card>
                                 ) : null}
+                            </View>
 
-                                <ModernButton
-                                    title={
-                                        session.currentIndex + 1 === session.words.length
-                                            ? 'See report'
-                                            : 'Next word'
-                                    }
-                                    onPress={handleNextWord}
-                                    style={styles.primaryAction}
-                                />
-                            </Card>
-                        ) : null}
+                            {isWebDesktop ? (
+                                <Card style={styles.optionsPanel}>
+                                    <View style={styles.optionsPanelHeader}>
+                                        <Text style={styles.optionsEyebrow}>Answer choices</Text>
+                                    </View>
+
+                                    {optionGrid}
+                                </Card>
+                            ) : (
+                                <View
+                                    style={[
+                                        styles.optionsSection,
+                                        hasAnswered && styles.optionsSectionAnswered,
+                                    ]}
+                                >
+                                    {optionGrid}
+                                </View>
+                            )}
+                        </View>
                     </View>
                 ) : null}
 
@@ -1070,36 +1380,65 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.textSecondary,
             textAlign: 'center',
         },
-        examLayout: {
-            gap: 14,
+        practiceLayout: {
+            gap: 12,
         },
-        examLayoutDesktop: {
+        practiceLayoutDesktop: {
             flexDirection: 'row',
-            alignItems: 'flex-start',
+            alignItems: 'center',
+            gap: 32,
+        },
+        topSection: {
+            gap: 10,
+        },
+        topSectionDesktop: {
+            width: layout.desktopSidebarWidth,
+            gap: 18,
         },
         questionCard: {
-            gap: 14,
-            flex: layout.isWebDesktop ? 1.05 : undefined,
+            gap: 12,
+            padding: 18,
         },
-        optionsCard: {
-            gap: 14,
-            flex: layout.isWebDesktop ? 0.95 : undefined,
+        questionCardDesktop: {
+            gap: 18,
+            padding: 26,
+            minHeight: 390,
+            justifyContent: 'center',
         },
-        modeChipRow: {
+        questionCardCompact: {
+            gap: 10,
+            padding: 16,
+        },
+        questionCardVeryCompact: {
+            paddingVertical: 14,
+        },
+        questionCardCorrect: {
+            borderColor: colors.success,
+            shadowColor: colors.success,
+        },
+        questionCardWrong: {
+            borderColor: colors.error,
+            shadowColor: colors.error,
+        },
+        chipRow: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            gap: 10,
+            gap: 8,
         },
         modeChip: {
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 6,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
+            gap: 5,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
             borderRadius: radii.pill,
             backgroundColor: colors.surfaceMuted,
             borderWidth: 1,
             borderColor: colors.border,
+        },
+        modeChipCompact: {
+            paddingHorizontal: 9,
+            paddingVertical: 5,
         },
         modeChipAccent: {
             backgroundColor: colors.accentSoft,
@@ -1125,38 +1464,132 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         questionText: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: layout.isWebDesktop ? 70 : 50,
-            lineHeight: layout.isWebDesktop ? 76 : 54,
+            fontSize: 50,
+            lineHeight: 54,
             textAlign: 'center',
         },
+        questionTextDesktop: {
+            fontSize: 70 + Math.round(layout.desktopScale * 10),
+            lineHeight: 76 + Math.round(layout.desktopScale * 12),
+        },
+        questionTextCompact: {
+            fontSize: 42,
+            lineHeight: 46,
+        },
+        questionTextVeryCompact: {
+            fontSize: 36,
+            lineHeight: 40,
+        },
         questionTextPinyin: {
-            fontSize: layout.isWebDesktop ? 44 : 32,
-            lineHeight: layout.isWebDesktop ? 50 : 38,
+            fontSize: 32,
+            lineHeight: 38,
+        },
+        questionTextPinyinDesktop: {
+            fontSize: 44 + Math.round(layout.desktopScale * 6),
+            lineHeight: 50 + Math.round(layout.desktopScale * 8),
+        },
+        questionTextPinyinCompact: {
+            fontSize: 28,
+            lineHeight: 34,
         },
         meaningStack: {
-            alignItems: 'center',
             gap: 8,
-            paddingVertical: 6,
+            alignItems: 'center',
+        },
+        meaningStackCompact: {
+            gap: 6,
         },
         meaningLine: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: layout.isWebDesktop ? 30 : 24,
-            lineHeight: layout.isWebDesktop ? 36 : 29,
+            fontSize: 24,
+            lineHeight: 29,
             textAlign: 'center',
+        },
+        meaningLineDesktop: {
+            fontSize: 30 + Math.round(layout.desktopScale * 4),
+            lineHeight: 36 + Math.round(layout.desktopScale * 4),
+        },
+        meaningLineCompact: {
+            fontSize: 21,
+            lineHeight: 25,
+        },
+        meaningLineVeryCompact: {
+            fontSize: 18,
+            lineHeight: 22,
+        },
+        detailSection: {
+            gap: 8,
+            alignItems: 'flex-start',
+        },
+        detailSectionCentered: {
+            width: '100%',
+            alignItems: 'center',
+        },
+        detailToggle: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            paddingHorizontal: 10,
+            paddingVertical: 7,
+            borderRadius: radii.pill,
+            backgroundColor: colors.accentSoft,
+            borderWidth: 1,
+            borderColor: 'transparent',
+        },
+        detailToggleCentered: {
+            alignSelf: 'center',
+        },
+        detailTogglePressed: {
+            transform: [{ scale: 0.98 }],
+        },
+        detailToggleLabel: {
+            color: colors.accent,
+            fontSize: 11,
+            lineHeight: 14,
+            fontWeight: '800',
+            letterSpacing: 0.7,
+            textTransform: 'uppercase',
+        },
+        detailToggleLabelCentered: {
+            textAlign: 'center',
+        },
+        detailPanel: {
+            width: '100%',
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        detailPanelCentered: {
+            alignSelf: 'stretch',
+        },
+        detailText: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 19,
+        },
+        detailTextCentered: {
+            textAlign: 'center',
+        },
+        detailTextDesktop: {
+            fontSize: 15,
+            lineHeight: 23,
         },
         questionFooter: {
             flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 10,
             alignItems: 'center',
             justifyContent: 'space-between',
+            gap: 12,
         },
         levelTag: {
-            paddingHorizontal: 12,
-            paddingVertical: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
             borderRadius: radii.pill,
             backgroundColor: colors.primarySoft,
+            alignSelf: 'flex-start',
         },
         levelTagText: {
             color: colors.primaryStrong,
@@ -1166,104 +1599,229 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             letterSpacing: 0.6,
             textTransform: 'uppercase',
         },
-        questionHint: {
-            flex: 1,
-            minWidth: 220,
-            fontSize: 12,
-            lineHeight: 16,
-            color: colors.textSecondary,
-            textAlign: layout.isWebDesktop ? 'right' : 'left',
+        answerCard: {
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            gap: 12,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
         },
-        optionsTitle: {
+        answerCardCompact: {
+            flexDirection: 'column',
+            gap: 10,
+        },
+        answerCardDesktop: {
+            gap: 14,
+        },
+        desktopFeedbackPanel: {
+            marginTop: 6,
+            gap: 18,
+            paddingTop: 18,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+        },
+        answerCopy: {
+            flex: 1,
+            gap: 8,
+        },
+        answerEyebrow: {
+            color: colors.error,
+            fontSize: 11,
+            fontWeight: '800',
+            letterSpacing: 1,
+            textTransform: 'uppercase',
+        },
+        answerEyebrowDesktop: {
+            fontSize: 14,
+            letterSpacing: 1.3,
+        },
+        answerEyebrowSuccess: {
+            color: colors.success,
+        },
+        answerEyebrowReveal: {
+            color: colors.accent,
+        },
+        answerRow: {
+            gap: 2,
+        },
+        answerRowDesktop: {
+            gap: 8,
+        },
+        answerRowSecondary: {
+            marginTop: 2,
+            paddingTop: 8,
+            borderTopWidth: 1,
+            borderTopColor: colors.border,
+        },
+        answerLabel: {
+            color: colors.textSecondary,
+            fontSize: 10,
+            fontWeight: '800',
+            letterSpacing: 0.9,
+            textTransform: 'uppercase',
+        },
+        answerLabelDesktop: {
+            fontSize: 12,
+            letterSpacing: 1.1,
+        },
+        answerLabelSuccess: {
+            color: colors.success,
+        },
+        answerSummary: {
             color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: layout.isWebDesktop ? 38 : 26,
-            lineHeight: layout.isWebDesktop ? 42 : 32,
+            fontSize: 15,
+            lineHeight: 19,
+            fontWeight: '700',
+        },
+        answerSummaryDesktop: {
+            fontSize: 24,
+            lineHeight: 30,
+        },
+        answerTranslation: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 17,
+        },
+        answerTranslationDesktop: {
+            fontSize: 18,
+            lineHeight: 27,
+        },
+        nextButton: {
+            minHeight: 48,
+            minWidth: 92,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            alignSelf: 'center',
+        },
+        nextButtonCompact: {
+            minWidth: 0,
+            alignSelf: 'stretch',
+        },
+        nextButtonDesktop: {
+            minWidth: 0,
+            alignSelf: 'stretch',
+        },
+        desktopFeedbackButton: {
+            minHeight: 50,
+            alignSelf: 'stretch',
+        },
+        optionsSection: {
+            flexGrow: 1,
+            justifyContent: 'center',
+        },
+        optionsSectionAnswered: {
+            flexGrow: 0,
+            justifyContent: 'flex-start',
+        },
+        optionsPanel: {
+            flex: 1,
+            gap: 18,
+            padding: 24,
+        },
+        optionsPanelHeader: {
+            gap: 10,
+            width: '100%',
+            maxWidth: 1120,
+            alignSelf: 'center',
+        },
+        optionsEyebrow: {
+            color: colors.primaryStrong,
+            fontSize: 13,
+            fontWeight: '800',
+            letterSpacing: 1.2,
+            textTransform: 'uppercase',
         },
         optionsGrid: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            gap: 10,
+            justifyContent: 'space-between',
+            rowGap: 10,
+        },
+        optionsGridDesktop: {
+            width: '100%',
+            maxWidth: 1120,
+            alignSelf: 'center',
+            rowGap: 14,
         },
         optionWrapper: {
-            width: layout.isWebDesktop ? '48.8%' : '100%',
+            width: '48%',
         },
-        optionButton: {
+        optionWrapperDesktop: {
+            width: '48.7%',
+        },
+        revealOptionWrapper: {
+            width: '100%',
+            alignItems: 'center',
+        },
+        revealOptionWrapperDesktop: {
             width: '100%',
         },
+        optionButton: {
+            paddingHorizontal: 10,
+        },
+        revealButton: {
+            backgroundColor: colors.surface,
+            borderColor: colors.accentSoft,
+        },
+        revealButtonCompact: {
+            minHeight: 62,
+        },
+        revealButtonWidth: {
+            width: '48%',
+        },
+        revealButtonCompactMobile: {
+            minHeight: 56,
+        },
+        revealButtonDesktop: {
+            minHeight: 82,
+        },
+        revealButtonWidthDesktop: {
+            width: '32%',
+        },
+        optionButtonCompact: {
+            paddingHorizontal: 8,
+        },
+        optionButtonDesktop: {
+            borderRadius: radii.lg,
+            paddingHorizontal: 24,
+        },
         optionText: {
-            fontSize: layout.isWebDesktop ? 19 : 18,
-            lineHeight: layout.isWebDesktop ? 28 : 26,
+            fontSize: 18,
+            lineHeight: 24,
         },
-        unknownButton: {
-            minHeight: 72,
-        },
-        unknownButtonText: {
+        optionTextPinyin: {
             fontSize: 17,
+            lineHeight: 24,
         },
-        feedbackCard: {
-            gap: 14,
+        optionTextDesktop: {
+            fontSize: 24 + Math.round(layout.desktopScale * 2),
+            lineHeight: 31 + Math.round(layout.desktopScale * 2),
         },
-        feedbackEyebrow: {
-            fontSize: 11,
-            lineHeight: 14,
-            fontWeight: '800',
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-            color: colors.textSecondary,
+        optionTextHanziDesktop: {
+            fontSize: 34 + Math.round(layout.desktopScale * 4),
+            lineHeight: 40 + Math.round(layout.desktopScale * 4),
         },
-        feedbackEyebrowSuccess: {
-            color: colors.success,
+        optionTextPinyinWeb: {
+            fontSize: 21,
+            lineHeight: 30,
         },
-        feedbackEyebrowUnknown: {
-            color: colors.accent,
-        },
-        feedbackRow: {
-            gap: 4,
-            paddingHorizontal: 16,
-            paddingVertical: 14,
-            borderRadius: radii.md,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        feedbackRowSuccess: {
-            backgroundColor: colors.successSoft,
-            borderColor: 'transparent',
-        },
-        feedbackRowDanger: {
-            backgroundColor: colors.errorSoft,
-            borderColor: 'transparent',
-        },
-        feedbackLabel: {
-            fontSize: 12,
-            lineHeight: 15,
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: 0.9,
-            color: colors.textMuted,
-        },
-        feedbackLabelSuccess: {
-            color: colors.success,
-        },
-        feedbackLabelDanger: {
-            color: colors.error,
-        },
-        feedbackWord: {
-            fontSize: layout.isWebDesktop ? 24 : 15,
-            lineHeight: layout.isWebDesktop ? 30 : 19,
-            fontWeight: '700',
+        revealButtonText: {
             color: colors.text,
+            fontSize: 16,
+            lineHeight: 20,
         },
-        feedbackMeaning: {
-            fontSize: layout.isWebDesktop ? 18 : 13,
-            lineHeight: layout.isWebDesktop ? 27 : 17,
+        revealButtonTextDesktop: {
+            fontSize: 19,
+            lineHeight: 24,
+        },
+        optionTextCompact: {
+            fontSize: 16,
+            lineHeight: 22,
+        },
+        revealNote: {
             color: colors.textSecondary,
-        },
-        feedbackNote: {
             fontSize: 13,
-            lineHeight: 17,
-            color: colors.textSecondary,
+            lineHeight: 19,
         },
         reportCard: {
             gap: 16,
