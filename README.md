@@ -13,4 +13,4 @@ The app now supports:
 - username/password signup and login
 - cloud backup for settings and practice state
 
-The frontend stays static and can still be hosted on GitHub Pages. The backend lives in [`backend/README.md`](/mnt/c/Users/tiago/Desktop/git/zou-ba/backend/README.md) and is designed for Cloudflare Worker + D1 deployment.
+The frontend stays static and can still be hosted on GitHub Pages. The backend lives in [`backend/README.md`](./backend/README.md) and is designed for Cloudflare Worker + D1 deployment.

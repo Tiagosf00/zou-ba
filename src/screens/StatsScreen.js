@@ -310,42 +310,23 @@ const StatsScreen = () => {
                                                         <View
                                                             style={[
                                                                 styles.countPill,
-                                                                styles.countPillSuccess,
+                                                                word.correctCount > 0
+                                                                    ? styles.countPillSuccess
+                                                                    : word.attemptCount > 0
+                                                                      ? styles.countPillMuted
+                                                                      : styles.countPillNeutral,
                                                             ]}
                                                         >
                                                             <Text
                                                                 style={[
                                                                     styles.countPillText,
-                                                                    styles.countPillTextSuccess,
+                                                                    word.correctCount > 0 &&
+                                                                        styles.countPillTextSuccess,
                                                                 ]}
                                                             >
                                                                 {word.correctCount} correct
                                                             </Text>
                                                         </View>
-
-                                                        {word.attemptCount > 0 ? (
-                                                            <View
-                                                                style={[
-                                                                    styles.countPill,
-                                                                    styles.countPillMuted,
-                                                                ]}
-                                                            >
-                                                                <Text style={styles.countPillText}>
-                                                                    {word.wrongCount} wrong
-                                                                </Text>
-                                                            </View>
-                                                        ) : (
-                                                            <View
-                                                                style={[
-                                                                    styles.countPill,
-                                                                    styles.countPillNeutral,
-                                                                ]}
-                                                            >
-                                                                <Text style={styles.countPillText}>
-                                                                    Not studied
-                                                                </Text>
-                                                            </View>
-                                                        )}
                                                     </View>
                                                 </View>
                                             ))}
@@ -532,11 +513,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             justifyContent: 'flex-start',
         },
         metricCard: {
-            gap: 8,
-            minHeight: 104,
-            padding: 16,
-            width: layout.isWebDesktop ? 220 : '100%',
-            maxWidth: layout.isWebDesktop ? 220 : undefined,
+            gap: 7,
+            minHeight: 92,
+            padding: 14,
+            width: layout.isWebDesktop ? 204 : '100%',
+            maxWidth: layout.isWebDesktop ? 204 : undefined,
         },
         metricIcon: {
             width: 36,
@@ -563,13 +544,13 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 12,
         },
         levelCard: {
-            gap: 14,
-            padding: 18,
+            gap: 12,
+            padding: 16,
         },
         levelHeader: {
             flexDirection: layout.isWebDesktop ? 'row' : 'column',
             justifyContent: 'space-between',
-            gap: 14,
+            gap: 12,
         },
         levelHeaderPressed: {
             opacity: 0.85,
@@ -588,15 +569,15 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         levelTitle: {
             color: colors.text,
-            fontSize: 24,
-            lineHeight: 28,
+            fontSize: 22,
+            lineHeight: 26,
             fontWeight: '700',
             fontFamily: typography.headingFont,
         },
         levelSubtitle: {
             color: colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 21,
+            fontSize: 13,
+            lineHeight: 19,
             fontFamily: typography.uiFont,
         },
         levelProgressSection: {
@@ -640,8 +621,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 12,
         },
         levelMetaChip: {
-            paddingHorizontal: 12,
-            paddingVertical: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
             borderRadius: radii.pill,
             backgroundColor: colors.surfaceMuted,
             borderWidth: 1,
@@ -649,7 +630,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         levelMetaChipText: {
             color: colors.text,
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: '600',
             fontFamily: typography.uiFont,
         },
@@ -660,8 +641,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         wordRow: {
             flexDirection: layout.isWebDesktop ? 'row' : 'column',
             justifyContent: 'space-between',
-            gap: 14,
-            paddingVertical: 14,
+            gap: 10,
+            paddingVertical: 10,
         },
         wordRowBorder: {
             borderTopWidth: 1,
@@ -669,44 +650,44 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         wordCopy: {
             flex: 1,
-            gap: 8,
+            gap: 6,
         },
         wordHeading: {
             flexDirection: 'row',
             alignItems: 'baseline',
             flexWrap: 'wrap',
-            gap: 10,
+            gap: 8,
         },
         wordHanzi: {
             color: colors.text,
-            fontSize: 24,
-            lineHeight: 28,
+            fontSize: 21,
+            lineHeight: 24,
             fontWeight: '700',
             fontFamily: typography.studyFont,
         },
         wordPinyin: {
             color: colors.primaryStrong,
-            fontSize: 15,
-            lineHeight: 20,
+            fontSize: 14,
+            lineHeight: 18,
             fontWeight: '600',
             fontFamily: typography.uiFont,
         },
         wordMeaning: {
             color: colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 21,
+            fontSize: 13,
+            lineHeight: 19,
             fontFamily: typography.uiFont,
         },
         wordPills: {
             flexDirection: 'row',
             flexWrap: 'wrap',
-            gap: 10,
+            gap: 8,
             alignItems: 'center',
             justifyContent: layout.isWebDesktop ? 'flex-end' : 'flex-start',
         },
         countPill: {
-            paddingHorizontal: 12,
-            paddingVertical: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
             borderRadius: radii.pill,
             borderWidth: 1,
         },
@@ -724,7 +705,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         countPillText: {
             color: colors.text,
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: '600',
             fontFamily: typography.uiFont,
         },

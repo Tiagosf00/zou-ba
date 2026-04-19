@@ -12,7 +12,7 @@ Cloudflare Worker + D1 backend for:
    ```bash
    npx wrangler d1 create zou-ba-db
    ```
-2. Copy the returned `database_id` into [`backend/wrangler.jsonc`](/mnt/c/Users/tiago/Desktop/git/zou-ba/backend/wrangler.jsonc).
+2. Copy the returned `database_id` into [`wrangler.jsonc`](./wrangler.jsonc).
 3. Install backend dependencies:
    ```bash
    cd backend
