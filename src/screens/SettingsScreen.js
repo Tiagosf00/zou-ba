@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
+import { pickDistinctMode } from '../constants/defaultSettings';
 import { getPracticeMode, PRACTICE_MODES } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -153,6 +154,17 @@ const SettingsScreen = () => {
     };
 
     const setMode = (type, modeId) => {
+        const otherType = type === 'inputMode' ? 'outputMode' : 'inputMode';
+        const otherModeId = settings[otherType];
+
+        if (modeId === otherModeId) {
+            updateSettings({
+                [type]: modeId,
+                [otherType]: pickDistinctMode(settings[type], modeId),
+            });
+            return;
+        }
+
         updateSettings({ [type]: modeId });
     };
 

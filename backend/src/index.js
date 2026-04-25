@@ -17,6 +17,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
     'http://localhost:8081',
     'http://127.0.0.1:8081',
 ];
+const MAX_BOX = 5;
 
 const encoder = new TextEncoder();
 const HSK_LEVEL_BY_CARD_ID = Object.fromEntries(
@@ -24,6 +25,26 @@ const HSK_LEVEL_BY_CARD_ID = Object.fromEntries(
 );
 
 const getNowIso = () => new Date().toISOString();
+
+const toTimestamp = (value) => {
+    if (!value) {
+        return null;
+    }
+
+    const timestamp = Date.parse(value);
+    return Number.isNaN(timestamp) ? null : timestamp;
+};
+
+const getNumericCount = (value) =>
+    Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+
+const getCardAttemptCount = (entry) =>
+    getNumericCount(entry?.correctCount) + getNumericCount(entry?.wrongCount);
+
+const getProgressCards = (state) =>
+    state && typeof state === 'object' && !Array.isArray(state)
+        ? state.progress?.cards || {}
+        : {};
 
 const parseJsonSafely = async (request) => {
     try {
@@ -180,11 +201,36 @@ export const getCardLevelWeight = (cardId) => {
     return Number.isInteger(level) && level >= 1 ? level : 1;
 };
 
+export const summarizeProgressState = (state) => {
+    const cards = getProgressCards(state);
+
+    return Object.values(cards).reduce(
+        (summary, entry) => {
+            if (!entry || typeof entry !== 'object') {
+                return summary;
+            }
+
+            const correctCount = getNumericCount(entry.correctCount);
+            const wrongCount = getNumericCount(entry.wrongCount);
+
+            return {
+                correctCount: summary.correctCount + correctCount,
+                wrongCount: summary.wrongCount + wrongCount,
+                attemptCount: summary.attemptCount + correctCount + wrongCount,
+                studiedCount: summary.studiedCount + 1,
+            };
+        },
+        {
+            correctCount: 0,
+            wrongCount: 0,
+            attemptCount: 0,
+            studiedCount: 0,
+        },
+    );
+};
+
 export const calculateLeaderboardScore = (state) => {
-    const cards =
-        state && typeof state === 'object' && !Array.isArray(state)
-            ? state.progress?.cards || {}
-            : {};
+    const cards = getProgressCards(state);
 
     return Object.entries(cards).reduce(
         (summary, [cardId, entry]) => {
@@ -201,6 +247,9 @@ export const calculateLeaderboardScore = (state) => {
                 correctCount: summary.correctCount + correctCount,
                 wrongCount: summary.wrongCount + wrongCount,
                 studiedCount: summary.studiedCount + 1,
+                masteredCount:
+                    summary.masteredCount +
+                    (entry.box === MAX_BOX && entry.lastResult === 'correct' ? 1 : 0),
             };
         },
         {
@@ -208,6 +257,7 @@ export const calculateLeaderboardScore = (state) => {
             correctCount: 0,
             wrongCount: 0,
             studiedCount: 0,
+            masteredCount: 0,
         },
     );
 };
@@ -317,7 +367,7 @@ const createSessionRecord = async (env, userId) => {
     };
 };
 
-const getUserState = async (env, userId) => {
+const getUserStateRecord = async (env, userId) => {
     const row = await env.DB.prepare(
         `
             SELECT state_json, updated_at
@@ -333,20 +383,139 @@ const getUserState = async (env, userId) => {
     }
 
     try {
-        return JSON.parse(row.state_json);
+        return {
+            state: JSON.parse(row.state_json),
+            serialized: row.state_json,
+            updatedAt: row.updated_at || null,
+        };
     } catch (error) {
         return null;
     }
 };
 
+const getUserState = async (env, userId) => {
+    const record = await getUserStateRecord(env, userId);
+    return record?.state || null;
+};
+
+const compareCardProgress = (leftEntry, rightEntry) => {
+    const leftAttemptCount = getCardAttemptCount(leftEntry);
+    const rightAttemptCount = getCardAttemptCount(rightEntry);
+
+    if (leftAttemptCount !== rightAttemptCount) {
+        return leftAttemptCount > rightAttemptCount ? 1 : -1;
+    }
+
+    const leftReviewedAt = toTimestamp(leftEntry?.lastReviewedAt) ?? 0;
+    const rightReviewedAt = toTimestamp(rightEntry?.lastReviewedAt) ?? 0;
+
+    if (leftReviewedAt !== rightReviewedAt) {
+        return leftReviewedAt > rightReviewedAt ? 1 : -1;
+    }
+
+    const leftBox = Number.isFinite(leftEntry?.box) ? leftEntry.box : 0;
+    const rightBox = Number.isFinite(rightEntry?.box) ? rightEntry.box : 0;
+
+    if (leftBox !== rightBox) {
+        return leftBox > rightBox ? 1 : -1;
+    }
+
+    return 0;
+};
+
+const mergeProgressCards = (existingCards = {}, incomingCards = {}) => {
+    const cardIds = new Set([
+        ...Object.keys(existingCards || {}),
+        ...Object.keys(incomingCards || {}),
+    ]);
+
+    return Object.fromEntries(
+        Array.from(cardIds)
+            .sort((left, right) => Number(left) - Number(right) || left.localeCompare(right))
+            .flatMap((cardId) => {
+                const existingEntry = existingCards?.[cardId];
+                const incomingEntry = incomingCards?.[cardId];
+
+                if (!existingEntry) {
+                    return incomingEntry ? [[cardId, incomingEntry]] : [];
+                }
+
+                if (!incomingEntry) {
+                    return [[cardId, existingEntry]];
+                }
+
+                return compareCardProgress(incomingEntry, existingEntry) >= 0
+                    ? [[cardId, incomingEntry]]
+                    : [[cardId, existingEntry]];
+            }),
+    );
+};
+
+export const mergeAppStateForSave = (
+    existingState,
+    incomingState,
+    updatedAt = getNowIso(),
+) => {
+    if (!existingState) {
+        return {
+            ...incomingState,
+            progress: {
+                ...incomingState.progress,
+                updatedAt,
+            },
+            updatedAt,
+        };
+    }
+
+    const existingProgress = existingState.progress || {};
+    const incomingProgress = incomingState.progress || {};
+    const mergedCards = mergeProgressCards(existingProgress.cards, incomingProgress.cards);
+
+    return {
+        ...existingState,
+        ...incomingState,
+        progress: {
+            ...existingProgress,
+            ...incomingProgress,
+            cards: mergedCards,
+            updatedAt,
+        },
+        updatedAt,
+    };
+};
+
+const saveUserStateVersion = async (env, userId, stateRecord) => {
+    if (!stateRecord?.serialized) {
+        return;
+    }
+
+    await env.DB.prepare(
+        `
+            INSERT INTO user_state_versions (id, user_id, state_json, state_updated_at, created_at)
+            VALUES (?1, ?2, ?3, ?4, ?5)
+        `,
+    )
+        .bind(
+            crypto.randomUUID(),
+            userId,
+            stateRecord.serialized,
+            stateRecord.state?.updatedAt || stateRecord.updatedAt || null,
+            getNowIso(),
+        )
+        .run();
+};
+
 const saveUserState = async (env, userId, state) => {
-    const normalizedPayload = normalizeStatePayload(state);
+    const existingRecord = await getUserStateRecord(env, userId);
+    const nowIso = getNowIso();
+    const stateToSave = mergeAppStateForSave(existingRecord?.state || null, state, nowIso);
+    const normalizedPayload = normalizeStatePayload(stateToSave);
 
     if (!normalizedPayload.ok) {
         throw new Error(normalizedPayload.error);
     }
 
-    const nowIso = getNowIso();
+    await saveUserStateVersion(env, userId, existingRecord);
 
     await env.DB.prepare(
         `
@@ -659,6 +828,7 @@ const handleLeaderboard = async (request, env) => {
                 correctCount: summary.correctCount,
                 wrongCount: summary.wrongCount,
                 studiedCount: summary.studiedCount,
+                masteredCount: summary.masteredCount,
                 updatedAt: row.state_updated_at || null,
             };
         })

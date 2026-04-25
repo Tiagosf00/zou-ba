@@ -4,6 +4,7 @@ export const DEFAULT_SETTINGS = {
     outputMode: 'pinyin',
     themeMode: 'light',
 };
+const VALID_MODES = ['hanzi', 'pinyin', 'eng'];
 
 const sanitizeLevels = (levels) => {
     if (!Array.isArray(levels)) {
@@ -22,11 +23,37 @@ const sanitizeLevels = (levels) => {
 };
 
 const sanitizeMode = (value, fallback) =>
-    value === 'hanzi' || value === 'pinyin' || value === 'eng' ? value : fallback;
+    VALID_MODES.includes(value) ? value : fallback;
+
+export const pickDistinctMode = (preferredMode, blockedMode) => {
+    const sanitizedPreferredMode = sanitizeMode(preferredMode, DEFAULT_SETTINGS.outputMode);
+
+    if (sanitizedPreferredMode !== blockedMode) {
+        return sanitizedPreferredMode;
+    }
+
+    return VALID_MODES.find((mode) => mode !== blockedMode) || DEFAULT_SETTINGS.outputMode;
+};
+
+export const normalizeModePair = (inputMode, outputMode) => {
+    const sanitizedInputMode = sanitizeMode(inputMode, DEFAULT_SETTINGS.inputMode);
+    const sanitizedOutputMode = sanitizeMode(outputMode, DEFAULT_SETTINGS.outputMode);
+
+    if (sanitizedInputMode !== sanitizedOutputMode) {
+        return {
+            inputMode: sanitizedInputMode,
+            outputMode: sanitizedOutputMode,
+        };
+    }
+
+    return {
+        inputMode: sanitizedInputMode,
+        outputMode: pickDistinctMode(DEFAULT_SETTINGS.outputMode, sanitizedInputMode),
+    };
+};
 
 export const normalizeSettings = (value) => ({
     hskLevels: sanitizeLevels(value?.hskLevels),
-    inputMode: sanitizeMode(value?.inputMode, DEFAULT_SETTINGS.inputMode),
-    outputMode: sanitizeMode(value?.outputMode, DEFAULT_SETTINGS.outputMode),
+    ...normalizeModePair(value?.inputMode, value?.outputMode),
     themeMode: value?.themeMode === 'dark' ? 'dark' : DEFAULT_SETTINGS.themeMode,
 });

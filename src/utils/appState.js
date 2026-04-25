@@ -21,6 +21,37 @@ const getValidIsoString = (value) => {
     return timestamp === null ? null : new Date(timestamp).toISOString();
 };
 
+const getNumericCount = (value) =>
+    Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+
+export const summarizeAppStateProgress = (state) => {
+    const cards = state?.progress?.cards || {};
+
+    return Object.values(cards).reduce(
+        (summary, entry) => {
+            if (!entry || typeof entry !== 'object') {
+                return summary;
+            }
+
+            const correctCount = getNumericCount(entry.correctCount);
+            const wrongCount = getNumericCount(entry.wrongCount);
+
+            return {
+                attemptCount: summary.attemptCount + correctCount + wrongCount,
+                studiedCount: summary.studiedCount + 1,
+                correctCount: summary.correctCount + correctCount,
+                wrongCount: summary.wrongCount + wrongCount,
+            };
+        },
+        {
+            attemptCount: 0,
+            studiedCount: 0,
+            correctCount: 0,
+            wrongCount: 0,
+        },
+    );
+};
+
 export const createAppState = ({
     settings = DEFAULT_SETTINGS,
     progress = createPracticeProgress(DEFAULT_PROFILE_ID),
@@ -78,6 +109,17 @@ export const withUpdatedProgress = (currentState, nextProgress) => {
 };
 
 export const compareAppStateFreshness = (leftState, rightState) => {
+    const leftProgress = summarizeAppStateProgress(leftState);
+    const rightProgress = summarizeAppStateProgress(rightState);
+
+    if (leftProgress.attemptCount !== rightProgress.attemptCount) {
+        return leftProgress.attemptCount > rightProgress.attemptCount ? 1 : -1;
+    }
+
+    if (leftProgress.studiedCount !== rightProgress.studiedCount) {
+        return leftProgress.studiedCount > rightProgress.studiedCount ? 1 : -1;
+    }
+
     const leftTimestamp = toTimestamp(leftState?.updatedAt) ?? 0;
     const rightTimestamp = toTimestamp(rightState?.updatedAt) ?? 0;
 
