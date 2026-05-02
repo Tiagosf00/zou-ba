@@ -2,7 +2,30 @@ import json
 import re
 
 
-MANUAL_VALID_SYLLABLES = {'dei', 'den', 'ei', 'fo', 'hm', 'hng', 'lo', 'lüe', 'm', 'n', 'ng', 'nun', 'nüe', 'o', 'yo'}
+MANUAL_VALID_SYLLABLES = {
+    'ang',
+    'dei',
+    'den',
+    'ei',
+    'fo',
+    'ga',
+    'hm',
+    'hng',
+    'lo',
+    'lüe',
+    'm',
+    'n',
+    'ng',
+    'niao',
+    'nun',
+    'nüe',
+    'o',
+    'yo',
+}
+
+PINYIN_TONE_MARKS = set('āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜńňǹḿ')
+PINYIN_VOWEL_INITIALS = set('aeoāáǎàēéěèōóǒò')
+HANZI_RE = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]')
 
 PLAIN_PINYIN_CHAR_MAP = {
     'Ā': 'a',
@@ -101,6 +124,10 @@ def to_plain_pinyin(text):
     return ''.join(to_plain_pinyin_char(char) for char in text.strip())
 
 
+def count_hanzi_syllables(text):
+    return len(HANZI_RE.findall(text))
+
+
 def load_valid_syllables(valid_pinyin_path):
     content = valid_pinyin_path.read_text(encoding='utf-8')
     raw_list_match = re.search(r'const rawList = "([^"]+)"', content, re.S)
@@ -119,7 +146,43 @@ def load_valid_syllables(valid_pinyin_path):
     return syllables | MANUAL_VALID_SYLLABLES
 
 
-def _segment_connected_token(token, valid_syllables, context):
+def _count_tone_marks(value):
+    return sum(1 for char in value if char in PINYIN_TONE_MARKS)
+
+
+def _starts_with_vowel_initial(syllable):
+    return bool(syllable) and syllable[0].lower() in PINYIN_VOWEL_INITIALS
+
+
+def _score_segments(segments, expected_syllables):
+    score = 0
+
+    if expected_syllables:
+        score += abs(len(segments) - expected_syllables) * 1000
+    else:
+        score += len(segments) * 4
+
+    for index, segment in enumerate(segments):
+        tone_count = _count_tone_marks(segment)
+
+        if tone_count > 1:
+            score += (tone_count - 1) * 150
+
+        plain_segment = to_plain_pinyin(segment)
+
+        if len(plain_segment) == 1 and len(segments) > 1:
+            score += 35
+
+        if plain_segment == 'ng' and len(segments) > 1:
+            score += 35
+
+        if index > 0 and _starts_with_vowel_initial(segment):
+            score += 90
+
+    return score
+
+
+def _segment_connected_token(token, valid_syllables, context, expected_syllables=None):
     relevant_chars = [char for char in token if to_plain_pinyin_char(char)]
     if not relevant_chars:
         raise RuntimeError(f'No pinyin letters found in "{token}" ({context})')
@@ -129,48 +192,81 @@ def _segment_connected_token(token, valid_syllables, context):
 
     def search(start_index):
         if start_index == len(plain_token):
-            return []
+            return [[]]
 
         if start_index in memo:
             return memo[start_index]
 
-        result = None
+        results = []
         max_length = min(len(plain_token), start_index + 6)
         for end_index in range(max_length, start_index, -1):
             candidate = plain_token[start_index:end_index]
             if candidate not in valid_syllables:
                 continue
 
-            remainder = search(end_index)
-            if remainder is not None:
-                result = [''.join(relevant_chars[start_index:end_index]), *remainder]
-                break
+            segment = ''.join(relevant_chars[start_index:end_index])
 
-        memo[start_index] = result
-        return result
+            for remainder in search(end_index):
+                results.append([segment, *remainder])
 
-    segmented = search(0)
-    if segmented is None:
+        memo[start_index] = results
+        return results
+
+    candidates = search(0)
+    if not candidates:
         raise RuntimeError(f'Could not segment pinyin token "{token}" -> "{plain_token}" ({context})')
 
-    return segmented
+    return min(candidates, key=lambda segments: _score_segments(segments, expected_syllables))
 
 
-def normalize_pinyin(raw_pinyin, valid_syllables, context):
-    primary_variant = strip_parentheticals(get_primary_variant(raw_pinyin))
+def _normalize_pinyin_sequence(raw_pinyin, valid_syllables, context, expected_syllables=None):
+    primary_variant = strip_parentheticals(raw_pinyin)
     words = [word for word in re.split(r'\s+', primary_variant) if word]
     syllables = []
 
     for word in words:
-        for chunk in [piece for piece in re.split(r"[’']", word) if piece]:
+        chunks = [piece for piece in re.split(r"[’']", word) if piece]
+        chunk_expected_syllables = 1 if len(words) > 1 or len(chunks) > 1 else expected_syllables
+
+        for chunk in chunks:
             if not any(to_plain_pinyin_char(char) for char in chunk):
                 continue
-            syllables.extend(_segment_connected_token(chunk, valid_syllables, context))
+            syllables.extend(
+                _segment_connected_token(
+                    chunk,
+                    valid_syllables,
+                    context,
+                    expected_syllables=chunk_expected_syllables,
+                )
+            )
 
     if not syllables:
         raise RuntimeError(f'Unable to normalize pinyin "{raw_pinyin}" ({context})')
 
     return ' '.join(syllables).lower()
+
+
+def normalize_pinyin(raw_pinyin, valid_syllables, context, expected_syllables=None):
+    primary_variant = strip_parentheticals(get_primary_variant(raw_pinyin))
+    alternatives = [part.strip() for part in re.split(r'\s*/\s*', primary_variant) if part.strip()]
+
+    if len(alternatives) > 1:
+        return '/'.join(
+            _normalize_pinyin_sequence(
+                alternative,
+                valid_syllables,
+                context,
+                expected_syllables=expected_syllables,
+            )
+            for alternative in alternatives
+        )
+
+    return _normalize_pinyin_sequence(
+        primary_variant,
+        valid_syllables,
+        context,
+        expected_syllables=expected_syllables,
+    )
 
 
 def normalize_definitions(raw_english):

@@ -5,7 +5,14 @@ import urllib.request
 from html.parser import HTMLParser
 from pathlib import Path
 
-from pinyin_helpers import clean_cell_text, normalize_chinese, normalize_definitions, normalize_pinyin, load_valid_syllables
+from pinyin_helpers import (
+    clean_cell_text,
+    count_hanzi_syllables,
+    load_valid_syllables,
+    normalize_chinese,
+    normalize_definitions,
+    normalize_pinyin,
+)
 
 
 LEVELS = [1, 2, 3, 4, 5, 6]
@@ -124,7 +131,12 @@ def parse_level_page(level, html, starting_id, valid_syllables):
         hanzi = normalize_chinese(raw_chinese)
         normalized_source_pinyin = PINYIN_OVERRIDES.get((level, source_row), raw_pinyin)
         try:
-            pinyin = normalize_pinyin(normalized_source_pinyin, valid_syllables, context)
+            pinyin = normalize_pinyin(
+                normalized_source_pinyin,
+                valid_syllables,
+                context,
+                expected_syllables=count_hanzi_syllables(hanzi) or None,
+            )
         except Exception as error:  # noqa: BLE001
             codepoints = ' '.join(hex(ord(char)) for char in normalized_source_pinyin)
             raise RuntimeError(

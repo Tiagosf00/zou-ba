@@ -268,11 +268,52 @@ const getAllowedOrigins = (env) =>
         .map((origin) => origin.trim())
         .filter(Boolean);
 
+const isPrivateIpv4Hostname = (hostname) => {
+    const parts = hostname.split('.').map((part) => Number(part));
+
+    if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+        return false;
+    }
+
+    const [first, second] = parts;
+
+    return (
+        first === 10 ||
+        (first === 172 && second >= 16 && second <= 31) ||
+        (first === 192 && second === 168)
+    );
+};
+
+const isTrustedDevOrigin = (origin) => {
+    try {
+        const url = new URL(origin);
+
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+            return false;
+        }
+
+        const hostname = url.hostname.replace(/^\[|\]$/g, '');
+
+        return (
+            hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname === '::1' ||
+            isPrivateIpv4Hostname(hostname)
+        );
+    } catch (error) {
+        return false;
+    }
+};
+
+const isAllowedCorsOrigin = (origin, allowedOrigins) =>
+    Boolean(origin && (allowedOrigins.includes(origin) || isTrustedDevOrigin(origin)));
+
 const createCorsHeaders = (request, env) => {
     const origin = request.headers.get('Origin');
     const allowedOrigins = getAllowedOrigins(env);
-    const allowOrigin =
-        origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0] || '*';
+    const allowOrigin = isAllowedCorsOrigin(origin, allowedOrigins)
+        ? origin
+        : allowedOrigins[0] || '*';
 
     return {
         'Access-Control-Allow-Origin': allowOrigin,

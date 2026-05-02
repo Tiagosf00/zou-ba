@@ -14,6 +14,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
+import AudioButton from '../components/AudioButton';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
@@ -300,6 +301,11 @@ const StatsScreen = () => {
                                                             <Text style={styles.wordPinyin}>
                                                                 {word.pinyin}
                                                             </Text>
+                                                            <AudioButton
+                                                                hanzi={word.hanzi}
+                                                                label={`Play ${word.hanzi} audio`}
+                                                                style={styles.wordAudioButton}
+                                                            />
                                                         </View>
                                                         <Text style={styles.wordMeaning}>
                                                             {word.meaningSummary}
@@ -654,7 +660,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         wordHeading: {
             flexDirection: 'row',
-            alignItems: 'baseline',
+            alignItems: 'center',
             flexWrap: 'wrap',
             gap: 8,
         },
@@ -671,6 +677,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             lineHeight: 18,
             fontWeight: '600',
             fontFamily: typography.uiFont,
+        },
+        wordAudioButton: {
+            marginLeft: 2,
         },
         wordMeaning: {
             color: colors.textSecondary,

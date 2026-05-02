@@ -5,6 +5,7 @@ import {
     calculateLeaderboardScore,
     hashPassword,
     getCardLevelWeight,
+    handleRequest,
     mergeAppStateForSave,
     normalizeStatePayload,
     summarizeProgressState,
@@ -43,6 +44,45 @@ test('hashPassword and verifyPassword round-trip correctly', async () => {
 test('normalizeStatePayload rejects arrays and oversize values', () => {
     assert.equal(normalizeStatePayload([]).ok, false);
     assert.equal(normalizeStatePayload({ version: 1, settings: {}, progress: {} }).ok, true);
+});
+
+test('cors preflight allows localhost dev origins on arbitrary ports', async () => {
+    const response = await handleRequest(
+        new Request('https://api.test/auth/login', {
+            method: 'OPTIONS',
+            headers: {
+                Origin: 'http://localhost:8091',
+                'Access-Control-Request-Method': 'POST',
+            },
+        }),
+        {
+            ALLOWED_ORIGINS: 'https://tiagosf00.github.io,http://localhost:8081',
+        },
+    );
+
+    assert.equal(response.status, 204);
+    assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'http://localhost:8091');
+});
+
+test('cors preflight allows private LAN dev origins for device testing', async () => {
+    const response = await handleRequest(
+        new Request('https://api.test/auth/login', {
+            method: 'OPTIONS',
+            headers: {
+                Origin: 'http://192.168.1.50:8091',
+                'Access-Control-Request-Method': 'POST',
+            },
+        }),
+        {
+            ALLOWED_ORIGINS: 'https://tiagosf00.github.io',
+        },
+    );
+
+    assert.equal(response.status, 204);
+    assert.equal(
+        response.headers.get('Access-Control-Allow-Origin'),
+        'http://192.168.1.50:8091',
+    );
 });
 
 test('getCardLevelWeight resolves HSK weights from card ids', () => {

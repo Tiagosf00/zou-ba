@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import BackdropOrbs from '../components/BackdropOrbs';
 import Card from '../components/Card';
 import ModernButton from '../components/ModernButton';
+import AudioButton from '../components/AudioButton';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -461,14 +462,21 @@ const ExamScreen = () => {
             >
                 {label}
             </Text>
-            <Text
-                style={[
-                    styles.answerSummary,
-                    isWebDesktop && styles.answerSummaryDesktop,
-                ]}
-            >
-                {item.hanzi} · {item.pinyin}
-            </Text>
+            <View style={styles.answerSummaryRow}>
+                <Text
+                    style={[
+                        styles.answerSummary,
+                        isWebDesktop && styles.answerSummaryDesktop,
+                    ]}
+                >
+                    {item.hanzi} · {item.pinyin}
+                </Text>
+                <AudioButton
+                    hanzi={item.hanzi}
+                    label={`Play ${item.hanzi} audio`}
+                    style={styles.inlineAudioButton}
+                />
+            </View>
             <Text
                 style={[
                     styles.answerTranslation,
@@ -1667,6 +1675,12 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         answerLabelSuccess: {
             color: colors.success,
         },
+        answerSummaryRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 8,
+        },
         answerSummary: {
             color: colors.text,
             fontSize: 15,
@@ -1676,6 +1690,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         answerSummaryDesktop: {
             fontSize: 24,
             lineHeight: 30,
+        },
+        inlineAudioButton: {
+            marginTop: 1,
         },
         answerTranslation: {
             color: colors.textSecondary,

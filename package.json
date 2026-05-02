@@ -12,6 +12,8 @@
     "generate:hsk": "python3 fetch_hsk_3_0.py",
     "generate:pdf-deck": "python3 scripts/build_pdf_dataset_json.py",
     "generate:pinyin": "python3 generateValidPinyin.py",
+    "generate:audio-assets": "python3 scripts/build_hsk_audio_asset_map.py",
+    "generate:audio-sources": "python3 scripts/build_hsk_audio_sources.py",
     "refresh:data": "python3 fetch_hsk_3_0.py && python3 generateValidPinyin.py"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@react-navigation/bottom-tabs": "^7.10.0",
     "@react-navigation/native": "^7.1.28",
     "expo": "~54.0.31",
+    "expo-asset": "~12.0.12",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",

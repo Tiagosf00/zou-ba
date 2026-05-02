@@ -15,7 +15,7 @@ DEFAULT_VALID_PINYIN = ROOT / "src" / "data" / "validPinyin.js"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from pinyin_helpers import load_valid_syllables, normalize_pinyin
+from pinyin_helpers import count_hanzi_syllables, load_valid_syllables, normalize_pinyin
 
 
 def normalize_row(row: dict[str, str], valid_syllables: set[str]) -> dict[str, object]:
@@ -32,7 +32,12 @@ def normalize_row(row: dict[str, str], valid_syllables: set[str]) -> dict[str, o
     if not detailed_english:
         raise ValueError(f"Row {row_id} is missing detailed_english_translation.")
 
-    pinyin = normalize_pinyin(row["pinyin"], valid_syllables, f"{hanzi} row {row_id}")
+    pinyin = normalize_pinyin(
+        row["pinyin"],
+        valid_syllables,
+        f"{hanzi} row {row_id}",
+        expected_syllables=count_hanzi_syllables(hanzi) or None,
+    )
 
     return {
         "id": row_id,

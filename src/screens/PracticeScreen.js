@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
+import AudioButton from '../components/AudioButton';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -205,9 +206,20 @@ const PracticeScreen = () => {
             return;
         }
 
+        const nextCards = recordRoundResult(
+            progressRef.current.cards,
+            round.question,
+            false,
+            new Date(),
+        );
+        const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
+
         setSelectedOption(null);
         setAnswerState('revealed');
         resetDetailVisibility();
+        setStreak(0);
+        progressRef.current = nextProgress;
+        updateProgress(nextProgress);
     };
 
     const handleNextCard = () => {
@@ -525,14 +537,21 @@ const PracticeScreen = () => {
             >
                 {label}
             </Text>
-            <Text
-                style={[
-                    styles.answerSummary,
-                    isWebDesktop && styles.answerSummaryDesktop,
-                ]}
-            >
-                {item.hanzi} · {item.pinyin}
-            </Text>
+            <View style={styles.answerSummaryRow}>
+                <Text
+                    style={[
+                        styles.answerSummary,
+                        isWebDesktop && styles.answerSummaryDesktop,
+                    ]}
+                >
+                    {item.hanzi} · {item.pinyin}
+                </Text>
+                <AudioButton
+                    hanzi={item.hanzi}
+                    label={`Play ${item.hanzi} audio`}
+                    style={styles.inlineAudioButton}
+                />
+            </View>
             <Text
                 style={[
                     styles.answerTranslation,
@@ -818,8 +837,8 @@ const PracticeScreen = () => {
 
                                         {didRevealAnswer ? (
                                             <Text style={styles.revealNote}>
-                                                This card was revealed without counting as correct
-                                                or wrong.
+                                                This counts as a failed review, so the card will
+                                                come back soon.
                                             </Text>
                                         ) : null}
 
@@ -878,8 +897,8 @@ const PracticeScreen = () => {
 
                                     {didRevealAnswer ? (
                                         <Text style={styles.revealNote}>
-                                            This card was revealed without counting as correct or
-                                            wrong.
+                                            This counts as a failed review, so the card will come
+                                            back soon.
                                         </Text>
                                     ) : null}
 
@@ -1640,6 +1659,12 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         answerLabelSuccess: {
             color: colors.success,
         },
+        answerSummaryRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 8,
+        },
         answerSummary: {
             color: colors.text,
             fontSize: 15,
@@ -1649,6 +1674,9 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         answerSummaryDesktop: {
             fontSize: 24,
             lineHeight: 30,
+        },
+        inlineAudioButton: {
+            marginTop: 1,
         },
         answerTranslation: {
             color: colors.textSecondary,

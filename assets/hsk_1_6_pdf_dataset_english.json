@@ -2343,7 +2343,7 @@
         "id": 181,
         "level": 1,
         "hanzi": "谁",
-        "pinyin": "shéi shuí",
+        "pinyin": "shéi/shuí",
         "rawEnglish": "who",
         "translations": {
             "eng": [
@@ -4956,7 +4956,7 @@
         "id": 382,
         "level": 2,
         "hanzi": "可能",
-        "pinyin": "kěn é ng",
+        "pinyin": "kě néng",
         "rawEnglish": "possible",
         "translations": {
             "eng": [
@@ -5333,7 +5333,7 @@
         "id": 411,
         "level": 2,
         "hanzi": "鸟",
-        "pinyin": "ni ǎo",
+        "pinyin": "niǎo",
         "rawEnglish": "bird",
         "translations": {
             "eng": [
@@ -6646,7 +6646,7 @@
         "id": 512,
         "level": 3,
         "hanzi": "办公室",
-        "pinyin": "bàng ō ng shì",
+        "pinyin": "bàn gōng shì",
         "rawEnglish": "office",
         "translations": {
             "eng": [
@@ -7530,7 +7530,7 @@
         "id": 580,
         "level": 3,
         "hanzi": "蛋糕",
-        "pinyin": "dàng āo",
+        "pinyin": "dàn gāo",
         "rawEnglish": "cake",
         "translations": {
             "eng": [
@@ -10741,7 +10741,7 @@
         "id": 827,
         "level": 3,
         "hanzi": "身高",
-        "pinyin": "shēng āo",
+        "pinyin": "shēn gāo",
         "rawEnglish": "height",
         "translations": {
             "eng": [
@@ -11482,7 +11482,7 @@
         "id": 884,
         "level": 3,
         "hanzi": "西南",
-        "pinyin": "xīn án",
+        "pinyin": "xī nán",
         "rawEnglish": "southwest",
         "translations": {
             "eng": [
@@ -13120,7 +13120,7 @@
         "id": 1010,
         "level": 4,
         "hanzi": "办公",
-        "pinyin": "bàng ō ng",
+        "pinyin": "bàn gōng",
         "rawEnglish": "do office work",
         "translations": {
             "eng": [
@@ -20907,7 +20907,7 @@
         "id": 1609,
         "level": 4,
         "hanzi": "热闹",
-        "pinyin": "rèn ao",
+        "pinyin": "rè nao",
         "rawEnglish": "lively",
         "translations": {
             "eng": [
@@ -21934,7 +21934,7 @@
         "id": 1688,
         "level": 4,
         "hanzi": "熟",
-        "pinyin": "shú shóu",
+        "pinyin": "shú/shóu",
         "rawEnglish": "ripe",
         "translations": {
             "eng": [
@@ -23975,7 +23975,7 @@
         "id": 1845,
         "level": 4,
         "hanzi": "严格",
-        "pinyin": "yáng é",
+        "pinyin": "yán gé",
         "rawEnglish": "strict",
         "translations": {
             "eng": [
@@ -24261,7 +24261,7 @@
         "id": 1867,
         "level": 4,
         "hanzi": "以内",
-        "pinyin": "yǐn èi",
+        "pinyin": "yǐ nèi",
         "rawEnglish": "within",
         "translations": {
             "eng": [
@@ -28902,7 +28902,7 @@
         "id": 2224,
         "level": 5,
         "hanzi": "大脑",
-        "pinyin": "dàn ǎo",
+        "pinyin": "dà nǎo",
         "rawEnglish": "brain",
         "translations": {
             "eng": [
@@ -33062,7 +33062,7 @@
         "id": 2544,
         "level": 5,
         "hanzi": "技能",
-        "pinyin": "jìn é ng",
+        "pinyin": "jì néng",
         "rawEnglish": "skill",
         "translations": {
             "eng": [
@@ -36026,7 +36026,7 @@
         "id": 2772,
         "level": 5,
         "hanzi": "敏感",
-        "pinyin": "mǐng ǎn",
+        "pinyin": "mǐn gǎn",
         "rawEnglish": "sensitive",
         "translations": {
             "eng": [
@@ -37924,7 +37924,7 @@
         "id": 2918,
         "level": 5,
         "hanzi": "人工",
-        "pinyin": "réng ō ng",
+        "pinyin": "rén gōng",
         "rawEnglish": "artificial",
         "translations": {
             "eng": [
@@ -46257,7 +46257,7 @@
         "id": 3559,
         "level": 5,
         "hanzi": "转告",
-        "pinyin": "zhuǎng ào",
+        "pinyin": "zhuǎn gào",
         "rawEnglish": "pass on",
         "translations": {
             "eng": [
@@ -46855,7 +46855,7 @@
         "id": 3605,
         "level": 6,
         "hanzi": "昂贵",
-        "pinyin": "á ng guì",
+        "pinyin": "áng guì",
         "rawEnglish": "expensive",
         "translations": {
             "eng": [
@@ -51782,7 +51782,7 @@
         "id": 3984,
         "level": 6,
         "hanzi": "分工",
-        "pinyin": "fēng ō ng",
+        "pinyin": "fēn gōng",
         "rawEnglish": "division of labor",
         "translations": {
             "eng": [
@@ -52237,7 +52237,7 @@
         "id": 4019,
         "level": 6,
         "hanzi": "尴尬",
-        "pinyin": "gāng à",
+        "pinyin": "gān gà",
         "rawEnglish": "awkward",
         "translations": {
             "eng": [
@@ -55370,7 +55370,7 @@
         "id": 4260,
         "level": 6,
         "hanzi": "间隔",
-        "pinyin": "jiàng é",
+        "pinyin": "jiàn gé",
         "rawEnglish": "interval",
         "translations": {
             "eng": [
@@ -58724,7 +58724,7 @@
         "id": 4518,
         "level": 6,
         "hanzi": "民歌",
-        "pinyin": "míng ē",
+        "pinyin": "mín gē",
         "rawEnglish": "folk song",
         "translations": {
             "eng": [
@@ -61012,7 +61012,7 @@
         "id": 4694,
         "level": 6,
         "hanzi": "人工智能",
-        "pinyin": "réng ō ng zhì néng",
+        "pinyin": "rén gōng zhì néng",
         "rawEnglish": "artificial intelligence",
         "translations": {
             "eng": [
