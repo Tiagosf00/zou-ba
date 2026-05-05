@@ -35,12 +35,14 @@ export const summarizeAppStateProgress = (state) => {
 
             const correctCount = getNumericCount(entry.correctCount);
             const wrongCount = getNumericCount(entry.wrongCount);
+            const unknownCount = getNumericCount(entry.unknownCount);
 
             return {
-                attemptCount: summary.attemptCount + correctCount + wrongCount,
+                attemptCount: summary.attemptCount + correctCount + wrongCount + unknownCount,
                 studiedCount: summary.studiedCount + 1,
                 correctCount: summary.correctCount + correctCount,
                 wrongCount: summary.wrongCount + wrongCount,
+                unknownCount: summary.unknownCount + unknownCount,
             };
         },
         {
@@ -48,6 +50,7 @@ export const summarizeAppStateProgress = (state) => {
             studiedCount: 0,
             correctCount: 0,
             wrongCount: 0,
+            unknownCount: 0,
         },
     );
 };

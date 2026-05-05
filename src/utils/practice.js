@@ -80,6 +80,7 @@ const sanitizeCardProgress = (entry) => {
         lastResult,
         correctCount: getNumericCount(entry.correctCount),
         wrongCount: getNumericCount(entry.wrongCount),
+        unknownCount: getNumericCount(entry.unknownCount),
         consecutiveCorrect: getNumericCount(entry.consecutiveCorrect),
         lastReviewedAt,
         nextReviewAt,
@@ -381,13 +382,15 @@ export const getWordStatsSnapshot = (items, cards) => {
         const entry = getCardProgress(cards, item.id);
         const correctCount = entry?.correctCount || 0;
         const wrongCount = entry?.wrongCount || 0;
-        const attemptCount = correctCount + wrongCount;
+        const unknownCount = entry?.unknownCount || 0;
+        const attemptCount = correctCount + wrongCount + unknownCount;
         const meaningLines = getMeaningLines(item);
 
         return {
             ...item,
             correctCount,
             wrongCount,
+            unknownCount,
             attemptCount,
             isStudied: !!entry,
             isMastered: entry?.box === MAX_BOX && entry?.lastResult === 'correct',
@@ -413,6 +416,10 @@ export const getWordStatsSnapshot = (items, cards) => {
                 (total, word) => total + word.wrongCount,
                 0,
             );
+            const totalUnknownCount = levelWords.reduce(
+                (total, word) => total + word.unknownCount,
+                0,
+            );
             const masteredCount = levelWords.filter((word) => word.isMastered).length;
 
             return {
@@ -422,6 +429,7 @@ export const getWordStatsSnapshot = (items, cards) => {
                 studiedCount,
                 totalCorrectCount,
                 totalWrongCount,
+                totalUnknownCount,
                 masteredCount,
             };
         });
@@ -431,13 +439,20 @@ export const getWordStatsSnapshot = (items, cards) => {
         studiedCount: words.filter((word) => word.isStudied).length,
         totalCorrectCount: words.reduce((total, word) => total + word.correctCount, 0),
         totalWrongCount: words.reduce((total, word) => total + word.wrongCount, 0),
+        totalUnknownCount: words.reduce((total, word) => total + word.unknownCount, 0),
         masteredCount: words.filter((word) => word.isMastered).length,
         activeLevelCount: levels.filter((level) => level.studiedCount > 0).length,
         levels,
     };
 };
 
-export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date()) => {
+export const recordRoundResult = (
+    cards,
+    item,
+    wasCorrect,
+    reviewedAt = new Date(),
+    options = {},
+) => {
     if (!item) {
         return cards;
     }
@@ -459,6 +474,7 @@ export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date
                 lastResult: 'correct',
                 correctCount: (current?.correctCount || 0) + 1,
                 wrongCount: current?.wrongCount || 0,
+                unknownCount: current?.unknownCount || 0,
                 consecutiveCorrect: (current?.consecutiveCorrect || 0) + 1,
                 lastReviewedAt,
                 nextReviewAt: new Date(reviewedAtTimestamp + delay).toISOString(),
@@ -466,13 +482,16 @@ export const recordRoundResult = (cards, item, wasCorrect, reviewedAt = new Date
         };
     }
 
+    const countAsWrong = options.countAsWrong !== false;
+
     return {
         ...cards,
         [item.id]: {
             box: 0,
             lastResult: 'wrong',
             correctCount: current?.correctCount || 0,
-            wrongCount: (current?.wrongCount || 0) + 1,
+            wrongCount: (current?.wrongCount || 0) + (countAsWrong ? 1 : 0),
+            unknownCount: (current?.unknownCount || 0) + (countAsWrong ? 0 : 1),
             consecutiveCorrect: 0,
             lastReviewedAt,
             nextReviewAt: new Date(reviewedAtTimestamp + FAILED_CARD_DELAY).toISOString(),

@@ -267,6 +267,7 @@ const ExamScreen = () => {
             round.question,
             outcome === 'correct',
             reviewedAt,
+            { countAsWrong: outcome !== 'unknown' },
         );
         const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
 
@@ -702,7 +703,7 @@ const ExamScreen = () => {
                             <View style={styles.setupFooter}>
                                 <Text style={styles.setupNote}>
                                     I don&apos;t know appears separately in the report and counts
-                                    as an incorrect review for the practice scheduler.
+                                    as a retry for the practice scheduler.
                                 </Text>
                                 <ModernButton
                                     title={`Start HSK ${selectedLevel} exam`}

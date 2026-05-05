@@ -170,6 +170,16 @@ const StatsScreen = () => {
                                     {stats.totalWrongCount} wrong
                                 </Text>
                             </View>
+                            <View style={styles.summaryChip}>
+                                <Ionicons
+                                    color={colors.accent}
+                                    name="help-circle-outline"
+                                    size={14}
+                                />
+                                <Text style={styles.summaryChipText}>
+                                    {stats.totalUnknownCount} I don't know
+                                </Text>
+                            </View>
                         </View>
                         {lastUpdatedLabel ? (
                             <Text style={styles.summaryTimestamp}>

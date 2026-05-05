@@ -39,7 +39,9 @@ const getNumericCount = (value) =>
     Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 
 const getCardAttemptCount = (entry) =>
-    getNumericCount(entry?.correctCount) + getNumericCount(entry?.wrongCount);
+    getNumericCount(entry?.correctCount) +
+    getNumericCount(entry?.wrongCount) +
+    getNumericCount(entry?.unknownCount);
 
 const getProgressCards = (state) =>
     state && typeof state === 'object' && !Array.isArray(state)
@@ -212,17 +214,20 @@ export const summarizeProgressState = (state) => {
 
             const correctCount = getNumericCount(entry.correctCount);
             const wrongCount = getNumericCount(entry.wrongCount);
+            const unknownCount = getNumericCount(entry.unknownCount);
 
             return {
                 correctCount: summary.correctCount + correctCount,
                 wrongCount: summary.wrongCount + wrongCount,
-                attemptCount: summary.attemptCount + correctCount + wrongCount,
+                unknownCount: summary.unknownCount + unknownCount,
+                attemptCount: summary.attemptCount + correctCount + wrongCount + unknownCount,
                 studiedCount: summary.studiedCount + 1,
             };
         },
         {
             correctCount: 0,
             wrongCount: 0,
+            unknownCount: 0,
             attemptCount: 0,
             studiedCount: 0,
         },
@@ -241,11 +246,13 @@ export const calculateLeaderboardScore = (state) => {
             const weight = getCardLevelWeight(cardId);
             const correctCount = Number.isFinite(entry.correctCount) ? entry.correctCount : 0;
             const wrongCount = Number.isFinite(entry.wrongCount) ? entry.wrongCount : 0;
+            const unknownCount = Number.isFinite(entry.unknownCount) ? entry.unknownCount : 0;
 
             return {
                 score: summary.score + (correctCount - wrongCount) * weight,
                 correctCount: summary.correctCount + correctCount,
                 wrongCount: summary.wrongCount + wrongCount,
+                unknownCount: summary.unknownCount + unknownCount,
                 studiedCount: summary.studiedCount + 1,
                 masteredCount:
                     summary.masteredCount +
@@ -256,6 +263,7 @@ export const calculateLeaderboardScore = (state) => {
             score: 0,
             correctCount: 0,
             wrongCount: 0,
+            unknownCount: 0,
             studiedCount: 0,
             masteredCount: 0,
         },
@@ -868,6 +876,7 @@ const handleLeaderboard = async (request, env) => {
                 score: summary.score,
                 correctCount: summary.correctCount,
                 wrongCount: summary.wrongCount,
+                unknownCount: summary.unknownCount,
                 studiedCount: summary.studiedCount,
                 masteredCount: summary.masteredCount,
                 updatedAt: row.state_updated_at || null,

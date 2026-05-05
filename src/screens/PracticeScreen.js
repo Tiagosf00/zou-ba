@@ -211,6 +211,7 @@ const PracticeScreen = () => {
             round.question,
             false,
             new Date(),
+            { countAsWrong: false },
         );
         const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
 

@@ -90,21 +90,24 @@ test('getCardLevelWeight resolves HSK weights from card ids', () => {
     assert.equal(getCardLevelWeight(301), 2);
 });
 
-test('calculateLeaderboardScore applies per-level weights to correct and wrong totals', () => {
+test('calculateLeaderboardScore excludes unknown reviews from score penalties', () => {
     const summary = calculateLeaderboardScore({
         progress: {
             cards: {
                 1: {
                     correctCount: 3,
                     wrongCount: 1,
+                    unknownCount: 4,
                 },
                 301: {
                     correctCount: 2,
                     wrongCount: 1,
+                    unknownCount: 2,
                 },
                 501: {
                     correctCount: 0,
                     wrongCount: 1,
+                    unknownCount: 1,
                 },
             },
         },
@@ -114,22 +117,25 @@ test('calculateLeaderboardScore applies per-level weights to correct and wrong t
         score: 1,
         correctCount: 5,
         wrongCount: 3,
+        unknownCount: 7,
         studiedCount: 3,
         masteredCount: 0,
     });
 });
 
-test('summarizeProgressState counts total progress attempts', () => {
+test('summarizeProgressState counts unknown reviews as attempts without wrong totals', () => {
     const summary = summarizeProgressState({
         progress: {
             cards: {
                 1: {
                     correctCount: 3,
                     wrongCount: 1,
+                    unknownCount: 2,
                 },
                 2: {
                     correctCount: 1,
                     wrongCount: 0,
+                    unknownCount: 1,
                 },
             },
         },
@@ -138,7 +144,8 @@ test('summarizeProgressState counts total progress attempts', () => {
     assert.deepEqual(summary, {
         correctCount: 4,
         wrongCount: 1,
-        attemptCount: 5,
+        unknownCount: 3,
+        attemptCount: 8,
         studiedCount: 2,
     });
 });
