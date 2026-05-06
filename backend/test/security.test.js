@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 
 import {
     calculateLeaderboardScore,
+    compactCloudState,
+    expandCloudState,
     hashPassword,
     getCardLevelWeight,
     handleRequest,
+    isCompactCloudState,
     mergeAppStateForSave,
     normalizeStatePayload,
     summarizeProgressState,
@@ -46,6 +49,78 @@ test('normalizeStatePayload rejects arrays and oversize values', () => {
     assert.equal(normalizeStatePayload({ version: 1, settings: {}, progress: {} }).ok, true);
 });
 
+test('compact cloud state round-trips card progress', () => {
+    const state = {
+        version: 1,
+        settings: {
+            hskLevels: [1, 2],
+            inputMode: 'hanzi',
+            outputMode: 'pinyin',
+            themeMode: 'dark',
+        },
+        progress: {
+            version: 1,
+            profileId: 'default',
+            updatedAt: '2026-05-06T09:00:00.000Z',
+            cards: {
+                1: {
+                    box: 0,
+                    lastResult: 'wrong',
+                    correctCount: 0,
+                    wrongCount: 0,
+                    unknownCount: 1,
+                    consecutiveCorrect: 0,
+                    lastReviewedAt: '2026-05-06T09:00:00.000Z',
+                    nextReviewAt: '2026-05-06T09:02:00.000Z',
+                },
+            },
+        },
+        updatedAt: '2026-05-06T09:00:00.000Z',
+    };
+
+    const compactState = compactCloudState(state);
+    const expandedState = expandCloudState(compactState);
+
+    assert.equal(isCompactCloudState(compactState), true);
+    assert.deepEqual(expandedState.progress.cards[1], state.progress.cards[1]);
+    assert.deepEqual(expandedState.settings, state.settings);
+});
+
+test('normalizeStatePayload stores large reviewed decks in compact form', () => {
+    const now = '2026-05-06T09:00:00.000Z';
+    const cards = Object.fromEntries(
+        Array.from({ length: 5400 }, (_, index) => [
+            String(index + 1),
+            {
+                box: 0,
+                lastResult: 'wrong',
+                correctCount: 0,
+                wrongCount: 0,
+                unknownCount: 1,
+                consecutiveCorrect: 0,
+                lastReviewedAt: now,
+                nextReviewAt: '2026-05-06T09:02:00.000Z',
+            },
+        ]),
+    );
+    const result = normalizeStatePayload({
+        version: 1,
+        settings: {},
+        progress: {
+            version: 1,
+            profileId: 'default',
+            cards,
+            updatedAt: now,
+        },
+        updatedAt: now,
+    });
+
+    assert.equal(result.ok, true);
+    assert.equal(isCompactCloudState(result.wireState), true);
+    assert.ok(result.serialized.length < 600000);
+    assert.equal(Object.keys(result.state.progress.cards).length, 5400);
+});
+
 test('cors preflight allows localhost dev origins on arbitrary ports', async () => {
     const response = await handleRequest(
         new Request('https://api.test/auth/login', {
@@ -62,6 +137,10 @@ test('cors preflight allows localhost dev origins on arbitrary ports', async () 
 
     assert.equal(response.status, 204);
     assert.equal(response.headers.get('Access-Control-Allow-Origin'), 'http://localhost:8091');
+    assert.match(
+        response.headers.get('Access-Control-Allow-Headers'),
+        /X-Zou-Ba-State-Encoding/,
+    );
 });
 
 test('cors preflight allows private LAN dev origins for device testing', async () => {

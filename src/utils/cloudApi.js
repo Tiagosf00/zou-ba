@@ -1,6 +1,9 @@
 import { normalizeAppState } from './appState';
+import { decodeCloudState, encodeCloudState } from './cloudStateCodec';
 
 const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL || '').trim().replace(/\/+$/, '');
+const STATE_ENCODING_HEADER = 'X-Zou-Ba-State-Encoding';
+const STATE_ENCODING_VALUE = 'compact-v2';
 
 export const isCloudConfigured = Boolean(API_BASE_URL);
 
@@ -24,6 +27,7 @@ const request = async (path, { body, headers, method = 'GET', token } = {}) => {
         method,
         headers: {
             Accept: 'application/json',
+            [STATE_ENCODING_HEADER]: STATE_ENCODING_VALUE,
             ...(body ? { 'Content-Type': 'application/json' } : {}),
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...headers,
@@ -53,7 +57,7 @@ const normalizeSessionResponse = (payload) => ({
     token: payload.session?.token || payload.token,
     expiresAt: payload.session?.expiresAt || payload.expiresAt || null,
     user: payload.user,
-    state: payload.state ? normalizeAppState(payload.state) : null,
+    state: payload.state ? normalizeAppState(decodeCloudState(payload.state)) : null,
 });
 
 export const signUp = async (username, password) =>
@@ -90,7 +94,7 @@ export const saveCloudState = async (token, state) =>
         method: 'PUT',
         token,
         body: {
-            state: normalizeAppState(state),
+            state: encodeCloudState(state),
         },
     });
 

@@ -12,6 +12,8 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const AUTH_WINDOW_MS = 1000 * 60 * 15;
 const AUTH_ATTEMPT_LIMIT = 10;
 const MAX_STATE_BYTES = 1024 * 1024;
+const COMPACT_STATE_ENCODING_HEADER = 'X-Zou-Ba-State-Encoding';
+const COMPACT_STATE_ENCODING_VALUE = 'compact-v2';
 const DEFAULT_ALLOWED_ORIGINS = [
     'https://tiagosf00.github.io',
     'http://localhost:8081',
@@ -38,6 +40,120 @@ const toTimestamp = (value) => {
 const getNumericCount = (value) =>
     Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
 
+const CLOUD_STATE_CODEC_VERSION = 2;
+const CORRECT_RESULT_FLAG = 1;
+
+const clampBox = (value) => {
+    const nextValue = Number.isFinite(value) ? Math.floor(value) : 0;
+    return Math.min(Math.max(nextValue, 0), MAX_BOX);
+};
+
+const toIsoString = (value) => {
+    if (Number.isFinite(value)) {
+        return new Date(value).toISOString();
+    }
+
+    const timestamp = toTimestamp(value);
+    return timestamp === null ? null : new Date(timestamp).toISOString();
+};
+
+const encodeDate = (value) => {
+    const timestamp = toTimestamp(value);
+    return timestamp === null ? null : timestamp;
+};
+
+export const isCompactCloudState = (value) =>
+    Boolean(value && typeof value === 'object' && value.v === CLOUD_STATE_CODEC_VERSION && value.p);
+
+const expandCompactCardProgress = (entry) => {
+    if (!Array.isArray(entry)) {
+        return null;
+    }
+
+    const lastReviewedAt = toIsoString(entry[6]);
+    const nextReviewAt = toIsoString(entry[7]);
+
+    if (!lastReviewedAt || !nextReviewAt) {
+        return null;
+    }
+
+    return {
+        box: clampBox(entry[0]),
+        lastResult: entry[1] === CORRECT_RESULT_FLAG ? 'correct' : 'wrong',
+        correctCount: getNumericCount(entry[2]),
+        wrongCount: getNumericCount(entry[3]),
+        unknownCount: getNumericCount(entry[4]),
+        consecutiveCorrect: getNumericCount(entry[5]),
+        lastReviewedAt,
+        nextReviewAt,
+    };
+};
+
+export const expandCloudState = (value) => {
+    if (!isCompactCloudState(value)) {
+        return value;
+    }
+
+    const cards = Object.fromEntries(
+        Object.entries(value.p?.c || {}).flatMap(([cardId, entry]) => {
+            const expandedEntry = expandCompactCardProgress(entry);
+            return expandedEntry ? [[cardId, expandedEntry]] : [];
+        }),
+    );
+
+    return {
+        version: 1,
+        settings: value.s || {},
+        progress: {
+            version: value.p?.v || 1,
+            profileId: value.p?.i || 'default',
+            cards,
+            updatedAt: toIsoString(value.p?.u) || toIsoString(value.u) || getNowIso(),
+        },
+        updatedAt: toIsoString(value.u) || toIsoString(value.p?.u) || getNowIso(),
+    };
+};
+
+const compactCardProgress = (entry) => [
+    clampBox(entry?.box),
+    entry?.lastResult === 'correct' ? CORRECT_RESULT_FLAG : 0,
+    getNumericCount(entry?.correctCount),
+    getNumericCount(entry?.wrongCount),
+    getNumericCount(entry?.unknownCount),
+    getNumericCount(entry?.consecutiveCorrect),
+    encodeDate(entry?.lastReviewedAt),
+    encodeDate(entry?.nextReviewAt),
+];
+
+export const compactCloudState = (value) => {
+    const expandedState = expandCloudState(value);
+    const progress = expandedState?.progress || {};
+    const cards = Object.fromEntries(
+        Object.entries(progress.cards || {}).flatMap(([cardId, entry]) => {
+            const lastReviewedAt = encodeDate(entry?.lastReviewedAt);
+            const nextReviewAt = encodeDate(entry?.nextReviewAt);
+
+            if (lastReviewedAt === null || nextReviewAt === null) {
+                return [];
+            }
+
+            return [[cardId, compactCardProgress(entry)]];
+        }),
+    );
+
+    return {
+        v: CLOUD_STATE_CODEC_VERSION,
+        s: expandedState?.settings || {},
+        p: {
+            v: progress.version || 1,
+            i: progress.profileId || 'default',
+            u: encodeDate(progress.updatedAt),
+            c: cards,
+        },
+        u: encodeDate(expandedState?.updatedAt),
+    };
+};
+
 const getCardAttemptCount = (entry) =>
     getNumericCount(entry?.correctCount) +
     getNumericCount(entry?.wrongCount) +
@@ -45,7 +161,7 @@ const getCardAttemptCount = (entry) =>
 
 const getProgressCards = (state) =>
     state && typeof state === 'object' && !Array.isArray(state)
-        ? state.progress?.cards || {}
+        ? expandCloudState(state)?.progress?.cards || {}
         : {};
 
 const parseJsonSafely = async (request) => {
@@ -182,7 +298,9 @@ export const normalizeStatePayload = (value) => {
         };
     }
 
-    const serialized = JSON.stringify(value);
+    const state = expandCloudState(value);
+    const wireState = compactCloudState(state);
+    const serialized = JSON.stringify(wireState);
 
     if (encoder.encode(serialized).length > MAX_STATE_BYTES) {
         return {
@@ -194,7 +312,8 @@ export const normalizeStatePayload = (value) => {
     return {
         ok: true,
         serialized,
-        state: value,
+        state,
+        wireState,
     };
 };
 
@@ -316,6 +435,17 @@ const isTrustedDevOrigin = (origin) => {
 const isAllowedCorsOrigin = (origin, allowedOrigins) =>
     Boolean(origin && (allowedOrigins.includes(origin) || isTrustedDevOrigin(origin)));
 
+const shouldUseCompactStateResponse = (request) =>
+    request.headers.get(COMPACT_STATE_ENCODING_HEADER) === COMPACT_STATE_ENCODING_VALUE;
+
+const stateForResponse = (request, state) => {
+    if (!state) {
+        return null;
+    }
+
+    return shouldUseCompactStateResponse(request) ? compactCloudState(state) : expandCloudState(state);
+};
+
 const createCorsHeaders = (request, env) => {
     const origin = request.headers.get('Origin');
     const allowedOrigins = getAllowedOrigins(env);
@@ -326,7 +456,7 @@ const createCorsHeaders = (request, env) => {
     return {
         'Access-Control-Allow-Origin': allowOrigin,
         'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
-        'Access-Control-Allow-Headers': 'Authorization,Content-Type',
+        'Access-Control-Allow-Headers': `Authorization,Content-Type,${COMPACT_STATE_ENCODING_HEADER}`,
         'Access-Control-Max-Age': '86400',
         Vary: 'Origin',
     };
@@ -432,8 +562,11 @@ const getUserStateRecord = async (env, userId) => {
     }
 
     try {
+        const wireState = JSON.parse(row.state_json);
+
         return {
-            state: JSON.parse(row.state_json),
+            state: expandCloudState(wireState),
+            wireState,
             serialized: row.state_json,
             updatedAt: row.updated_at || null,
         };
@@ -778,7 +911,7 @@ const handleLogin = async (request, env) => {
             username: userRow.username,
         },
         session,
-        state,
+        state: stateForResponse(request, state),
     });
 };
 
@@ -788,7 +921,7 @@ const handleSession = async (request, env, authenticatedSession) => {
     return jsonResponse(request, env, {
         user: authenticatedSession.user,
         expiresAt: authenticatedSession.expiresAt,
-        state,
+        state: stateForResponse(request, state),
     });
 };
 
@@ -804,7 +937,7 @@ const handleGetState = async (request, env, authenticatedSession) => {
     const state = await getUserState(env, authenticatedSession.user.id);
 
     return jsonResponse(request, env, {
-        state,
+        state: stateForResponse(request, state),
     });
 };
 
@@ -819,7 +952,7 @@ const handlePutState = async (request, env, authenticatedSession) => {
     const state = await saveUserState(env, authenticatedSession.user.id, normalizedPayload.state);
 
     return jsonResponse(request, env, {
-        state,
+        state: stateForResponse(request, state),
     });
 };
 
@@ -862,7 +995,7 @@ const handleLeaderboard = async (request, env) => {
 
             if (row?.state_json) {
                 try {
-                    state = JSON.parse(row.state_json);
+                    state = expandCloudState(JSON.parse(row.state_json));
                 } catch (error) {
                     state = null;
                 }
