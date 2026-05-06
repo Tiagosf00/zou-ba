@@ -316,9 +316,8 @@ const RankingScreen = () => {
                             #{currentUserEntry.rank} with {currentUserEntry.score} points
                         </Text>
                         <Text style={styles.currentUserText}>
-                            {currentUserEntry.correctCount} correct, {currentUserEntry.wrongCount}{' '}
-                            wrong, and {currentUserEntry.unknownCount || 0} I don't know across{' '}
-                            {currentUserEntry.studiedCount} tracked words.
+                            {currentUserEntry.correctCount} correct and {currentUserEntry.wrongCount}{' '}
+                            wrong answers across {currentUserEntry.studiedCount} tracked words.
                         </Text>
                     </Card>
                 ) : !leaderboardState.error ? (
@@ -382,8 +381,7 @@ const RankingScreen = () => {
                                             </Text>
                                             <Text style={styles.rankMeta}>
                                                 {entry.correctCount} correct · {entry.wrongCount}{' '}
-                                                wrong · {entry.unknownCount || 0} I don't know ·{' '}
-                                                {entry.studiedCount} words
+                                                wrong · {entry.studiedCount} words
                                             </Text>
                                         </View>
 
