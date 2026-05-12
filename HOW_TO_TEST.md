@@ -37,12 +37,11 @@ EXPO_PUBLIC_API_BASE_URL="http://127.0.0.1:8787" npm run web -- --port 8091
 
 1. Practice: choose an HSK level in Settings, answer a card correctly, and confirm the streak increases.
 2. Practice: tap `I don't know`; the answer should reveal, the message should say it counts as a failed review, and the card should return after about 2 minutes.
-3. Practice and Exam: while logged in as `tiagodfs`, after answering, the small audio button should appear next to the revealed word and play audio.
-4. Practice, Exam, and Stats: while logged out or logged in as any other user, audio buttons should not appear.
-5. Stats: while logged in as `tiagodfs`, expand a level and confirm word rows show the audio button.
-6. Pinyin: spot-check `可能` as `kě néng`, `鸟` as `niǎo`, and `谁` as `shéi/shuí`.
-7. Cloud sync: create an account from Settings, log out, log back in, and confirm progress/settings restore.
-8. Other devices: when testing the local frontend from another machine or phone, use the computer's LAN URL for the frontend. Auth should no longer fail from arbitrary localhost/LAN ports.
+3. Practice and Exam: after answering, the small audio button should appear next to the revealed word and play audio for every user, including logged-out users.
+4. Stats: expand a level and confirm word rows show the audio button for every user.
+5. Pinyin: spot-check `可能` as `kě néng`, `鸟` as `niǎo`, and `谁` as `shéi/shuí`.
+6. Cloud sync: create an account from Settings, log out, log back in, and confirm progress/settings restore.
+7. Other devices: when testing the local frontend from another machine or phone, use the computer's LAN URL for the frontend. Auth should no longer fail from arbitrary localhost/LAN ports.
 
 ## Automated Checks
 

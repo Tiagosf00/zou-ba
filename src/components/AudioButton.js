@@ -2,24 +2,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 
-const AUDIO_ACCESS_USERNAME = 'tiagodfs';
-
-export const canUseHskAudio = (auth) => {
-    const username = auth?.session?.user?.username;
-
-    return typeof username === 'string' && username.toLowerCase() === AUDIO_ACCESS_USERNAME;
-};
-
 const AudioButton = ({ hanzi, label, size = 'small', style }) => {
-    const { auth } = useAppState();
     const { colors, radii } = useAppTheme();
     const timeoutRef = useRef(null);
     const [playState, setPlayState] = useState('idle');
     const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
-    const hasAudioAccess = canUseHskAudio(auth);
     const isLarge = size === 'large';
     const isBusy = playState === 'loading';
     const isPlaying = playState === 'playing';
@@ -33,10 +22,6 @@ const AudioButton = ({ hanzi, label, size = 'small', style }) => {
         },
         [],
     );
-
-    if (!hasAudioAccess) {
-        return null;
-    }
 
     const resetSoon = () => {
         if (timeoutRef.current) {
