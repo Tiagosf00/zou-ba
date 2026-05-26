@@ -20,6 +20,13 @@ export const PRACTICE_MODES = [
         chipLabel: 'English',
         description: 'Practice vocabulary recall from meaning.',
     },
+    {
+        id: 'audio',
+        label: 'Audio',
+        detail: 'Listen',
+        chipLabel: 'Audio',
+        description: 'Practice by listening to spoken Chinese.',
+    },
 ];
 
 const practiceModeMap = PRACTICE_MODES.reduce((result, mode) => {

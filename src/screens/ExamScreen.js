@@ -15,6 +15,8 @@ import BackdropOrbs from '../components/BackdropOrbs';
 import Card from '../components/Card';
 import ModernButton from '../components/ModernButton';
 import AudioButton from '../components/AudioButton';
+import AudioChoiceButton from '../components/AudioChoiceButton';
+import AudioPrompt from '../components/AudioPrompt';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -184,6 +186,7 @@ const ExamScreen = () => {
               : 96;
     const isDesktopHanziAnswers = isWebDesktop && activeOutputMode.id === 'hanzi';
     const singleLinePinyinAnswers = activeOutputMode.id === 'pinyin';
+    const isAudioAnswers = activeOutputMode.id === 'audio';
     const meaningLines = currentQuestion
         ? getMeaningLines(currentQuestion).length > 0
             ? getMeaningLines(currentQuestion)
@@ -341,6 +344,16 @@ const ExamScreen = () => {
             return null;
         }
 
+        if (inputModeId === 'audio') {
+            return (
+                <AudioPrompt
+                    compact={compactLayout}
+                    hanzi={item.hanzi}
+                    label="Play audio prompt"
+                />
+            );
+        }
+
         if (inputModeId === 'eng') {
             const meanings = getMeaningLines(item);
             const lines = meanings.length > 0 ? meanings : ['No meaning available.'];
@@ -492,16 +505,19 @@ const ExamScreen = () => {
 
     const optionGrid = round ? (
         <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
-            {round.options.map((item) => {
+            {round.options.map((item, index) => {
                 const isSelected = selectedOption?.id === item.id;
                 const isAnswer = item.id === currentQuestion?.id;
                 let variant = 'secondary';
+                let audioActionLabel = 'Choose';
 
                 if (hasAnswered) {
                     if (isAnswer) {
                         variant = 'success';
+                        audioActionLabel = 'Correct';
                     } else if (isSelected) {
                         variant = 'danger';
+                        audioActionLabel = 'Picked';
                     }
                 }
 
@@ -513,33 +529,53 @@ const ExamScreen = () => {
                             isWebDesktop && styles.optionWrapperDesktop,
                         ]}
                     >
-                        <ModernButton
-                            title={
-                                singleLinePinyinAnswers
-                                    ? getDisplayText(item, activeOutputMode.id)
-                                    : getDisplayLines(item, activeOutputMode.id)
-                            }
-                            onPress={() => handleSelection(item)}
-                            variant={variant}
-                            multiline={!singleLinePinyinAnswers}
-                            fitText={singleLinePinyinAnswers}
-                            minimumFontScale={isWebWide ? 0.86 : 0.78}
-                            disabled={hasAnswered}
-                            style={[
-                                styles.optionButton,
-                                { minHeight: optionButtonHeight },
-                                compactLayout && styles.optionButtonCompact,
-                                isWebDesktop && styles.optionButtonDesktop,
-                            ]}
-                            textStyle={[
-                                styles.optionText,
-                                compactLayout && styles.optionTextCompact,
-                                singleLinePinyinAnswers && styles.optionTextPinyin,
-                                isWebDesktop && styles.optionTextDesktop,
-                                isDesktopHanziAnswers && styles.optionTextHanziDesktop,
-                                isWebWide && singleLinePinyinAnswers && styles.optionTextPinyinWeb,
-                            ]}
-                        />
+                        {isAudioAnswers ? (
+                            <AudioChoiceButton
+                                actionLabel={audioActionLabel}
+                                choiceLabel={`Choice ${index + 1}`}
+                                disabled={hasAnswered}
+                                hanzi={item.hanzi}
+                                isDesktop={isWebDesktop}
+                                onSelect={() => handleSelection(item)}
+                                style={[
+                                    styles.optionButton,
+                                    { minHeight: optionButtonHeight },
+                                    compactLayout && styles.optionButtonCompact,
+                                    isWebDesktop && styles.optionButtonDesktop,
+                                ]}
+                                variant={variant}
+                            />
+                        ) : (
+                            <ModernButton
+                                title={
+                                    singleLinePinyinAnswers
+                                        ? getDisplayText(item, activeOutputMode.id)
+                                        : getDisplayLines(item, activeOutputMode.id)
+                                }
+                                onPress={() => handleSelection(item)}
+                                variant={variant}
+                                multiline={!singleLinePinyinAnswers}
+                                fitText={singleLinePinyinAnswers}
+                                minimumFontScale={isWebWide ? 0.86 : 0.78}
+                                disabled={hasAnswered}
+                                style={[
+                                    styles.optionButton,
+                                    { minHeight: optionButtonHeight },
+                                    compactLayout && styles.optionButtonCompact,
+                                    isWebDesktop && styles.optionButtonDesktop,
+                                ]}
+                                textStyle={[
+                                    styles.optionText,
+                                    compactLayout && styles.optionTextCompact,
+                                    singleLinePinyinAnswers && styles.optionTextPinyin,
+                                    isWebDesktop && styles.optionTextDesktop,
+                                    isDesktopHanziAnswers && styles.optionTextHanziDesktop,
+                                    isWebWide &&
+                                        singleLinePinyinAnswers &&
+                                        styles.optionTextPinyinWeb,
+                                ]}
+                            />
+                        )}
                     </View>
                 );
             })}

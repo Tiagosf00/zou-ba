@@ -4,7 +4,7 @@ export const DEFAULT_SETTINGS = {
     outputMode: 'pinyin',
     themeMode: 'light',
 };
-const VALID_MODES = ['hanzi', 'pinyin', 'eng'];
+const VALID_MODES = ['hanzi', 'pinyin', 'eng', 'audio'];
 
 const sanitizeLevels = (levels) => {
     if (!Array.isArray(levels)) {
