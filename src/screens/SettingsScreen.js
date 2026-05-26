@@ -27,6 +27,7 @@ const MODE_ICONS = {
     hanzi: 'language',
     pinyin: 'musical-notes',
     eng: 'chatbubble-ellipses',
+    audio: 'volume-high',
 };
 
 const THEME_OPTIONS = [

@@ -204,6 +204,10 @@ export const getDisplayLines = (item, mode) => {
         return getPinyinSyllables(item);
     }
 
+    if (mode === 'audio') {
+        return ['Audio'];
+    }
+
     return [item.hanzi];
 };
 
@@ -218,6 +222,10 @@ export const getDisplayText = (item, mode) => {
 
     if (mode === 'pinyin') {
         return item.pinyin;
+    }
+
+    if (mode === 'audio') {
+        return 'Audio';
     }
 
     return item.hanzi;
@@ -237,6 +245,10 @@ const getOptionDisplayKey = (item, mode) => {
             .join('\n')
             .trim()
             .toLowerCase();
+    }
+
+    if (mode === 'audio') {
+        return (item.hanzi || '').trim();
     }
 
     return (item.hanzi || '').trim();

@@ -15,6 +15,8 @@ import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
 import AudioButton from '../components/AudioButton';
+import AudioChoiceButton from '../components/AudioChoiceButton';
+import AudioPrompt from '../components/AudioPrompt';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -463,6 +465,7 @@ const PracticeScreen = () => {
     const didRevealAnswer = answerState === 'revealed';
     const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
     const singleLinePinyinAnswers = settings.outputMode === 'pinyin';
+    const isAudioAnswers = settings.outputMode === 'audio';
     const meanings = getMeaningLines(question);
     const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
     const toggleDetailVisibility = (key) => {
@@ -521,6 +524,67 @@ const PracticeScreen = () => {
             </View>
         );
     };
+
+    const renderQuestionPrompt = (item, inputModeId) => {
+        if (!item) {
+            return null;
+        }
+
+        if (inputModeId === 'audio') {
+            return (
+                <AudioPrompt
+                    compact={compactLayout}
+                    hanzi={item.hanzi}
+                    label="Play audio prompt"
+                />
+            );
+        }
+
+        if (inputModeId === 'eng') {
+            return (
+                <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
+                    {meaningLines.map((line) => (
+                        <Text
+                            key={line}
+                            style={[
+                                styles.meaningLine,
+                                isWebDesktop && styles.meaningLineDesktop,
+                                compactLayout && styles.meaningLineCompact,
+                                veryTightLayout && styles.meaningLineVeryCompact,
+                            ]}
+                        >
+                            {line}
+                        </Text>
+                    ))}
+                    {renderDetailedMeaning(item, 'question', true)}
+                </View>
+            );
+        }
+
+        return (
+            <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.72}
+                numberOfLines={inputModeId === 'pinyin' ? 2 : 1}
+                style={[
+                    styles.questionText,
+                    inputModeId === 'pinyin' && styles.questionTextPinyin,
+                    isWebDesktop && styles.questionTextDesktop,
+                    isWebDesktop &&
+                        inputModeId === 'pinyin' &&
+                        styles.questionTextPinyinDesktop,
+                    compactLayout && styles.questionTextCompact,
+                    compactLayout &&
+                        inputModeId === 'pinyin' &&
+                        styles.questionTextPinyinCompact,
+                    veryTightLayout && styles.questionTextVeryCompact,
+                ]}
+            >
+                {getDisplayText(item, inputModeId)}
+            </Text>
+        );
+    };
+
     const renderAnswerRow = (item, label, detailKey, isSuccess = false, secondary = false) => (
         <View
             style={[
@@ -566,16 +630,19 @@ const PracticeScreen = () => {
     );
     const optionGrid = (
         <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
-            {options.map((item) => {
+            {options.map((item, index) => {
                 const isSelected = selectedOption?.id === item.id;
                 const isAnswer = item.id === question.id;
                 let variant = 'secondary';
+                let audioActionLabel = 'Choose';
 
                 if (hasAnswered) {
                     if (isAnswer) {
                         variant = 'success';
+                        audioActionLabel = 'Correct';
                     } else if (isSelected) {
                         variant = 'danger';
+                        audioActionLabel = 'Picked';
                     }
                 }
 
@@ -584,33 +651,53 @@ const PracticeScreen = () => {
                         key={item.id}
                         style={[styles.optionWrapper, isWebDesktop && styles.optionWrapperDesktop]}
                     >
-                        <ModernButton
-                            title={
-                                singleLinePinyinAnswers
-                                    ? getDisplayText(item, settings.outputMode)
-                                    : getDisplayLines(item, settings.outputMode)
-                            }
-                            onPress={() => handleSelection(item)}
-                            variant={variant}
-                            multiline={!singleLinePinyinAnswers}
-                            fitText={singleLinePinyinAnswers}
-                            minimumFontScale={isWebWide ? 0.86 : 0.78}
-                            disabled={hasAnswered}
-                            style={[
-                                styles.optionButton,
-                                { minHeight: optionButtonHeight },
-                                compactLayout && styles.optionButtonCompact,
-                                isWebDesktop && styles.optionButtonDesktop,
-                            ]}
-                            textStyle={[
-                                styles.optionText,
-                                compactLayout && styles.optionTextCompact,
-                                singleLinePinyinAnswers && styles.optionTextPinyin,
-                                isWebDesktop && styles.optionTextDesktop,
-                                isDesktopHanziAnswers && styles.optionTextHanziDesktop,
-                                isWebWide && singleLinePinyinAnswers && styles.optionTextPinyinWeb,
-                            ]}
-                        />
+                        {isAudioAnswers ? (
+                            <AudioChoiceButton
+                                actionLabel={audioActionLabel}
+                                choiceLabel={`Choice ${index + 1}`}
+                                disabled={hasAnswered}
+                                hanzi={item.hanzi}
+                                isDesktop={isWebDesktop}
+                                onSelect={() => handleSelection(item)}
+                                style={[
+                                    styles.optionButton,
+                                    { minHeight: optionButtonHeight },
+                                    compactLayout && styles.optionButtonCompact,
+                                    isWebDesktop && styles.optionButtonDesktop,
+                                ]}
+                                variant={variant}
+                            />
+                        ) : (
+                            <ModernButton
+                                title={
+                                    singleLinePinyinAnswers
+                                        ? getDisplayText(item, settings.outputMode)
+                                        : getDisplayLines(item, settings.outputMode)
+                                }
+                                onPress={() => handleSelection(item)}
+                                variant={variant}
+                                multiline={!singleLinePinyinAnswers}
+                                fitText={singleLinePinyinAnswers}
+                                minimumFontScale={isWebWide ? 0.86 : 0.78}
+                                disabled={hasAnswered}
+                                style={[
+                                    styles.optionButton,
+                                    { minHeight: optionButtonHeight },
+                                    compactLayout && styles.optionButtonCompact,
+                                    isWebDesktop && styles.optionButtonDesktop,
+                                ]}
+                                textStyle={[
+                                    styles.optionText,
+                                    compactLayout && styles.optionTextCompact,
+                                    singleLinePinyinAnswers && styles.optionTextPinyin,
+                                    isWebDesktop && styles.optionTextDesktop,
+                                    isDesktopHanziAnswers && styles.optionTextHanziDesktop,
+                                    isWebWide &&
+                                        singleLinePinyinAnswers &&
+                                        styles.optionTextPinyinWeb,
+                                ]}
+                            />
+                        )}
                     </View>
                 );
             })}
@@ -765,45 +852,7 @@ const PracticeScreen = () => {
                                 </View>
                             </View>
 
-                            {settings.inputMode === 'eng' ? (
-                                <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
-                                    {meaningLines.map((line) => (
-                                        <Text
-                                            key={line}
-                                            style={[
-                                                styles.meaningLine,
-                                                isWebDesktop && styles.meaningLineDesktop,
-                                                compactLayout && styles.meaningLineCompact,
-                                                veryTightLayout && styles.meaningLineVeryCompact,
-                                            ]}
-                                        >
-                                            {line}
-                                        </Text>
-                                    ))}
-                                    {renderDetailedMeaning(question, 'question', true)}
-                                </View>
-                            ) : (
-                                <Text
-                                    adjustsFontSizeToFit
-                                    minimumFontScale={0.72}
-                                    numberOfLines={settings.inputMode === 'pinyin' ? 2 : 1}
-                                    style={[
-                                        styles.questionText,
-                                        settings.inputMode === 'pinyin' && styles.questionTextPinyin,
-                                        isWebDesktop && styles.questionTextDesktop,
-                                        isWebDesktop &&
-                                            settings.inputMode === 'pinyin' &&
-                                            styles.questionTextPinyinDesktop,
-                                        compactLayout && styles.questionTextCompact,
-                                        compactLayout &&
-                                            settings.inputMode === 'pinyin' &&
-                                            styles.questionTextPinyinCompact,
-                                        veryTightLayout && styles.questionTextVeryCompact,
-                                    ]}
-                                >
-                                    {getDisplayText(question, settings.inputMode)}
-                                </Text>
-                            )}
+                            {renderQuestionPrompt(question, settings.inputMode)}
 
                             <View style={styles.questionFooter}>
                                 <View style={styles.levelTag}>

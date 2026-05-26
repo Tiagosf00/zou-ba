@@ -9,7 +9,8 @@ const AudioButton = ({ hanzi, label, size = 'small', style }) => {
     const timeoutRef = useRef(null);
     const [playState, setPlayState] = useState('idle');
     const styles = useMemo(() => createStyles(colors, radii), [colors, radii]);
-    const isLarge = size === 'large';
+    const isHero = size === 'hero';
+    const isLarge = size === 'large' || isHero;
     const isBusy = playState === 'loading';
     const isPlaying = playState === 'playing';
     const iconName = isBusy ? 'hourglass-outline' : isPlaying ? 'volume-high' : 'volume-medium';
@@ -66,7 +67,7 @@ const AudioButton = ({ hanzi, label, size = 'small', style }) => {
             onPress={handlePress}
             style={({ pressed }) => [
                 styles.button,
-                isLarge ? styles.buttonLarge : styles.buttonSmall,
+                isHero ? styles.buttonHero : isLarge ? styles.buttonLarge : styles.buttonSmall,
                 isPlaying && styles.buttonPlaying,
                 pressed && styles.buttonPressed,
                 !hanzi && styles.buttonDisabled,
@@ -76,7 +77,7 @@ const AudioButton = ({ hanzi, label, size = 'small', style }) => {
             <Ionicons
                 color={isPlaying ? colors.onPrimary : colors.primaryStrong}
                 name={iconName}
-                size={isLarge ? 19 : 15}
+                size={isHero ? 30 : isLarge ? 19 : 15}
             />
         </Pressable>
     );
@@ -99,6 +100,10 @@ const createStyles = (colors, radii) =>
         buttonLarge: {
             width: 38,
             height: 38,
+        },
+        buttonHero: {
+            width: 68,
+            height: 68,
         },
         buttonPlaying: {
             borderColor: colors.primaryStrong,
