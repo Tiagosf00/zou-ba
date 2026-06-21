@@ -22,6 +22,11 @@ import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
 import {
+    getVocabularyPoolItems,
+    getVocabularyPoolSummary,
+    isCustomVocabularyPool,
+} from '../utils/vocabularyPool';
+import {
     buildRound,
     createPracticeProgress,
     DEFAULT_PROFILE_ID,
@@ -99,17 +104,19 @@ const PracticeScreen = () => {
 
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
-    const levelKey = settings.hskLevels.join('-');
+    const poolKey = [
+        settings.vocabularyPool,
+        settings.hskLevels.join('-'),
+        settings.customCardIds.join('-'),
+    ].join(':');
     const filteredData = useMemo(
-        () => hskData.filter((item) => settings.hskLevels.includes(item.level)),
-        [levelKey],
+        () => getVocabularyPoolItems(hskData, settings),
+        [poolKey],
     );
     const recentQuestionLimit =
         filteredData.length <= 12 ? 4 : filteredData.length <= 40 ? 6 : 8;
-    const levelSummary =
-        settings.hskLevels.length === 6
-            ? 'HSK 1-6'
-            : settings.hskLevels.map((level) => `HSK ${level}`).join(' · ');
+    const poolSummary = getVocabularyPoolSummary(settings);
+    const usesCustomVocabulary = isCustomVocabularyPool(settings);
 
     const getMeaningSummary = (item) => {
         const lines = getMeaningLines(item);
@@ -173,7 +180,7 @@ const PracticeScreen = () => {
         recentQuestionIdsRef.current = [];
         setStreak(0);
         loadRound(progressRef.current.cards);
-    }, [isHydrated, levelKey]);
+    }, [isHydrated, poolKey]);
 
     const handleSelection = (item) => {
         if (!round || answerState || !isHydrated) {
@@ -371,13 +378,17 @@ const PracticeScreen = () => {
             : filteredData.length < MINIMUM_ITEMS_PER_ROUND
               ? {
                     eyebrow: 'Practice',
-                    title: 'Not enough words for a round yet.',
-                    text: 'Choose a few HSK levels in settings so we can build six answer choices.',
+                    title: usesCustomVocabulary
+                        ? 'Not enough custom words yet.'
+                        : 'Not enough words for a round yet.',
+                    text: usesCustomVocabulary
+                        ? 'Add at least six words to your custom vocabulary pool in settings so we can build answer choices.'
+                        : 'Choose a few HSK levels in settings so we can build six answer choices.',
                 }
               : {
                     eyebrow: 'Caught up',
                     title: "You're done for now.",
-                    text: `No review or new cards are due across ${levelSummary}. Come back a little later or switch HSK levels to study a different pool.`,
+                    text: `No review or new cards are due across ${poolSummary}. Come back a little later or switch vocabulary pools to study something else.`,
                 };
 
         return (
@@ -785,7 +796,7 @@ const PracticeScreen = () => {
                                     ]}
                                 >
                                     See {inputMode.chipLabel.toLowerCase()}, answer with{' '}
-                                    {outputMode.chipLabel.toLowerCase()}, across {levelSummary}.
+                                    {outputMode.chipLabel.toLowerCase()}, across {poolSummary}.
                                 </Text>
                                 {trainingSnapshotTrigger}
                             </View>

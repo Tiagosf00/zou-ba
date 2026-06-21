@@ -13,13 +13,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 import Card from '../components/Card';
+import CustomVocabularyEditor from '../components/CustomVocabularyEditor';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
-import { pickDistinctMode } from '../constants/defaultSettings';
+import { pickDistinctMode, VOCABULARY_POOLS } from '../constants/defaultSettings';
 import { getPracticeMode, PRACTICE_MODES } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
+import { getVocabularyPoolSummary } from '../utils/vocabularyPool';
 
 const LEVELS = [1, 2, 3, 4, 5, 6];
 
@@ -128,18 +130,28 @@ const SettingsScreen = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [feedback, setFeedback] = useState(null);
+    const [isCustomEditorVisible, setIsCustomEditorVisible] = useState(false);
 
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
     const themeMode = settings.themeMode || 'light';
-    const levelSummary =
-        settings.hskLevels.length === 6
-            ? 'HSK 1-6'
-            : settings.hskLevels.map((level) => `HSK ${level}`).join(' · ');
+    const vocabularyPool = settings.vocabularyPool || VOCABULARY_POOLS.HSK;
+    const isHskPool = vocabularyPool === VOCABULARY_POOLS.HSK;
+    const isCustomPool = vocabularyPool === VOCABULARY_POOLS.CUSTOM;
+    const customWordCount = settings.customCardIds.length;
+    const levelSummary = getVocabularyPoolSummary(settings);
     const syncBadge = getSyncBadge(cloud.syncState);
     const trimmedUsername = username.trim().toLowerCase();
     const canSubmitCredentials =
         trimmedUsername.length >= 3 && password.length >= 6 && auth.action === 'idle';
+
+    const setVocabularyPool = (pool) => {
+        updateSettings({ vocabularyPool: pool });
+    };
+
+    const updateCustomCardIds = (cardIds) => {
+        updateSettings({ customCardIds: cardIds });
+    };
 
     const toggleLevel = (level) => {
         const currentLevels = settings.hskLevels;
@@ -585,38 +597,134 @@ const SettingsScreen = () => {
 
                     <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
                         <Card style={styles.card}>
-                            <Text style={styles.sectionTitle}>HSK levels</Text>
+                            <Text style={styles.sectionTitle}>Vocabulary pool</Text>
                             <Text style={styles.sectionSubtitle}>
-                                Choose the vocabulary pool for each round.
+                                Choose the words that can appear in practice rounds.
                             </Text>
 
-                            <View style={styles.levelGrid}>
-                                {LEVELS.map((level) => {
-                                    const isActive = settings.hskLevels.includes(level);
+                            <View style={styles.poolToggleRow}>
+                                <Pressable
+                                    onPress={() => setVocabularyPool(VOCABULARY_POOLS.HSK)}
+                                    style={({ pressed }) => [
+                                        styles.poolOption,
+                                        isHskPool && styles.poolOptionActive,
+                                        pressed && styles.poolOptionPressed,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.poolIcon,
+                                            isHskPool && styles.poolIconActive,
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            color={isHskPool ? colors.onPrimary : colors.primaryStrong}
+                                            name="albums"
+                                            size={18}
+                                        />
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.poolLabel,
+                                            isHskPool && styles.poolLabelActive,
+                                        ]}
+                                    >
+                                        HSK levels
+                                    </Text>
+                                    <Text style={styles.poolDetail}>{settings.hskLevels.length} selected</Text>
+                                </Pressable>
 
-                                    return (
-                                        <Pressable
-                                            key={level}
-                                            onPress={() => toggleLevel(level)}
-                                            style={({ pressed }) => [
-                                                styles.levelButton,
-                                                isWebDesktop && styles.levelButtonDesktop,
-                                                isActive && styles.levelButtonActive,
-                                                pressed && styles.levelButtonPressed,
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.levelText,
-                                                    isActive && styles.levelTextActive,
+                                <Pressable
+                                    onPress={() => setVocabularyPool(VOCABULARY_POOLS.CUSTOM)}
+                                    style={({ pressed }) => [
+                                        styles.poolOption,
+                                        isCustomPool && styles.poolOptionActive,
+                                        pressed && styles.poolOptionPressed,
+                                    ]}
+                                >
+                                    <View
+                                        style={[
+                                            styles.poolIcon,
+                                            isCustomPool && styles.poolIconActive,
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            color={
+                                                isCustomPool ? colors.onPrimary : colors.primaryStrong
+                                            }
+                                            name="list"
+                                            size={18}
+                                        />
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.poolLabel,
+                                            isCustomPool && styles.poolLabelActive,
+                                        ]}
+                                    >
+                                        Custom
+                                    </Text>
+                                    <Text style={styles.poolDetail}>
+                                        {customWordCount} {customWordCount === 1 ? 'word' : 'words'}
+                                    </Text>
+                                </Pressable>
+                            </View>
+
+                            {isHskPool ? (
+                                <View style={styles.levelGrid}>
+                                    {LEVELS.map((level) => {
+                                        const isActive = settings.hskLevels.includes(level);
+
+                                        return (
+                                            <Pressable
+                                                key={level}
+                                                onPress={() => toggleLevel(level)}
+                                                style={({ pressed }) => [
+                                                    styles.levelButton,
+                                                    isWebDesktop && styles.levelButtonDesktop,
+                                                    isActive && styles.levelButtonActive,
+                                                    pressed && styles.levelButtonPressed,
                                                 ]}
                                             >
-                                                HSK {level}
-                                            </Text>
-                                        </Pressable>
-                                    );
-                                })}
-                            </View>
+                                                <Text
+                                                    style={[
+                                                        styles.levelText,
+                                                        isActive && styles.levelTextActive,
+                                                    ]}
+                                                >
+                                                    HSK {level}
+                                                </Text>
+                                            </Pressable>
+                                        );
+                                    })}
+                                </View>
+                            ) : (
+                                <View style={styles.customPoolPanel}>
+                                    <View style={styles.customPoolCopy}>
+                                        <Text style={styles.customPoolTitle}>
+                                            {customWordCount} custom{' '}
+                                            {customWordCount === 1 ? 'word' : 'words'}
+                                        </Text>
+                                        <Text style={styles.customPoolText}>
+                                            Practice needs at least six selected words to build answer
+                                            choices.
+                                        </Text>
+                                    </View>
+
+                                    <Pressable
+                                        onPress={() => setIsCustomEditorVisible(true)}
+                                        style={({ pressed }) => [
+                                            styles.customEditorButton,
+                                            pressed && styles.poolOptionPressed,
+                                        ]}
+                                    >
+                                        <Ionicons color={colors.onPrimary} name="create" size={17} />
+                                        <Text style={styles.customEditorButtonText}>
+                                            Edit word list
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            )}
                         </Card>
                     </View>
 
@@ -645,6 +753,12 @@ const SettingsScreen = () => {
                     </View>
                 </View>
             </ScrollView>
+            <CustomVocabularyEditor
+                customCardIds={settings.customCardIds}
+                onChangeCardIds={updateCustomCardIds}
+                onClose={() => setIsCustomEditorVisible(false)}
+                visible={isCustomEditorVisible}
+            />
         </SafeAreaView>
     );
 };
@@ -1059,6 +1173,89 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         levelTextActive: {
             color: colors.onPrimary,
+        },
+        poolToggleRow: {
+            flexDirection: 'row',
+            gap: 12,
+        },
+        poolOption: {
+            flex: 1,
+            gap: 8,
+            paddingHorizontal: 14,
+            paddingVertical: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        poolOptionActive: {
+            backgroundColor: colors.surface,
+            borderColor: colors.primarySoft,
+            ...shadows.sm,
+        },
+        poolOptionPressed: {
+            transform: [{ scale: 0.99 }],
+        },
+        poolIcon: {
+            width: 38,
+            height: 38,
+            borderRadius: 19,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: colors.primarySoft,
+        },
+        poolIconActive: {
+            backgroundColor: colors.primary,
+        },
+        poolLabel: {
+            color: colors.text,
+            fontSize: 16,
+            fontWeight: '800',
+        },
+        poolLabelActive: {
+            color: colors.primaryStrong,
+        },
+        poolDetail: {
+            color: colors.textSecondary,
+            fontSize: 13,
+            lineHeight: 18,
+        },
+        customPoolPanel: {
+            gap: 14,
+            padding: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.surfaceMuted,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        customPoolCopy: {
+            gap: 5,
+        },
+        customPoolTitle: {
+            color: colors.text,
+            fontSize: 18,
+            fontWeight: '800',
+        },
+        customPoolText: {
+            color: colors.textSecondary,
+            fontSize: 14,
+            lineHeight: 20,
+        },
+        customEditorButton: {
+            minHeight: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            paddingHorizontal: 16,
+            borderRadius: radii.md,
+            backgroundColor: colors.primary,
+            ...shadows.sm,
+        },
+        customEditorButtonText: {
+            color: colors.onPrimary,
+            fontSize: 15,
+            fontWeight: '800',
         },
         modeList: {
             gap: 12,

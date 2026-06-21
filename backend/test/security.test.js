@@ -54,6 +54,8 @@ test('compact cloud state round-trips card progress', () => {
         version: 1,
         settings: {
             hskLevels: [1, 2],
+            vocabularyPool: 'custom',
+            customCardIds: [1, 3, 301],
             inputMode: 'hanzi',
             outputMode: 'pinyin',
             themeMode: 'dark',
