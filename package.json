@@ -14,6 +14,8 @@
     "generate:pinyin": "python3 generateValidPinyin.py",
     "generate:audio-assets": "python3 scripts/build_hsk_audio_asset_map.py",
     "generate:audio-sources": "python3 scripts/build_hsk_audio_sources.py",
+    "generate:book-audio-catalog": "python3 scripts/build_hsk_course_audio_catalog.py",
+    "validate:book-audio-catalog": "python3 scripts/build_hsk_course_audio_catalog.py --validate-only",
     "refresh:data": "python3 fetch_hsk_3_0.py && python3 generateValidPinyin.py"
   },
   "dependencies": {

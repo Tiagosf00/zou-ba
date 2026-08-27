@@ -1,0 +1,3754 @@
+{
+  "source": "Beijing Language and Culture University Press",
+  "sourceBaseUrl": "https://www.blcup.com",
+  "totalTracks": 525,
+  "books": [
+    {
+      "bookId": "hsk1",
+      "label": "HSK 1",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=c55419ff-dd4c-4ead-9dae-0d159197f622",
+      "trackCount": 86,
+      "tracks": [
+        {
+          "resourceId": "b3a37218-6381-4d45-abc8-e72523cbe523",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程1 课本音频 00片头",
+          "order": 0
+        },
+        {
+          "resourceId": "f822ad43-3495-4950-8a67-46772bd540f1",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "b80597c6-2e28-4168-a826-6fbfa9333c8e",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "5071aa73-7718-4bb7-b69d-ffdd210ca727",
+          "code": "01-3",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-3",
+          "order": 3
+        },
+        {
+          "resourceId": "c0772d37-2902-416c-9bd9-5cd4f79e1a81",
+          "code": "01-4",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-4",
+          "order": 4
+        },
+        {
+          "resourceId": "b7218fe3-9dbe-4c29-91e0-34750333290b",
+          "code": "01-5",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-5",
+          "order": 5
+        },
+        {
+          "resourceId": "9db323d7-125a-4f90-81aa-2115b8afed07",
+          "code": "01-6",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-6",
+          "order": 6
+        },
+        {
+          "resourceId": "94fd845c-0469-4dc3-89a7-7eebd7c9e1ac",
+          "code": "01-7",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-7",
+          "order": 7
+        },
+        {
+          "resourceId": "3f16166d-3a34-4d76-b18b-71f18e5ac30f",
+          "code": "01-8",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-8",
+          "order": 8
+        },
+        {
+          "resourceId": "f436e5e9-ce98-409a-84bb-64f462862d6e",
+          "code": "01-9",
+          "lessonNumber": 1,
+          "title": "HSK标准教程1 课本音频 01-9",
+          "order": 9
+        },
+        {
+          "resourceId": "d4e88327-bc95-459e-9ef7-87df4e2244db",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-1",
+          "order": 10
+        },
+        {
+          "resourceId": "53fd29e4-dfd3-44ed-8025-149ad23a1f36",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-2",
+          "order": 11
+        },
+        {
+          "resourceId": "380c7c69-cedf-40e4-b253-a43c69f68054",
+          "code": "02-3",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-3",
+          "order": 12
+        },
+        {
+          "resourceId": "fd03dc49-8c2e-456c-b435-886605e6f425",
+          "code": "02-4",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-4",
+          "order": 13
+        },
+        {
+          "resourceId": "a13a7b07-964c-4f03-bd65-6f11c1815ea8",
+          "code": "02-5",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-5",
+          "order": 14
+        },
+        {
+          "resourceId": "c198ea86-ad7e-4594-ab15-a0e71acf53d6",
+          "code": "02-6",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-6",
+          "order": 15
+        },
+        {
+          "resourceId": "da437927-c335-4320-b74c-d52248a19471",
+          "code": "02-7",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-7",
+          "order": 16
+        },
+        {
+          "resourceId": "fb5c6fd0-6b9a-4055-bc58-1db076ca66b0",
+          "code": "02-8",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-8",
+          "order": 17
+        },
+        {
+          "resourceId": "7ea30d77-e68f-4a06-a94d-489574b258cb",
+          "code": "02-9",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-9",
+          "order": 18
+        },
+        {
+          "resourceId": "83d06664-c78f-40c7-a7df-170fa4240f2a",
+          "code": "02-10",
+          "lessonNumber": 2,
+          "title": "HSK标准教程1 课本音频 02-10",
+          "order": 19
+        },
+        {
+          "resourceId": "56de0cc1-8700-4086-805e-278e113a1870",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-1",
+          "order": 20
+        },
+        {
+          "resourceId": "d46254ad-5bc8-4727-9032-06c0060bd70b",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-2",
+          "order": 21
+        },
+        {
+          "resourceId": "85efc370-f389-4dd5-87f1-964d8f3f2214",
+          "code": "03-3",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-3",
+          "order": 22
+        },
+        {
+          "resourceId": "bf068d58-7348-4d87-9283-b7343ebe9055",
+          "code": "03-4",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-4",
+          "order": 23
+        },
+        {
+          "resourceId": "a9562e71-a919-4128-9b16-f0e6c1d7ee70",
+          "code": "03-5",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-5",
+          "order": 24
+        },
+        {
+          "resourceId": "14323d42-aaca-4c33-9cd4-94b10564be24",
+          "code": "03-6",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-6",
+          "order": 25
+        },
+        {
+          "resourceId": "0a423cd0-5d93-4827-bf77-4cc97a866383",
+          "code": "03-7",
+          "lessonNumber": 3,
+          "title": "HSK标准教程1 课本音频 03-7",
+          "order": 26
+        },
+        {
+          "resourceId": "b2569285-c1b4-459b-9ae1-2b410c14d135",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-1",
+          "order": 27
+        },
+        {
+          "resourceId": "b746d7ab-d758-452b-815b-e5ee58dccf70",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-2",
+          "order": 28
+        },
+        {
+          "resourceId": "7a4aea8e-b674-42c6-8aa2-a77571911ee5",
+          "code": "04-3",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-3",
+          "order": 29
+        },
+        {
+          "resourceId": "8961cab1-1312-463e-878d-756448d12894",
+          "code": "04-4",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-4",
+          "order": 30
+        },
+        {
+          "resourceId": "9dd97ad5-eef5-491d-8371-b259a93ff678",
+          "code": "04-5",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-5",
+          "order": 31
+        },
+        {
+          "resourceId": "a3bf9786-ad1f-453a-8fe2-594d945a874c",
+          "code": "04-6",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-6",
+          "order": 32
+        },
+        {
+          "resourceId": "4d3a1429-7965-445c-8cc6-22c4024079bd",
+          "code": "04-7",
+          "lessonNumber": 4,
+          "title": "HSK标准教程1 课本音频 04-7",
+          "order": 33
+        },
+        {
+          "resourceId": "22c854db-ec60-48d6-bdf2-dfd242414e82",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-1",
+          "order": 34
+        },
+        {
+          "resourceId": "c2427523-116e-4f4e-8cc0-8a90aaf91877",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-2",
+          "order": 35
+        },
+        {
+          "resourceId": "1855895f-ba2e-491a-90e3-2a37d6c90a97",
+          "code": "05-3",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-3",
+          "order": 36
+        },
+        {
+          "resourceId": "d2c80583-9b1e-4019-8a62-2f3ff5366eb2",
+          "code": "05-4",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-4",
+          "order": 37
+        },
+        {
+          "resourceId": "b1870d86-b4d0-4e03-b056-44c8df2a8004",
+          "code": "05-5",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-5",
+          "order": 38
+        },
+        {
+          "resourceId": "41ab1fbf-7420-429f-98f3-be6a432035ec",
+          "code": "05-6",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-6",
+          "order": 39
+        },
+        {
+          "resourceId": "1a51fb4b-48f0-417f-a912-e85339520d90",
+          "code": "05-7",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-7",
+          "order": 40
+        },
+        {
+          "resourceId": "15ca754a-d2bc-4976-b293-8f2dee39df2d",
+          "code": "05-8",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-8",
+          "order": 41
+        },
+        {
+          "resourceId": "3b98fed3-344e-46db-9fe1-cc18364e0fa2",
+          "code": "05-9",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-9",
+          "order": 42
+        },
+        {
+          "resourceId": "7ebd02be-3e19-4d39-9c12-f92ed49160f0",
+          "code": "05-10",
+          "lessonNumber": 5,
+          "title": "HSK标准教程1 课本音频 05-10",
+          "order": 43
+        },
+        {
+          "resourceId": "b1cf2106-62d7-4c10-bd87-3f4ff45d7cef",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK标准教程1 课本音频 06-1",
+          "order": 44
+        },
+        {
+          "resourceId": "e5aba5e0-7ae7-4371-9b59-3f211e130443",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK标准教程1 课本音频 06-2",
+          "order": 45
+        },
+        {
+          "resourceId": "fda38ecb-0559-48c0-81d8-3302568ee126",
+          "code": "06-3",
+          "lessonNumber": 6,
+          "title": "HSK标准教程1 课本音频 06-3",
+          "order": 46
+        },
+        {
+          "resourceId": "d97bb143-f829-4580-b6d1-7592c1620d87",
+          "code": "06-4",
+          "lessonNumber": 6,
+          "title": "HSK标准教程1 课本音频 06-4",
+          "order": 47
+        },
+        {
+          "resourceId": "f8f0bc86-1c68-4dac-a9f7-e087f1b3fc2c",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK标准教程1 课本音频 07-1",
+          "order": 48
+        },
+        {
+          "resourceId": "9e0f3e44-15c7-42a6-88ae-efecdfec7d38",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK标准教程1 课本音频 07-2",
+          "order": 49
+        },
+        {
+          "resourceId": "1c632d68-1d54-4ae9-a655-895786597cf6",
+          "code": "07-3",
+          "lessonNumber": 7,
+          "title": "HSK标准教程1 课本音频 07-3",
+          "order": 50
+        },
+        {
+          "resourceId": "104fef36-545e-4426-a535-b6faab38b5f2",
+          "code": "07-4",
+          "lessonNumber": 7,
+          "title": "HSK标准教程1 课本音频 07-4",
+          "order": 51
+        },
+        {
+          "resourceId": "e2ae85c4-394e-4696-9250-b850468f3f97",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程1 课本音频 08-1",
+          "order": 52
+        },
+        {
+          "resourceId": "343d0f8f-3747-4705-b8d7-ce35e631cc44",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK标准教程1 课本音频 08-2",
+          "order": 53
+        },
+        {
+          "resourceId": "97f2f676-5ea9-4572-94dd-f2633b5627c3",
+          "code": "08-3",
+          "lessonNumber": 8,
+          "title": "HSK标准教程1 课本音频 08-3",
+          "order": 54
+        },
+        {
+          "resourceId": "45f1aa91-1a56-46a8-a7a0-a7f882da0e11",
+          "code": "08-4",
+          "lessonNumber": 8,
+          "title": "HSK标准教程1 课本音频 08-4",
+          "order": 55
+        },
+        {
+          "resourceId": "c78f2125-67be-441a-963b-f3263eb8bc62",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK标准教程1 课本音频 09-1",
+          "order": 56
+        },
+        {
+          "resourceId": "49325ebd-6bcc-48c4-973d-71869e292a9d",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK标准教程1 课本音频 09-2",
+          "order": 57
+        },
+        {
+          "resourceId": "4a858a0b-ec90-4ed4-9507-213f3340aa17",
+          "code": "09-3",
+          "lessonNumber": 9,
+          "title": "HSK标准教程1 课本音频 09-3",
+          "order": 58
+        },
+        {
+          "resourceId": "e202be47-e6b7-4929-8862-4e5475f49734",
+          "code": "09-4",
+          "lessonNumber": 9,
+          "title": "HSK标准教程1 课本音频 09-4",
+          "order": 59
+        },
+        {
+          "resourceId": "75189afb-0dcb-4623-928c-4a4ce2012b56",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-1",
+          "order": 60
+        },
+        {
+          "resourceId": "797a8e00-fe94-4c45-8d84-acb33a0cf01e",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-2",
+          "order": 61
+        },
+        {
+          "resourceId": "041b5b51-5e84-44a3-9691-65fadb379914",
+          "code": "10-3",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-3",
+          "order": 62
+        },
+        {
+          "resourceId": "c5304868-d2ff-4f64-a6d2-0f9d9fdaddcc",
+          "code": "10-4",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-4",
+          "order": 63
+        },
+        {
+          "resourceId": "f6c99f49-1048-41ec-9990-c380fc639b57",
+          "code": "10-5",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-5",
+          "order": 64
+        },
+        {
+          "resourceId": "91875e41-1e3d-401e-8538-b6360de8595e",
+          "code": "10-6",
+          "lessonNumber": 10,
+          "title": "HSK标准教程1 课本音频 10-6",
+          "order": 65
+        },
+        {
+          "resourceId": "7e0caa91-ce65-49f5-9556-dc9a06cc9f8b",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK标准教程1 课本音频 11-1",
+          "order": 66
+        },
+        {
+          "resourceId": "b93a8c0b-0cdd-4101-9aa9-3c10a338d3fc",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK标准教程1 课本音频 11-2",
+          "order": 67
+        },
+        {
+          "resourceId": "4a94034f-81f2-4266-ae6b-ef8c4a2d9bc2",
+          "code": "11-3",
+          "lessonNumber": 11,
+          "title": "HSK标准教程1 课本音频 11-3",
+          "order": 68
+        },
+        {
+          "resourceId": "ca9e9d22-62c5-45e4-994a-533a755a198a",
+          "code": "11-4",
+          "lessonNumber": 11,
+          "title": "HSK标准教程1 课本音频 11-4",
+          "order": 69
+        },
+        {
+          "resourceId": "d514dee4-7086-44b7-964a-5f0672480c50",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK标准教程1 课本音频 12-1",
+          "order": 70
+        },
+        {
+          "resourceId": "841e088e-1617-4c1f-a1b4-60f1939904c0",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK标准教程1 课本音频 12-2",
+          "order": 71
+        },
+        {
+          "resourceId": "3c79160f-69e2-4b81-b20c-62eec0d8a34a",
+          "code": "12-3",
+          "lessonNumber": 12,
+          "title": "HSK标准教程1 课本音频 12-3",
+          "order": 72
+        },
+        {
+          "resourceId": "81c763a0-d330-4285-b259-2f45bbb8aab4",
+          "code": "12-4",
+          "lessonNumber": 12,
+          "title": "HSK标准教程1 课本音频 12-4",
+          "order": 73
+        },
+        {
+          "resourceId": "5bab1d23-3124-4274-9339-b7e7f63983d2",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK标准教程1 课本音频 13-1",
+          "order": 74
+        },
+        {
+          "resourceId": "dad25ff9-cfc1-4069-b957-630838269015",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK标准教程1 课本音频 13-2",
+          "order": 75
+        },
+        {
+          "resourceId": "4bc057a8-daab-4104-9fbb-37e9e2769d01",
+          "code": "13-3",
+          "lessonNumber": 13,
+          "title": "HSK标准教程1 课本音频 13-3",
+          "order": 76
+        },
+        {
+          "resourceId": "d17201a9-1daa-435c-b5aa-6e3f92c23ea1",
+          "code": "13-4",
+          "lessonNumber": 13,
+          "title": "HSK标准教程1 课本音频 13-4",
+          "order": 77
+        },
+        {
+          "resourceId": "bc8ad961-ef9b-460f-9a5e-7803eeaf3fc6",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK标准教程1 课本音频 14-1",
+          "order": 78
+        },
+        {
+          "resourceId": "6c308b85-78e0-4d03-915c-fb3512e300f0",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK标准教程1 课本音频 14-2",
+          "order": 79
+        },
+        {
+          "resourceId": "f5616f90-097a-46c3-bc57-b7196bc7454d",
+          "code": "14-3",
+          "lessonNumber": 14,
+          "title": "HSK标准教程1 课本音频 14-3",
+          "order": 80
+        },
+        {
+          "resourceId": "866c6449-2299-49e7-b08f-4656b757e274",
+          "code": "14-4",
+          "lessonNumber": 14,
+          "title": "HSK标准教程1 课本音频 14-4",
+          "order": 81
+        },
+        {
+          "resourceId": "d90aef22-7cb9-4fad-adbd-0647facb2dfb",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK标准教程1 课本音频 15-1",
+          "order": 82
+        },
+        {
+          "resourceId": "452bc1d1-5521-4bd8-85b7-b82fc2e8085b",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK标准教程1 课本音频 15-2",
+          "order": 83
+        },
+        {
+          "resourceId": "cdc8806c-062c-482a-a53f-291d84b79ebf",
+          "code": "15-3",
+          "lessonNumber": 15,
+          "title": "HSK标准教程1 课本音频 15-3",
+          "order": 84
+        },
+        {
+          "resourceId": "d00a3803-38c6-44a1-847b-95337b20e435",
+          "code": "15-4",
+          "lessonNumber": 15,
+          "title": "HSK标准教程1 课本音频 15-4",
+          "order": 85
+        }
+      ]
+    },
+    {
+      "bookId": "hsk2",
+      "label": "HSK 2",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=d47a93c3-ae70-43f6-9e32-140b2a473d53",
+      "trackCount": 76,
+      "tracks": [
+        {
+          "resourceId": "7982c7b4-cd39-44ac-bb63-9fc9b3ee86a8",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程2 课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "749c3d7b-419e-4756-93a5-ab59a8f6a63b",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK标准教程2 课本音频 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "76cf9af3-f17e-4068-98b8-b78650905eea",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK标准教程2 课本音频 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "d72eb7d3-3cfe-480b-8fe5-ca627c53f585",
+          "code": "01-3",
+          "lessonNumber": 1,
+          "title": "HSK标准教程2 课本音频 01-3",
+          "order": 3
+        },
+        {
+          "resourceId": "c4ac428e-3ad9-4f9f-981d-dc748af773e8",
+          "code": "01-4",
+          "lessonNumber": 1,
+          "title": "HSK标准教程2 课本音频 01-4",
+          "order": 4
+        },
+        {
+          "resourceId": "e8f66ee5-80db-4d58-91fc-7319c593caa7",
+          "code": "01-5",
+          "lessonNumber": 1,
+          "title": "HSK标准教程2 课本音频 01-5",
+          "order": 5
+        },
+        {
+          "resourceId": "ecca5c7a-47a2-46f3-9c8c-92e4aeeb3dd1",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK标准教程2 课本音频 02-1",
+          "order": 6
+        },
+        {
+          "resourceId": "709a5cac-41ed-4fc1-aed8-77bb4c8ad6d2",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK标准教程2 课本音频 02-2",
+          "order": 7
+        },
+        {
+          "resourceId": "b22426ff-a3b4-45f8-97aa-d28e3b64f10a",
+          "code": "02-3",
+          "lessonNumber": 2,
+          "title": "HSK标准教程2 课本音频 02-3",
+          "order": 8
+        },
+        {
+          "resourceId": "c7040055-3721-4955-a02e-68aa9780c0a6",
+          "code": "02-4",
+          "lessonNumber": 2,
+          "title": "HSK标准教程2 课本音频 02-4",
+          "order": 9
+        },
+        {
+          "resourceId": "a7414c4b-ad7f-41be-9f61-51d318a98735",
+          "code": "02-5",
+          "lessonNumber": 2,
+          "title": "HSK标准教程2 课本音频 02-5",
+          "order": 10
+        },
+        {
+          "resourceId": "d9776e58-2dce-427a-a482-5429e9f58418",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK标准教程2 课本音频 03-1",
+          "order": 11
+        },
+        {
+          "resourceId": "d9194a2f-3ea8-4e74-835e-65d5b292c495",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK标准教程2 课本音频 03-2",
+          "order": 12
+        },
+        {
+          "resourceId": "99d55a47-5c1f-4203-9f94-5cf205d33012",
+          "code": "03-3",
+          "lessonNumber": 3,
+          "title": "HSK标准教程2 课本音频 03-3",
+          "order": 13
+        },
+        {
+          "resourceId": "8366559c-42a8-421d-887a-5ecec37254f3",
+          "code": "03-4",
+          "lessonNumber": 3,
+          "title": "HSK标准教程2 课本音频 03-4",
+          "order": 14
+        },
+        {
+          "resourceId": "fefd418c-7236-4609-906a-0a630addad3f",
+          "code": "03-5",
+          "lessonNumber": 3,
+          "title": "HSK标准教程2 课本音频 03-5",
+          "order": 15
+        },
+        {
+          "resourceId": "edbaaae3-15ce-474e-b955-4e0c017b559b",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK标准教程2 课本音频 04-1",
+          "order": 16
+        },
+        {
+          "resourceId": "b176b195-a20c-4c29-a1e1-1f694dae5712",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK标准教程2 课本音频 04-2",
+          "order": 17
+        },
+        {
+          "resourceId": "43ba94b9-0504-4056-89d7-421ca7c52ce6",
+          "code": "04-3",
+          "lessonNumber": 4,
+          "title": "HSK标准教程2 课本音频 04-3",
+          "order": 18
+        },
+        {
+          "resourceId": "f574dabd-afd2-42bb-9721-fa6ebb28dc6f",
+          "code": "04-4",
+          "lessonNumber": 4,
+          "title": "HSK标准教程2 课本音频 04-4",
+          "order": 19
+        },
+        {
+          "resourceId": "0168d88b-eab8-4323-a2d8-e1b69643323c",
+          "code": "04-5",
+          "lessonNumber": 4,
+          "title": "HSK标准教程2 课本音频 04-5",
+          "order": 20
+        },
+        {
+          "resourceId": "1cb2f129-feee-468c-a110-65c2ad483f77",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK标准教程2 课本音频 05-1",
+          "order": 21
+        },
+        {
+          "resourceId": "bdedee07-2ad9-44bd-9c34-6303b5ff0387",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK标准教程2 课本音频 05-2",
+          "order": 22
+        },
+        {
+          "resourceId": "d2246486-9aae-4ca3-b230-87f3a9f3c84b",
+          "code": "05-3",
+          "lessonNumber": 5,
+          "title": "HSK标准教程2 课本音频 05-3",
+          "order": 23
+        },
+        {
+          "resourceId": "a993af9f-f240-489f-ae36-cc521b0a4fc3",
+          "code": "05-4",
+          "lessonNumber": 5,
+          "title": "HSK标准教程2 课本音频 05-4",
+          "order": 24
+        },
+        {
+          "resourceId": "925e7e47-3df8-49db-a155-66481a89918b",
+          "code": "05-5",
+          "lessonNumber": 5,
+          "title": "HSK标准教程2 课本音频 05-5",
+          "order": 25
+        },
+        {
+          "resourceId": "b77b4783-6356-4c50-99af-0c47372d8119",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK标准教程2 课本音频 06-1",
+          "order": 26
+        },
+        {
+          "resourceId": "f1c01749-0b56-418d-a0d7-2e4153bb2311",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK标准教程2 课本音频 06-2",
+          "order": 27
+        },
+        {
+          "resourceId": "e12ab46f-a5e7-4897-9db8-9880c9cc3d8c",
+          "code": "06-3",
+          "lessonNumber": 6,
+          "title": "HSK标准教程2 课本音频 06-3",
+          "order": 28
+        },
+        {
+          "resourceId": "7fe62432-a733-4c7e-b8c3-b0a15082d759",
+          "code": "06-4",
+          "lessonNumber": 6,
+          "title": "HSK标准教程2 课本音频 06-4",
+          "order": 29
+        },
+        {
+          "resourceId": "7f20294b-b268-4128-a12b-789d490a36e6",
+          "code": "06-5",
+          "lessonNumber": 6,
+          "title": "HSK标准教程2 课本音频 06-5",
+          "order": 30
+        },
+        {
+          "resourceId": "abf59be0-bdae-4ce4-9640-b67de541c689",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK标准教程2 课本音频 07-1",
+          "order": 31
+        },
+        {
+          "resourceId": "43d298b4-ddd7-4a6a-883a-ad08ef8b2cff",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK标准教程2 课本音频 07-2",
+          "order": 32
+        },
+        {
+          "resourceId": "059753e8-17f5-4436-9427-27d374449831",
+          "code": "07-3",
+          "lessonNumber": 7,
+          "title": "HSK标准教程2 课本音频 07-3",
+          "order": 33
+        },
+        {
+          "resourceId": "81f7024b-96f4-463c-9855-10d8c8b3ad2e",
+          "code": "07-4",
+          "lessonNumber": 7,
+          "title": "HSK标准教程2 课本音频 07-4",
+          "order": 34
+        },
+        {
+          "resourceId": "77abdbd4-25b6-45cd-b762-65c22cbdef7e",
+          "code": "07-5",
+          "lessonNumber": 7,
+          "title": "HSK标准教程2 课本音频 07-5",
+          "order": 35
+        },
+        {
+          "resourceId": "4346eed1-1bc1-4ceb-a418-0206435ec1e5",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程2 课本音频 08-1",
+          "order": 36
+        },
+        {
+          "resourceId": "549989d0-b065-4f5e-9300-e848ba3ab08b",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK标准教程2 课本音频 08-2",
+          "order": 37
+        },
+        {
+          "resourceId": "0111323e-81e4-4871-9174-02d6d116f3ac",
+          "code": "08-3",
+          "lessonNumber": 8,
+          "title": "HSK标准教程2 课本音频 08-3",
+          "order": 38
+        },
+        {
+          "resourceId": "d5ecec40-abe3-4e47-b34c-051203b69fe9",
+          "code": "08-4",
+          "lessonNumber": 8,
+          "title": "HSK标准教程2 课本音频 08-4",
+          "order": 39
+        },
+        {
+          "resourceId": "2a52742f-5a90-4545-8555-3b3aeddc4a2c",
+          "code": "08-5",
+          "lessonNumber": 8,
+          "title": "HSK标准教程2 课本音频 08-5",
+          "order": 40
+        },
+        {
+          "resourceId": "f48f8a96-06cf-4e5f-8c47-3a5d10da2891",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK标准教程2 课本音频 09-1",
+          "order": 41
+        },
+        {
+          "resourceId": "3432ec23-7a04-48bc-be1a-f339a0e7f4ad",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK标准教程2 课本音频 09-2",
+          "order": 42
+        },
+        {
+          "resourceId": "3d733117-b928-4df7-af03-8e29c32979f3",
+          "code": "09-3",
+          "lessonNumber": 9,
+          "title": "HSK标准教程2 课本音频 09-3",
+          "order": 43
+        },
+        {
+          "resourceId": "b67fa52b-32cb-41f4-bba5-d285412ec671",
+          "code": "09-4",
+          "lessonNumber": 9,
+          "title": "HSK标准教程2 课本音频 09-4",
+          "order": 44
+        },
+        {
+          "resourceId": "fe8b5a7e-16e5-4c00-b644-d01368329b5c",
+          "code": "09-5",
+          "lessonNumber": 9,
+          "title": "HSK标准教程2 课本音频 09-5",
+          "order": 45
+        },
+        {
+          "resourceId": "1e767a13-e9f1-4b4d-be5e-4e669aac9620",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK标准教程2 课本音频 10-1",
+          "order": 46
+        },
+        {
+          "resourceId": "a05e0f52-1992-4fab-9ccf-c67a58749cb2",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK标准教程2 课本音频 10-2",
+          "order": 47
+        },
+        {
+          "resourceId": "739798dc-47a7-41fa-b178-074bc362db96",
+          "code": "10-3",
+          "lessonNumber": 10,
+          "title": "HSK标准教程2 课本音频 10-3",
+          "order": 48
+        },
+        {
+          "resourceId": "4f81a73c-62a0-4e9f-a56c-f59420a4549f",
+          "code": "10-4",
+          "lessonNumber": 10,
+          "title": "HSK标准教程2 课本音频 10-4",
+          "order": 49
+        },
+        {
+          "resourceId": "345b50b8-29fa-46e4-ba27-55bd3a10c2ac",
+          "code": "10-5",
+          "lessonNumber": 10,
+          "title": "HSK标准教程2 课本音频 10-5",
+          "order": 50
+        },
+        {
+          "resourceId": "d0cadcd2-36f6-4cc2-beb3-532af6de6890",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK标准教程2 课本音频 11-1",
+          "order": 51
+        },
+        {
+          "resourceId": "fb23297c-8534-4d66-b33d-33a5a0170209",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK标准教程2 课本音频 11-2",
+          "order": 52
+        },
+        {
+          "resourceId": "db56f59a-6676-487a-89be-32354c1a687e",
+          "code": "11-3",
+          "lessonNumber": 11,
+          "title": "HSK标准教程2 课本音频 11-3",
+          "order": 53
+        },
+        {
+          "resourceId": "823c0517-b68c-44ba-b230-305e5fc3aaf5",
+          "code": "11-4",
+          "lessonNumber": 11,
+          "title": "HSK标准教程2 课本音频 11-4",
+          "order": 54
+        },
+        {
+          "resourceId": "7fe38e1d-e80a-416f-95ae-10255634daef",
+          "code": "11-5",
+          "lessonNumber": 11,
+          "title": "HSK标准教程2 课本音频 11-5",
+          "order": 55
+        },
+        {
+          "resourceId": "1f17fa8e-34d8-4a06-a12e-0256ff3cb49f",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK标准教程2 课本音频 12-1",
+          "order": 56
+        },
+        {
+          "resourceId": "05cb15bb-03e5-4d4d-bca0-8bdd5edfd430",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK标准教程2 课本音频 12-2",
+          "order": 57
+        },
+        {
+          "resourceId": "53ba267d-e65d-4468-87d6-a90ad21c53b3",
+          "code": "12-3",
+          "lessonNumber": 12,
+          "title": "HSK标准教程2 课本音频 12-3",
+          "order": 58
+        },
+        {
+          "resourceId": "3bf8265a-92ea-41ec-90ae-777154698135",
+          "code": "12-4",
+          "lessonNumber": 12,
+          "title": "HSK标准教程2 课本音频 12-4",
+          "order": 59
+        },
+        {
+          "resourceId": "2b3227a0-d3f3-4db7-ae54-56862ba2bfad",
+          "code": "12-5",
+          "lessonNumber": 12,
+          "title": "HSK标准教程2 课本音频 12-5",
+          "order": 60
+        },
+        {
+          "resourceId": "d541319d-1071-438e-98c7-cd1117ca34d9",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK标准教程2 课本音频 13-1",
+          "order": 61
+        },
+        {
+          "resourceId": "2718b0a4-745b-4ce3-be19-2c8cd8bb1fbf",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK标准教程2 课本音频 13-2",
+          "order": 62
+        },
+        {
+          "resourceId": "616a9878-7d23-4662-8a1c-57d00af54c66",
+          "code": "13-3",
+          "lessonNumber": 13,
+          "title": "HSK标准教程2 课本音频 13-3",
+          "order": 63
+        },
+        {
+          "resourceId": "6e4baf46-7297-4ff3-89bd-4ac610ebbc58",
+          "code": "13-4",
+          "lessonNumber": 13,
+          "title": "HSK标准教程2 课本音频 13-4",
+          "order": 64
+        },
+        {
+          "resourceId": "8c3ea8eb-b953-401d-8e1d-8cff7a581070",
+          "code": "13-5",
+          "lessonNumber": 13,
+          "title": "HSK标准教程2 课本音频 13-5",
+          "order": 65
+        },
+        {
+          "resourceId": "9a00b53f-d859-447e-944e-f100bf0161cc",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK标准教程2 课本音频 14-1",
+          "order": 66
+        },
+        {
+          "resourceId": "e1ad5f81-e1da-46e0-9734-6e52b5a76e4c",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK标准教程2 课本音频 14-2",
+          "order": 67
+        },
+        {
+          "resourceId": "ced2a2b0-100f-494b-b580-a79923f19db2",
+          "code": "14-3",
+          "lessonNumber": 14,
+          "title": "HSK标准教程2 课本音频 14-3",
+          "order": 68
+        },
+        {
+          "resourceId": "c0b81a51-e6d8-4e09-9038-075c0d3ed7a0",
+          "code": "14-4",
+          "lessonNumber": 14,
+          "title": "HSK标准教程2 课本音频 14-4",
+          "order": 69
+        },
+        {
+          "resourceId": "29ae2bda-3f88-4286-9146-533d6c544a63",
+          "code": "14-5",
+          "lessonNumber": 14,
+          "title": "HSK标准教程2 课本音频 14-5",
+          "order": 70
+        },
+        {
+          "resourceId": "dfb60d82-8f04-4d4f-bb42-adcc66580210",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK标准教程2 课本音频 15-1",
+          "order": 71
+        },
+        {
+          "resourceId": "b88ab7aa-bf79-4902-b4fb-030aa3fb9ea1",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK标准教程2 课本音频 15-2",
+          "order": 72
+        },
+        {
+          "resourceId": "106ed8ab-eeb2-4a2e-8221-06b2f6ab77c1",
+          "code": "15-3",
+          "lessonNumber": 15,
+          "title": "HSK标准教程2 课本音频 15-3",
+          "order": 73
+        },
+        {
+          "resourceId": "dd7622c5-16c6-4ff9-97eb-6b97e20ac9e2",
+          "code": "15-4",
+          "lessonNumber": 15,
+          "title": "HSK标准教程2 课本音频 15-4",
+          "order": 74
+        },
+        {
+          "resourceId": "4463d21d-683f-4721-8d9b-0e3617e8191f",
+          "code": "15-5",
+          "lessonNumber": 15,
+          "title": "HSK标准教程2 课本音频 15-5",
+          "order": 75
+        }
+      ]
+    },
+    {
+      "bookId": "hsk3",
+      "label": "HSK 3",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=1cd84d66-f817-40a4-bfaf-2d58b02ebe3a",
+      "trackCount": 101,
+      "tracks": [
+        {
+          "resourceId": "5faf0837-a26f-4a94-a3b2-bf83fdc9361a",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程3 课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "2e285618-4a63-480c-8391-8a37b3bd9309",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK标准教程3 课本音频 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "df6d8255-f222-42c6-8f7e-347a1b7bab27",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK标准教程3 课本音频 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "f9092ed8-afcf-465f-bab8-ef93667d03f1",
+          "code": "01-3",
+          "lessonNumber": 1,
+          "title": "HSK标准教程3 课本音频 01-3",
+          "order": 3
+        },
+        {
+          "resourceId": "06602422-58a7-4386-891e-021089fa74b2",
+          "code": "01-4",
+          "lessonNumber": 1,
+          "title": "HSK标准教程3 课本音频 01-4",
+          "order": 4
+        },
+        {
+          "resourceId": "2ac95234-8aec-4358-8761-1536831ff937",
+          "code": "01-5",
+          "lessonNumber": 1,
+          "title": "HSK标准教程3 课本音频 01-5",
+          "order": 5
+        },
+        {
+          "resourceId": "5676b759-1682-4080-b519-a0cfa83e64ca",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK标准教程3 课本音频 02-1",
+          "order": 6
+        },
+        {
+          "resourceId": "ba19f00b-d8b6-48ad-a79a-fb8b29ee6f03",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK标准教程3 课本音频 02-2",
+          "order": 7
+        },
+        {
+          "resourceId": "6fedf5ea-e2f9-467f-a6e3-56accf84dbd9",
+          "code": "02-3",
+          "lessonNumber": 2,
+          "title": "HSK标准教程3 课本音频 02-3",
+          "order": 8
+        },
+        {
+          "resourceId": "db06961c-99e5-4f00-b949-e30de33cc79f",
+          "code": "02-4",
+          "lessonNumber": 2,
+          "title": "HSK标准教程3 课本音频 02-4",
+          "order": 9
+        },
+        {
+          "resourceId": "753e629e-9ef5-4134-a4f8-55e88469aac2",
+          "code": "02-5",
+          "lessonNumber": 2,
+          "title": "HSK标准教程3 课本音频 02-5",
+          "order": 10
+        },
+        {
+          "resourceId": "6bfac636-2462-4ab7-9894-72cf504103a7",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK标准教程3 课本音频 03-1",
+          "order": 11
+        },
+        {
+          "resourceId": "9d706c15-cb09-4971-87e7-b6c46fc59112",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK标准教程3 课本音频 03-2",
+          "order": 12
+        },
+        {
+          "resourceId": "a10d972d-e15d-4b1a-b573-12127023d3bb",
+          "code": "03-3",
+          "lessonNumber": 3,
+          "title": "HSK标准教程3 课本音频 03-3",
+          "order": 13
+        },
+        {
+          "resourceId": "e0fbac45-953e-41e8-b651-fed770bbe5f0",
+          "code": "03-4",
+          "lessonNumber": 3,
+          "title": "HSK标准教程3 课本音频 03-4",
+          "order": 14
+        },
+        {
+          "resourceId": "a03ffbba-8114-4075-879c-73aec896393e",
+          "code": "03-5",
+          "lessonNumber": 3,
+          "title": "HSK标准教程3 课本音频 03-5",
+          "order": 15
+        },
+        {
+          "resourceId": "98c807f8-f167-416a-afef-1dd75fec1045",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK标准教程3 课本音频 04-1",
+          "order": 16
+        },
+        {
+          "resourceId": "f96e21a4-7f78-4239-aeaf-71049c0be653",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK标准教程3 课本音频 04-2",
+          "order": 17
+        },
+        {
+          "resourceId": "73ccc2ef-544b-44be-8ae0-67ef32c39164",
+          "code": "04-3",
+          "lessonNumber": 4,
+          "title": "HSK标准教程3 课本音频 04-3",
+          "order": 18
+        },
+        {
+          "resourceId": "754f31bd-e473-4505-9e90-ec44c77ea29e",
+          "code": "04-4",
+          "lessonNumber": 4,
+          "title": "HSK标准教程3 课本音频 04-4",
+          "order": 19
+        },
+        {
+          "resourceId": "c49615f0-d86f-41d8-a7ea-fbb697a206ef",
+          "code": "04-5",
+          "lessonNumber": 4,
+          "title": "HSK标准教程3 课本音频 04-5",
+          "order": 20
+        },
+        {
+          "resourceId": "50537ee1-cb57-466b-9431-7c0aa233a632",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK标准教程3 课本音频 05-1",
+          "order": 21
+        },
+        {
+          "resourceId": "0b756c03-39dd-4204-a0bd-ab1acf9b5897",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK标准教程3 课本音频 05-2",
+          "order": 22
+        },
+        {
+          "resourceId": "f80d8378-eb3f-4dd5-813a-dcdf9d7f368d",
+          "code": "05-3",
+          "lessonNumber": 5,
+          "title": "HSK标准教程3 课本音频 05-3",
+          "order": 23
+        },
+        {
+          "resourceId": "056b54b5-47cb-411f-9a4d-678d172e3b06",
+          "code": "05-4",
+          "lessonNumber": 5,
+          "title": "HSK标准教程3 课本音频 05-4",
+          "order": 24
+        },
+        {
+          "resourceId": "b4847bdc-4379-4b13-a2cc-7b0bde59bbc7",
+          "code": "05-5",
+          "lessonNumber": 5,
+          "title": "HSK标准教程3 课本音频 05-5",
+          "order": 25
+        },
+        {
+          "resourceId": "027bd7e6-d24a-4f5d-84b2-1ef798d5560d",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK标准教程3 课本音频 06-1",
+          "order": 26
+        },
+        {
+          "resourceId": "45a1cd8e-71ac-4222-ab7a-8159006d953b",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK标准教程3 课本音频 06-2",
+          "order": 27
+        },
+        {
+          "resourceId": "0f16f265-16b8-4760-86fb-fede73dd1cfc",
+          "code": "06-3",
+          "lessonNumber": 6,
+          "title": "HSK标准教程3 课本音频 06-3",
+          "order": 28
+        },
+        {
+          "resourceId": "1c39590d-dc73-4f35-bd2a-7bca223e8dd2",
+          "code": "06-4",
+          "lessonNumber": 6,
+          "title": "HSK标准教程3 课本音频 06-4",
+          "order": 29
+        },
+        {
+          "resourceId": "484f0937-3474-44d1-bbc6-62b7127a9306",
+          "code": "06-5",
+          "lessonNumber": 6,
+          "title": "HSK标准教程3 课本音频 06-5",
+          "order": 30
+        },
+        {
+          "resourceId": "2fbc97fd-4f60-4558-8687-f4656d1d0e4c",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK标准教程3 课本音频 07-1",
+          "order": 31
+        },
+        {
+          "resourceId": "c2c8722d-1011-449d-a432-36e9f2fda610",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK标准教程3 课本音频 07-2",
+          "order": 32
+        },
+        {
+          "resourceId": "844a1b5d-71d5-4e13-81ec-517d55574922",
+          "code": "07-3",
+          "lessonNumber": 7,
+          "title": "HSK标准教程3 课本音频 07-3",
+          "order": 33
+        },
+        {
+          "resourceId": "5923a37d-e59a-41ba-ae3a-ad372d45d262",
+          "code": "07-4",
+          "lessonNumber": 7,
+          "title": "HSK标准教程3 课本音频 07-4",
+          "order": 34
+        },
+        {
+          "resourceId": "5529f0ff-348e-4452-9d59-ec9b7a5f4909",
+          "code": "07-5",
+          "lessonNumber": 7,
+          "title": "HSK标准教程3 课本音频 07-5",
+          "order": 35
+        },
+        {
+          "resourceId": "fe1c27d6-f1c2-4650-bfad-eb5ef1e79bdc",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程3 课本音频 08-1",
+          "order": 36
+        },
+        {
+          "resourceId": "d8671ffe-f574-49f6-8d2f-e66d59275d8d",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK标准教程3 课本音频 08-2",
+          "order": 37
+        },
+        {
+          "resourceId": "609a325e-e4d8-4a0e-8535-b8dff2022f7f",
+          "code": "08-3",
+          "lessonNumber": 8,
+          "title": "HSK标准教程3 课本音频 08-3",
+          "order": 38
+        },
+        {
+          "resourceId": "d1f796f1-84de-437c-a656-8547d477b74e",
+          "code": "08-4",
+          "lessonNumber": 8,
+          "title": "HSK标准教程3 课本音频 08-4",
+          "order": 39
+        },
+        {
+          "resourceId": "cb857f6c-0da9-48a5-9b6f-68ff82862fec",
+          "code": "08-5",
+          "lessonNumber": 8,
+          "title": "HSK标准教程3 课本音频 08-5",
+          "order": 40
+        },
+        {
+          "resourceId": "8654c1ce-ed1e-40d7-ba86-36541dea56e7",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK标准教程3 课本音频 09-1",
+          "order": 41
+        },
+        {
+          "resourceId": "64c39a9a-276b-4b5a-b17a-35883bc7702f",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK标准教程3 课本音频 09-2",
+          "order": 42
+        },
+        {
+          "resourceId": "efcc939e-65d6-4da4-81c9-9f7687290307",
+          "code": "09-3",
+          "lessonNumber": 9,
+          "title": "HSK标准教程3 课本音频 09-3",
+          "order": 43
+        },
+        {
+          "resourceId": "501adbad-94d3-44fb-a3bd-5c6b5ec3ad2a",
+          "code": "09-4",
+          "lessonNumber": 9,
+          "title": "HSK标准教程3 课本音频 09-4",
+          "order": 44
+        },
+        {
+          "resourceId": "7088c973-64e1-4621-aa38-309f4c0bc2cc",
+          "code": "09-5",
+          "lessonNumber": 9,
+          "title": "HSK标准教程3 课本音频 09-5",
+          "order": 45
+        },
+        {
+          "resourceId": "2c323f71-89ef-4402-abe4-4132de75476e",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK标准教程3 课本音频 10-1",
+          "order": 46
+        },
+        {
+          "resourceId": "543f2a06-177b-41c3-8670-ae3afc95d113",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK标准教程3 课本音频 10-2",
+          "order": 47
+        },
+        {
+          "resourceId": "2042c4c6-75ca-48f0-b2f2-1a8570231368",
+          "code": "10-3",
+          "lessonNumber": 10,
+          "title": "HSK标准教程3 课本音频 10-3",
+          "order": 48
+        },
+        {
+          "resourceId": "64cce56c-466a-43ad-abc3-f8a1fb990921",
+          "code": "10-4",
+          "lessonNumber": 10,
+          "title": "HSK标准教程3 课本音频 10-4",
+          "order": 49
+        },
+        {
+          "resourceId": "49915f68-6a9e-4095-9c94-3029a8ed707b",
+          "code": "10-5",
+          "lessonNumber": 10,
+          "title": "HSK标准教程3 课本音频 10-5",
+          "order": 50
+        },
+        {
+          "resourceId": "ecb3949c-cd53-4f2e-b313-d26c87901c91",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK标准教程3 课本音频 11-1",
+          "order": 51
+        },
+        {
+          "resourceId": "6b46baa6-a453-47c6-a9b3-5722d1afbb8c",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK标准教程3 课本音频 11-2",
+          "order": 52
+        },
+        {
+          "resourceId": "71185446-9a1a-4c19-a9be-561f879be84d",
+          "code": "11-3",
+          "lessonNumber": 11,
+          "title": "HSK标准教程3 课本音频 11-3",
+          "order": 53
+        },
+        {
+          "resourceId": "fe6026aa-15ee-4105-b047-ba2502b66c67",
+          "code": "11-4",
+          "lessonNumber": 11,
+          "title": "HSK标准教程3 课本音频 11-4",
+          "order": 54
+        },
+        {
+          "resourceId": "2059b490-9d2b-43d9-8896-8d3b257f7e9e",
+          "code": "11-5",
+          "lessonNumber": 11,
+          "title": "HSK标准教程3 课本音频 11-5",
+          "order": 55
+        },
+        {
+          "resourceId": "70d78bee-dc11-4ea6-a56f-d543feb5aa74",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK标准教程3 课本音频 12-1",
+          "order": 56
+        },
+        {
+          "resourceId": "7297549d-970a-4103-bf46-741137d1971e",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK标准教程3 课本音频 12-2",
+          "order": 57
+        },
+        {
+          "resourceId": "3f501a1e-90c9-4393-a65d-ec1cef5c36eb",
+          "code": "12-3",
+          "lessonNumber": 12,
+          "title": "HSK标准教程3 课本音频 12-3",
+          "order": 58
+        },
+        {
+          "resourceId": "f4eb4ab8-ef77-4b6b-9188-67abda9d0ef0",
+          "code": "12-4",
+          "lessonNumber": 12,
+          "title": "HSK标准教程3 课本音频 12-4",
+          "order": 59
+        },
+        {
+          "resourceId": "1e22537a-5163-43d7-8967-4a844906e658",
+          "code": "12-5",
+          "lessonNumber": 12,
+          "title": "HSK标准教程3 课本音频 12-5",
+          "order": 60
+        },
+        {
+          "resourceId": "7bb0fa1b-1588-4267-a6b8-040ec11eeae4",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK标准教程3 课本音频 13-1",
+          "order": 61
+        },
+        {
+          "resourceId": "aa5f1052-46eb-4b41-bad7-2c77ae67f0a5",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK标准教程3 课本音频 13-2",
+          "order": 62
+        },
+        {
+          "resourceId": "4456c311-b691-4fb5-82c5-c0144628b74e",
+          "code": "13-3",
+          "lessonNumber": 13,
+          "title": "HSK标准教程3 课本音频 13-3",
+          "order": 63
+        },
+        {
+          "resourceId": "a35b1492-e67a-4c58-916b-dc7cce5cff9c",
+          "code": "13-4",
+          "lessonNumber": 13,
+          "title": "HSK标准教程3 课本音频 13-4",
+          "order": 64
+        },
+        {
+          "resourceId": "4fa6900c-8b10-4cd7-ba26-2478c88c76bd",
+          "code": "13-5",
+          "lessonNumber": 13,
+          "title": "HSK标准教程3 课本音频 13-5",
+          "order": 65
+        },
+        {
+          "resourceId": "16896cac-4062-42fe-8f78-da0ce60c3ca7",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK标准教程3 课本音频 14-1",
+          "order": 66
+        },
+        {
+          "resourceId": "b62c3a1e-e8b2-4935-9c21-74ea37fd4e61",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK标准教程3 课本音频 14-2",
+          "order": 67
+        },
+        {
+          "resourceId": "713577ba-2166-4b64-b938-d2633dcdd27d",
+          "code": "14-3",
+          "lessonNumber": 14,
+          "title": "HSK标准教程3 课本音频 14-3",
+          "order": 68
+        },
+        {
+          "resourceId": "329f7e75-33f0-45a2-a3e5-e623d87a0d40",
+          "code": "14-4",
+          "lessonNumber": 14,
+          "title": "HSK标准教程3 课本音频 14-4",
+          "order": 69
+        },
+        {
+          "resourceId": "e9cee63f-29be-46df-88d6-904e4be2eb19",
+          "code": "14-5",
+          "lessonNumber": 14,
+          "title": "HSK标准教程3 课本音频 14-5",
+          "order": 70
+        },
+        {
+          "resourceId": "f265db5e-f909-42b3-8d4f-2a37eced7500",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK标准教程3 课本音频 15-1",
+          "order": 71
+        },
+        {
+          "resourceId": "52084f96-5a5b-4574-8942-fca8f845044c",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK标准教程3 课本音频 15-2",
+          "order": 72
+        },
+        {
+          "resourceId": "de7f4664-77f7-45b9-8332-f16e66b4d060",
+          "code": "15-3",
+          "lessonNumber": 15,
+          "title": "HSK标准教程3 课本音频 15-3",
+          "order": 73
+        },
+        {
+          "resourceId": "c35ab5d9-c2d9-4216-b2ad-50d1da03516c",
+          "code": "15-4",
+          "lessonNumber": 15,
+          "title": "HSK标准教程3 课本音频 15-4",
+          "order": 74
+        },
+        {
+          "resourceId": "0d234597-14a4-4f68-9ab1-0e180347b127",
+          "code": "15-5",
+          "lessonNumber": 15,
+          "title": "HSK标准教程3 课本音频 15-5",
+          "order": 75
+        },
+        {
+          "resourceId": "53ed22cb-bcdf-4d1e-ba48-b8e3ea5bf86f",
+          "code": "16-1",
+          "lessonNumber": 16,
+          "title": "HSK标准教程3 课本音频 16-1",
+          "order": 76
+        },
+        {
+          "resourceId": "44fedcd6-6e34-4fcf-8c6f-4768ba686cb5",
+          "code": "16-2",
+          "lessonNumber": 16,
+          "title": "HSK标准教程3 课本音频 16-2",
+          "order": 77
+        },
+        {
+          "resourceId": "d31d45b9-75af-45c2-ace7-b9f4d79f008b",
+          "code": "16-3",
+          "lessonNumber": 16,
+          "title": "HSK标准教程3 课本音频 16-3",
+          "order": 78
+        },
+        {
+          "resourceId": "6bbb9ee8-b71a-4e3b-8fa8-9b9ca5dac7fe",
+          "code": "16-4",
+          "lessonNumber": 16,
+          "title": "HSK标准教程3 课本音频 16-4",
+          "order": 79
+        },
+        {
+          "resourceId": "db394531-5c9a-4a6f-9a3f-26edd45ab7f0",
+          "code": "16-5",
+          "lessonNumber": 16,
+          "title": "HSK标准教程3 课本音频 16-5",
+          "order": 80
+        },
+        {
+          "resourceId": "c1e496b3-34fc-4a77-8a44-29184e298e47",
+          "code": "17-1",
+          "lessonNumber": 17,
+          "title": "HSK标准教程3 课本音频 17-1",
+          "order": 81
+        },
+        {
+          "resourceId": "6339c808-df2e-490d-8a0d-6ef5079013ae",
+          "code": "17-2",
+          "lessonNumber": 17,
+          "title": "HSK标准教程3 课本音频 17-2",
+          "order": 82
+        },
+        {
+          "resourceId": "37bb5531-0e1e-4740-9567-b67fd33678d8",
+          "code": "17-3",
+          "lessonNumber": 17,
+          "title": "HSK标准教程3 课本音频 17-3",
+          "order": 83
+        },
+        {
+          "resourceId": "c46b2d91-ddc9-4076-87ab-fa3a5ff14f42",
+          "code": "17-4",
+          "lessonNumber": 17,
+          "title": "HSK标准教程3 课本音频 17-4",
+          "order": 84
+        },
+        {
+          "resourceId": "234413fb-38af-4fa0-9521-b6a4045b7d99",
+          "code": "17-5",
+          "lessonNumber": 17,
+          "title": "HSK标准教程3 课本音频 17-5",
+          "order": 85
+        },
+        {
+          "resourceId": "13f41bbc-cf23-4725-b776-6659488ceca2",
+          "code": "18-1",
+          "lessonNumber": 18,
+          "title": "HSK标准教程3 课本音频 18-1",
+          "order": 86
+        },
+        {
+          "resourceId": "07157e98-5913-4d8d-92fe-2cc07bd49148",
+          "code": "18-2",
+          "lessonNumber": 18,
+          "title": "HSK标准教程3 课本音频 18-2",
+          "order": 87
+        },
+        {
+          "resourceId": "276766fe-fb98-45e2-b4c9-ee55443b4ff0",
+          "code": "18-3",
+          "lessonNumber": 18,
+          "title": "HSK标准教程3 课本音频 18-3",
+          "order": 88
+        },
+        {
+          "resourceId": "703c74c6-ffd7-4522-b608-a3c1e845de68",
+          "code": "18-4",
+          "lessonNumber": 18,
+          "title": "HSK标准教程3 课本音频 18-4",
+          "order": 89
+        },
+        {
+          "resourceId": "1e96008d-d877-4dbe-af3c-548fd026c557",
+          "code": "18-5",
+          "lessonNumber": 18,
+          "title": "HSK标准教程3 课本音频 18-5",
+          "order": 90
+        },
+        {
+          "resourceId": "a0aed04c-ea4d-4e00-afaf-31d4ce2c1536",
+          "code": "19-1",
+          "lessonNumber": 19,
+          "title": "HSK标准教程3 课本音频 19-1",
+          "order": 91
+        },
+        {
+          "resourceId": "154637c0-8829-455e-aecf-858692088b39",
+          "code": "19-2",
+          "lessonNumber": 19,
+          "title": "HSK标准教程3 课本音频 19-2",
+          "order": 92
+        },
+        {
+          "resourceId": "eb8c541f-dfab-4767-bcff-25ab705724b0",
+          "code": "19-3",
+          "lessonNumber": 19,
+          "title": "HSK标准教程3 课本音频 19-3",
+          "order": 93
+        },
+        {
+          "resourceId": "8dae3d82-83d1-4ecc-b3a0-5711c2fc6116",
+          "code": "19-4",
+          "lessonNumber": 19,
+          "title": "HSK标准教程3 课本音频 19-4",
+          "order": 94
+        },
+        {
+          "resourceId": "ed98158d-17bc-47b1-91b4-bbdaee77faa1",
+          "code": "19-5",
+          "lessonNumber": 19,
+          "title": "HSK标准教程3 课本音频 19-5",
+          "order": 95
+        },
+        {
+          "resourceId": "bd715d25-12b3-4916-847c-f5c43d623abe",
+          "code": "20-1",
+          "lessonNumber": 20,
+          "title": "HSK标准教程3 课本音频 20-1",
+          "order": 96
+        },
+        {
+          "resourceId": "f0cf03c4-bebe-46da-8c9b-8636733ccfee",
+          "code": "20-2",
+          "lessonNumber": 20,
+          "title": "HSK标准教程3 课本音频 20-2",
+          "order": 97
+        },
+        {
+          "resourceId": "5ee34678-a468-4745-82dc-b8daa3de05b0",
+          "code": "20-5 (1)",
+          "lessonNumber": 20,
+          "title": "HSK标准教程3 课本音频 20-5 (1)",
+          "order": 98
+        },
+        {
+          "resourceId": "b12c491d-882c-468a-b78b-97eb9706f2da",
+          "code": "20-5 (2)",
+          "lessonNumber": 20,
+          "title": "HSK标准教程3 课本音频 20-5 (2)",
+          "order": 99
+        },
+        {
+          "resourceId": "ddfd7458-7945-42b9-8053-c6eb64f56ef9",
+          "code": "20-5 (3)",
+          "lessonNumber": 20,
+          "title": "HSK标准教程3 课本音频 20-5 (3)",
+          "order": 100
+        }
+      ]
+    },
+    {
+      "bookId": "hsk4a",
+      "label": "HSK 4上",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=009861d5-008b-495d-ae7a-23482ec05ad7",
+      "trackCount": 52,
+      "tracks": [
+        {
+          "resourceId": "20c2b5d0-390f-4eb6-b52d-adb8d0c9438c",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程4上 00 片头",
+          "order": 0
+        },
+        {
+          "resourceId": "e07d4504-c85c-45ff-8062-61f455583d68",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK标准教程4上 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "2fae9f92-65d4-4069-bbbb-7eead1470db7",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK标准教程4上 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "bc8f65af-e8b7-4f83-a8d1-060a869da2d7",
+          "code": "01-3",
+          "lessonNumber": 1,
+          "title": "HSK标准教程4上 01-3",
+          "order": 3
+        },
+        {
+          "resourceId": "ac6e0dcc-ab3a-4a57-8110-bb04e6ecaf89",
+          "code": "01-4",
+          "lessonNumber": 1,
+          "title": "HSK标准教程4上 01-4",
+          "order": 4
+        },
+        {
+          "resourceId": "e19d9931-3de6-43a8-b15d-02c1784c64d5",
+          "code": "01-5",
+          "lessonNumber": 1,
+          "title": "HSK标准教程4上 01-5",
+          "order": 5
+        },
+        {
+          "resourceId": "9fcad20c-91b4-427b-baff-fd13b8bfc50f",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK标准教程4上 02-1",
+          "order": 6
+        },
+        {
+          "resourceId": "bb9ac599-8a03-419c-b912-790bcb7a610f",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK标准教程4上 02-2",
+          "order": 7
+        },
+        {
+          "resourceId": "bcd30d11-0f5f-4fe8-8e8d-a1b5690e86b3",
+          "code": "02-3",
+          "lessonNumber": 2,
+          "title": "HSK标准教程4上 02-3",
+          "order": 8
+        },
+        {
+          "resourceId": "ae254192-f7a7-4ea5-8433-211543547483",
+          "code": "02-4",
+          "lessonNumber": 2,
+          "title": "HSK标准教程4上 02-4",
+          "order": 9
+        },
+        {
+          "resourceId": "844eec15-c97a-4499-b6dc-254bfb618b54",
+          "code": "02-5",
+          "lessonNumber": 2,
+          "title": "HSK标准教程4上 02-5",
+          "order": 10
+        },
+        {
+          "resourceId": "b8b74dfd-ce94-4ab6-9233-28c93b8d8b86",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK标准教程4上 03-1",
+          "order": 11
+        },
+        {
+          "resourceId": "3270d981-873f-480d-8ee1-2ec10f83b402",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK标准教程4上 03-2",
+          "order": 12
+        },
+        {
+          "resourceId": "4c66b48f-a14e-40ea-8431-3c635ba38f30",
+          "code": "03-3",
+          "lessonNumber": 3,
+          "title": "HSK标准教程4上 03-3",
+          "order": 13
+        },
+        {
+          "resourceId": "fc34caaa-0b4b-4a39-afdf-faa67561b1df",
+          "code": "03-4",
+          "lessonNumber": 3,
+          "title": "HSK标准教程4上 03-4",
+          "order": 14
+        },
+        {
+          "resourceId": "3cc29db0-36b1-4b12-b478-9be4b062aacc",
+          "code": "03-5",
+          "lessonNumber": 3,
+          "title": "HSK标准教程4上 03-5",
+          "order": 15
+        },
+        {
+          "resourceId": "867cda7c-6b4c-4644-a4a8-a36bd4159a00",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK标准教程4上 04-1",
+          "order": 16
+        },
+        {
+          "resourceId": "e264a502-9220-4711-be35-3458622fe3b9",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK标准教程4上 04-2",
+          "order": 17
+        },
+        {
+          "resourceId": "93750ce1-9623-49ba-9b0a-a6037c7621ef",
+          "code": "04-3",
+          "lessonNumber": 4,
+          "title": "HSK标准教程4上 04-3",
+          "order": 18
+        },
+        {
+          "resourceId": "f316408d-720f-4034-859d-d12f4aee0186",
+          "code": "04-4",
+          "lessonNumber": 4,
+          "title": "HSK标准教程4上 04-4",
+          "order": 19
+        },
+        {
+          "resourceId": "d94d1a56-27b0-4683-9703-5469fd0f46b5",
+          "code": "04-5",
+          "lessonNumber": 4,
+          "title": "HSK标准教程4上 04-5",
+          "order": 20
+        },
+        {
+          "resourceId": "9b32bfcd-718a-465b-a544-6ad60397814c",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK标准教程4上 05-1",
+          "order": 21
+        },
+        {
+          "resourceId": "6aff7ef3-14e1-405b-8da3-bfa4fade12b3",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK标准教程4上 05-2",
+          "order": 22
+        },
+        {
+          "resourceId": "c820d4f4-190f-4472-92e9-b9e72e64d7ca",
+          "code": "05-3",
+          "lessonNumber": 5,
+          "title": "HSK标准教程4上 05-3",
+          "order": 23
+        },
+        {
+          "resourceId": "2e8e7c10-62d5-4313-b773-939e124d4f3c",
+          "code": "05-4",
+          "lessonNumber": 5,
+          "title": "HSK标准教程4上 05-4",
+          "order": 24
+        },
+        {
+          "resourceId": "01951140-47a4-41f0-aba0-6903b34d9b38",
+          "code": "05-5",
+          "lessonNumber": 5,
+          "title": "HSK标准教程4上 05-5",
+          "order": 25
+        },
+        {
+          "resourceId": "c68f8698-fcb7-484d-8794-2250b33e44df",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK标准教程4上 06-1",
+          "order": 26
+        },
+        {
+          "resourceId": "8b128e6e-d619-4712-8bbd-2d069e648472",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK标准教程4上 06-2",
+          "order": 27
+        },
+        {
+          "resourceId": "c6b29cb7-0b9d-4854-9b5f-0690fefd029d",
+          "code": "06-3",
+          "lessonNumber": 6,
+          "title": "HSK标准教程4上 06-3",
+          "order": 28
+        },
+        {
+          "resourceId": "4d319605-4d67-451e-9926-8740b0123257",
+          "code": "06-4",
+          "lessonNumber": 6,
+          "title": "HSK标准教程4上 06-4",
+          "order": 29
+        },
+        {
+          "resourceId": "6516febe-3c83-49dd-9a4e-63cf70779da2",
+          "code": "06-5",
+          "lessonNumber": 6,
+          "title": "HSK标准教程4上 06-5",
+          "order": 30
+        },
+        {
+          "resourceId": "e2286f5f-4508-451c-ab12-3ba16b62ead3",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK标准教程4上 07-1",
+          "order": 31
+        },
+        {
+          "resourceId": "2efc1cc7-f60e-447e-83ee-478af5cede62",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK标准教程4上 07-2",
+          "order": 32
+        },
+        {
+          "resourceId": "9e15b412-9dd9-4913-b7b1-fa3cd67468ff",
+          "code": "07-3",
+          "lessonNumber": 7,
+          "title": "HSK标准教程4上 07-3",
+          "order": 33
+        },
+        {
+          "resourceId": "5aaa0e6f-124f-44d5-9b9d-88f958f2d011",
+          "code": "07-4",
+          "lessonNumber": 7,
+          "title": "HSK标准教程4上 07-4",
+          "order": 34
+        },
+        {
+          "resourceId": "95ecc5b3-6a0f-475f-81b3-ca3a8fe44f44",
+          "code": "07-5",
+          "lessonNumber": 7,
+          "title": "HSK标准教程4上 07-5",
+          "order": 35
+        },
+        {
+          "resourceId": "390727ca-7193-4161-b7fa-33426476d258",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程4上 08-1",
+          "order": 36
+        },
+        {
+          "resourceId": "1eba4715-d528-4127-87b4-dad831c3e553",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK标准教程4上 08-2",
+          "order": 37
+        },
+        {
+          "resourceId": "7ed46bed-3a98-470f-9bb5-46c7552b682d",
+          "code": "08-3",
+          "lessonNumber": 8,
+          "title": "HSK标准教程4上 08-3",
+          "order": 38
+        },
+        {
+          "resourceId": "c0227289-e898-4b24-b926-18caf927722b",
+          "code": "08-4",
+          "lessonNumber": 8,
+          "title": "HSK标准教程4上 08-4",
+          "order": 39
+        },
+        {
+          "resourceId": "77aaccbb-9f29-47d9-8ed4-ffd82ac44778",
+          "code": "08-5",
+          "lessonNumber": 8,
+          "title": "HSK标准教程4上 08-5",
+          "order": 40
+        },
+        {
+          "resourceId": "f7b4bfa0-93f0-47d5-8dd9-4f1690380125",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK标准教程4上 09-1",
+          "order": 41
+        },
+        {
+          "resourceId": "350893e7-20ba-4ecd-9dbe-ce6306968953",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK标准教程4上 09-2",
+          "order": 42
+        },
+        {
+          "resourceId": "b2226791-d555-48a6-9072-0b3b5a7fb103",
+          "code": "09-3",
+          "lessonNumber": 9,
+          "title": "HSK标准教程4上 09-3",
+          "order": 43
+        },
+        {
+          "resourceId": "106c422e-22df-4a4c-9a03-683b208ac396",
+          "code": "09-4",
+          "lessonNumber": 9,
+          "title": "HSK标准教程4上 09-4",
+          "order": 44
+        },
+        {
+          "resourceId": "c500d6bf-fb06-4616-a64c-2e11d3db52a6",
+          "code": "09-5",
+          "lessonNumber": 9,
+          "title": "HSK标准教程4上 09-5",
+          "order": 45
+        },
+        {
+          "resourceId": "f3c46dcc-66a7-4628-8cea-a4ca0490261c",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK标准教程4上 10-1",
+          "order": 46
+        },
+        {
+          "resourceId": "b5292230-5d74-47ec-8c5f-7b5416b2944b",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK标准教程4上 10-2",
+          "order": 47
+        },
+        {
+          "resourceId": "c4a21afe-5ca0-4377-a864-1fad2378892c",
+          "code": "10-3",
+          "lessonNumber": 10,
+          "title": "HSK标准教程4上 10-3",
+          "order": 48
+        },
+        {
+          "resourceId": "a5a07a92-fd89-42ba-a75f-41a0dd4a0567",
+          "code": "10-4",
+          "lessonNumber": 10,
+          "title": "HSK标准教程4上 10-4",
+          "order": 49
+        },
+        {
+          "resourceId": "9888a7e8-1c74-478f-8b15-329dca929e91",
+          "code": "10-5",
+          "lessonNumber": 10,
+          "title": "HSK标准教程4上 10-5",
+          "order": 50
+        },
+        {
+          "resourceId": "a8109536-27cc-457e-a854-7b7870a1838b",
+          "code": null,
+          "lessonNumber": null,
+          "title": "HSK标准教程4上 音频",
+          "order": 51
+        }
+      ]
+    },
+    {
+      "bookId": "hsk4b",
+      "label": "HSK 4下",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=3ddee33f-4951-4075-8698-18b1ef0190e0",
+      "trackCount": 51,
+      "tracks": [
+        {
+          "resourceId": "7efefe9e-e00e-410b-9f56-b6492b6e3a6e",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程4 （下）课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "0955726d-3c47-4b59-b297-002d7feb5e77",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK标准教程4 （下）课本音频 11-1",
+          "order": 1
+        },
+        {
+          "resourceId": "1dae47c1-74f4-4b8c-9903-79e74c808299",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK标准教程4 （下）课本音频 11-2",
+          "order": 2
+        },
+        {
+          "resourceId": "23dd7d11-64b8-4ded-9085-686249a29ba4",
+          "code": "11-3",
+          "lessonNumber": 11,
+          "title": "HSK标准教程4 （下）课本音频 11-3",
+          "order": 3
+        },
+        {
+          "resourceId": "cc23431f-4ce6-40e9-b571-8338ba3fb643",
+          "code": "11-4",
+          "lessonNumber": 11,
+          "title": "HSK标准教程4 （下）课本音频 11-4",
+          "order": 4
+        },
+        {
+          "resourceId": "f82eaefc-ca97-42ff-bf45-74ee60169143",
+          "code": "11-5",
+          "lessonNumber": 11,
+          "title": "HSK标准教程4 （下）课本音频 11-5",
+          "order": 5
+        },
+        {
+          "resourceId": "c3ddf9f5-2a09-432b-b67c-234e3ab1ecf1",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK标准教程4 （下）课本音频 12-1",
+          "order": 6
+        },
+        {
+          "resourceId": "7a0fb117-6bc8-4485-91c5-b660ed242816",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK标准教程4 （下）课本音频 12-2",
+          "order": 7
+        },
+        {
+          "resourceId": "bf6ed3bc-a853-47ec-8d36-7e8d162bf514",
+          "code": "12-3",
+          "lessonNumber": 12,
+          "title": "HSK标准教程4 （下）课本音频 12-3",
+          "order": 8
+        },
+        {
+          "resourceId": "fa492d23-3f0c-45aa-9f02-3c340f3018cf",
+          "code": "12-4",
+          "lessonNumber": 12,
+          "title": "HSK标准教程4 （下）课本音频 12-4",
+          "order": 9
+        },
+        {
+          "resourceId": "71444d41-5801-474f-b60a-992fd2c746d7",
+          "code": "12-5",
+          "lessonNumber": 12,
+          "title": "HSK标准教程4 （下）课本音频 12-5",
+          "order": 10
+        },
+        {
+          "resourceId": "a936d258-8d51-4f84-954e-038e2d9a7e01",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK标准教程4 （下）课本音频 13-1",
+          "order": 11
+        },
+        {
+          "resourceId": "64d3f0a2-6774-45db-b8f4-e6eb79aa1876",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK标准教程4 （下）课本音频 13-2",
+          "order": 12
+        },
+        {
+          "resourceId": "3ee3641b-7a30-406d-a5b8-7c7154f0aba2",
+          "code": "13-3",
+          "lessonNumber": 13,
+          "title": "HSK标准教程4 （下）课本音频 13-3",
+          "order": 13
+        },
+        {
+          "resourceId": "07a65f21-922e-419b-ac92-ce36d5bcc8c7",
+          "code": "13-4",
+          "lessonNumber": 13,
+          "title": "HSK标准教程4 （下）课本音频 13-4",
+          "order": 14
+        },
+        {
+          "resourceId": "1df46481-3786-4383-bb17-9d1f5dab2ab5",
+          "code": "13-5",
+          "lessonNumber": 13,
+          "title": "HSK标准教程4 （下）课本音频 13-5",
+          "order": 15
+        },
+        {
+          "resourceId": "723eba30-0b69-40b1-b3db-7b49dae4100b",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK标准教程4 （下）课本音频 14-1",
+          "order": 16
+        },
+        {
+          "resourceId": "50381c37-dd95-476d-b207-9114d4ced69c",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK标准教程4 （下）课本音频 14-2",
+          "order": 17
+        },
+        {
+          "resourceId": "68ba002c-1434-4bb2-b244-132f138124f8",
+          "code": "14-3",
+          "lessonNumber": 14,
+          "title": "HSK标准教程4 （下）课本音频 14-3",
+          "order": 18
+        },
+        {
+          "resourceId": "ff3fedc8-ba0a-44d5-b541-a173b873bb79",
+          "code": "14-4",
+          "lessonNumber": 14,
+          "title": "HSK标准教程4 （下）课本音频 14-4",
+          "order": 19
+        },
+        {
+          "resourceId": "8ad74acb-6ec3-4d67-9792-6704bf4ce09c",
+          "code": "14-5",
+          "lessonNumber": 14,
+          "title": "HSK标准教程4 （下）课本音频 14-5",
+          "order": 20
+        },
+        {
+          "resourceId": "4e4d8a10-cac7-4cd1-89c8-b845874ad9ca",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK标准教程4 （下）课本音频 15-1",
+          "order": 21
+        },
+        {
+          "resourceId": "e80707f8-e645-4b05-b475-9047a51d0e0c",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK标准教程4（下） 课本音频 15-2",
+          "order": 22
+        },
+        {
+          "resourceId": "261799d1-f466-4fee-aa17-93f71b735d45",
+          "code": "15-3",
+          "lessonNumber": 15,
+          "title": "HSK标准教程4（下） 课本音频 15-3",
+          "order": 23
+        },
+        {
+          "resourceId": "7cdc3b0b-a13a-42c6-b83a-9d7825bf177f",
+          "code": "15-4",
+          "lessonNumber": 15,
+          "title": "HSK标准教程4（下） 课本音频 15-4",
+          "order": 24
+        },
+        {
+          "resourceId": "a47cd766-2be0-448e-9fcc-2343efc99534",
+          "code": "15-5",
+          "lessonNumber": 15,
+          "title": "HSK标准教程4（下） 课本音频 15-5",
+          "order": 25
+        },
+        {
+          "resourceId": "4ec1e575-6852-4959-b022-178b15373f47",
+          "code": "16-1",
+          "lessonNumber": 16,
+          "title": "HSK标准教程4（下） 课本音频 16-1",
+          "order": 26
+        },
+        {
+          "resourceId": "a0eec5bc-0d46-4212-b413-d0678dea8c68",
+          "code": "16-2",
+          "lessonNumber": 16,
+          "title": "HSK标准教程4（下） 课本音频 16-2",
+          "order": 27
+        },
+        {
+          "resourceId": "279e197b-6976-4a33-b84f-9c6ef85d698b",
+          "code": "16-3",
+          "lessonNumber": 16,
+          "title": "HSK标准教程4（下） 课本音频 16-3",
+          "order": 28
+        },
+        {
+          "resourceId": "ede0ca11-4046-47ca-bb5a-97000c657ed3",
+          "code": "16-4",
+          "lessonNumber": 16,
+          "title": "HSK标准教程4（下） 课本音频 16-4",
+          "order": 29
+        },
+        {
+          "resourceId": "3b7aa42b-d4ca-47e6-995b-83e76ffd4354",
+          "code": "16-5",
+          "lessonNumber": 16,
+          "title": "HSK标准教程4（下） 课本音频 16-5",
+          "order": 30
+        },
+        {
+          "resourceId": "c661dd04-2752-4835-93e9-6eae24364168",
+          "code": "17-1",
+          "lessonNumber": 17,
+          "title": "HSK标准教程4（下） 课本音频 17-1",
+          "order": 31
+        },
+        {
+          "resourceId": "b56b4070-3783-44f7-b553-7ec2e7fb97ee",
+          "code": "17-2",
+          "lessonNumber": 17,
+          "title": "HSK标准教程4（下） 课本音频 17-2",
+          "order": 32
+        },
+        {
+          "resourceId": "f5d01352-79b1-4822-9671-f1586ecc71af",
+          "code": "17-3",
+          "lessonNumber": 17,
+          "title": "HSK标准教程4（下） 课本音频 17-3",
+          "order": 33
+        },
+        {
+          "resourceId": "154d8b07-1086-4cd4-9711-eb2e487f88c9",
+          "code": "17-4",
+          "lessonNumber": 17,
+          "title": "HSK标准教程4（下） 课本音频 17-4",
+          "order": 34
+        },
+        {
+          "resourceId": "4c505fbb-292b-4279-9f0f-42634baa0e50",
+          "code": "17-5",
+          "lessonNumber": 17,
+          "title": "HSK标准教程4（下） 课本音频 17-5",
+          "order": 35
+        },
+        {
+          "resourceId": "3e8e0c22-e24d-4f6a-bf30-1d588dadcdc3",
+          "code": "18-1",
+          "lessonNumber": 18,
+          "title": "HSK标准教程4（下） 课本音频 18-1",
+          "order": 36
+        },
+        {
+          "resourceId": "054c905b-764f-4b24-83f5-1a11743e70c6",
+          "code": "18-2",
+          "lessonNumber": 18,
+          "title": "HSK标准教程4（下） 课本音频 18-2",
+          "order": 37
+        },
+        {
+          "resourceId": "170f6056-4c04-47df-bec0-49f5094bf7ab",
+          "code": "18-3",
+          "lessonNumber": 18,
+          "title": "HSK标准教程4（下） 课本音频 18-3",
+          "order": 38
+        },
+        {
+          "resourceId": "1ebcbcda-5965-4c10-b055-504ad34497f3",
+          "code": "18-4",
+          "lessonNumber": 18,
+          "title": "HSK标准教程4（下） 课本音频 18-4",
+          "order": 39
+        },
+        {
+          "resourceId": "261cfb04-c888-432b-836c-7da882deab43",
+          "code": "18-5",
+          "lessonNumber": 18,
+          "title": "HSK标准教程4（下） 课本音频 18-5",
+          "order": 40
+        },
+        {
+          "resourceId": "136c9a6e-5039-4b43-ad5a-44df9fd46b5d",
+          "code": "19-1",
+          "lessonNumber": 19,
+          "title": "HSK标准教程4（下） 课本音频 19-1",
+          "order": 41
+        },
+        {
+          "resourceId": "7496e7cb-d5c3-4c01-9798-ecb525742b8e",
+          "code": "19-2",
+          "lessonNumber": 19,
+          "title": "HSK标准教程4（下） 课本音频 19-2",
+          "order": 42
+        },
+        {
+          "resourceId": "9077c18d-10f9-4f1b-a31c-1540c48db3ad",
+          "code": "19-3",
+          "lessonNumber": 19,
+          "title": "HSK标准教程4（下） 课本音频 19-3",
+          "order": 43
+        },
+        {
+          "resourceId": "a5b8cc11-3bf0-4801-885e-974d289dd56f",
+          "code": "19-4",
+          "lessonNumber": 19,
+          "title": "HSK标准教程4（下） 课本音频 19-4",
+          "order": 44
+        },
+        {
+          "resourceId": "1ce805f4-3b60-4b3d-adbd-63cd9fe570f0",
+          "code": "19-5",
+          "lessonNumber": 19,
+          "title": "HSK标准教程4（下） 课本音频 19-5",
+          "order": 45
+        },
+        {
+          "resourceId": "010ba224-cea0-4019-8e05-92cf6b373eb1",
+          "code": "20-1",
+          "lessonNumber": 20,
+          "title": "HSK标准教程4（下） 课本音频 20-1",
+          "order": 46
+        },
+        {
+          "resourceId": "54b16a7d-d920-447c-90c5-77304a333cc2",
+          "code": "20-2",
+          "lessonNumber": 20,
+          "title": "HSK标准教程4（下） 课本音频 20-2",
+          "order": 47
+        },
+        {
+          "resourceId": "a1f58cf9-b42d-4f17-9247-fdae0b939bea",
+          "code": "20-3",
+          "lessonNumber": 20,
+          "title": "HSK标准教程4（下） 课本音频 20-3",
+          "order": 48
+        },
+        {
+          "resourceId": "41884fbd-684a-45fb-a357-fe8ba34d57c2",
+          "code": "20-4",
+          "lessonNumber": 20,
+          "title": "HSK标准教程4（下） 课本音频 20-4",
+          "order": 49
+        },
+        {
+          "resourceId": "1fd57357-c7bc-489c-b7e1-7bbd055b466b",
+          "code": "20-5",
+          "lessonNumber": 20,
+          "title": "HSK标准教程4（下） 课本音频 20-5",
+          "order": 50
+        }
+      ]
+    },
+    {
+      "bookId": "hsk5a",
+      "label": "HSK 5上",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=f1a99c5e-b11a-418e-8931-225d65a9eecf",
+      "trackCount": 39,
+      "tracks": [
+        {
+          "resourceId": "8815c9d9-a1df-4548-ba5c-c12b4bccda84",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK 标准教程5 （上）课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "8112419a-d7db-491f-98cd-849adf99489d",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK 标准教程5 （上）课本音频 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "066b8325-4b2c-4586-807a-11fac839b428",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK 标准教程5 （上）课本音频 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "b41429fa-6317-4410-be8c-2a5fc74a32da",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK 标准教程5 （上）课本音频 02-1",
+          "order": 3
+        },
+        {
+          "resourceId": "22e42c2f-1583-439e-b815-8558fde42e42",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK 标准教程5 （上）课本音频 02-2",
+          "order": 4
+        },
+        {
+          "resourceId": "75384877-ae69-4cb3-b9d9-ef5604716926",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK 标准教程5 （上）课本音频 03-1",
+          "order": 5
+        },
+        {
+          "resourceId": "071abe4b-8835-4568-bf25-bb00d4744d1c",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK 标准教程5 （上）课本音频 03-2",
+          "order": 6
+        },
+        {
+          "resourceId": "42561c99-25f9-4a52-acd4-e7daa2674ee5",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK 标准教程5 （上）课本音频 04-1",
+          "order": 7
+        },
+        {
+          "resourceId": "b12dd96a-4bb4-4ddd-8f54-89b188efe5b7",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK 标准教程5 （上）课本音频 04-2",
+          "order": 8
+        },
+        {
+          "resourceId": "163d5cf9-abda-4088-bf47-574b8efc325e",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK 标准教程5 （上）课本音频 05-1",
+          "order": 9
+        },
+        {
+          "resourceId": "85d2598a-8fea-40d7-a542-e675db86c91f",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK 标准教程5 （上）课本音频 05-2",
+          "order": 10
+        },
+        {
+          "resourceId": "5626acf2-7935-4b9b-9363-c2b52577b130",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK 标准教程5 （上）课本音频 06-1",
+          "order": 11
+        },
+        {
+          "resourceId": "ebaebdef-60f1-4e2b-8031-8a6f71de2760",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK 标准教程5 （上）课本音频 06-2",
+          "order": 12
+        },
+        {
+          "resourceId": "e3c2c7d2-918b-4939-a68e-a8ecdfbc9c64",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK 标准教程5 （上）课本音频 07-1",
+          "order": 13
+        },
+        {
+          "resourceId": "cbbf210e-5823-486e-851f-a9dbb5a9c96c",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK 标准教程5 （上）课本音频 07-2",
+          "order": 14
+        },
+        {
+          "resourceId": "43a80593-eade-4f78-bf69-cac6b9803fe9",
+          "code": "07-3",
+          "lessonNumber": 7,
+          "title": "HSK 标准教程5 （上）课本音频 07-3",
+          "order": 15
+        },
+        {
+          "resourceId": "048b9929-ab80-4b12-9a78-ea9c47d3f835",
+          "code": "07-4",
+          "lessonNumber": 7,
+          "title": "HSK 标准教程5 （上）课本音频 07-4",
+          "order": 16
+        },
+        {
+          "resourceId": "952aa1f7-ffe9-495f-b974-d8539e3ddba3",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK 标准教程5 （上）课本音频 08-1",
+          "order": 17
+        },
+        {
+          "resourceId": "51e72114-22c4-4cd9-9611-547152d31b9d",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK 标准教程5 （上）课本音频 08-2",
+          "order": 18
+        },
+        {
+          "resourceId": "c929d432-129d-483a-bc92-a111659b34ad",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK 标准教程5 （上）课本音频 09-1",
+          "order": 19
+        },
+        {
+          "resourceId": "020bc8e3-84c7-4d73-8b22-715d8f9336e4",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK 标准教程5 （上）课本音频 09-2",
+          "order": 20
+        },
+        {
+          "resourceId": "b0f488e6-9037-40f8-801c-513a6a55c0a0",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK 标准教程5 （上）课本音频 10-1",
+          "order": 21
+        },
+        {
+          "resourceId": "386acab3-17a5-4c77-a7f0-88589e97cad0",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK 标准教程5 （上）课本音频 10-2",
+          "order": 22
+        },
+        {
+          "resourceId": "e8c1fa2e-bbdf-4da4-9e5e-e17f739e91c5",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK 标准教程5 （上）课本音频 11-1",
+          "order": 23
+        },
+        {
+          "resourceId": "9aa14ee9-b4b5-4de0-9bea-3649617d9fc0",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK 标准教程5 （上）课本音频 11-2",
+          "order": 24
+        },
+        {
+          "resourceId": "de1ea792-1b71-4b74-8d14-0aade60151bc",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK 标准教程5 （上）课本音频 12-1",
+          "order": 25
+        },
+        {
+          "resourceId": "f35a6290-2eed-431d-868d-e8eef594a990",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK 标准教程5 （上）课本音频 12-2",
+          "order": 26
+        },
+        {
+          "resourceId": "ae42b762-bb23-4479-a3c2-a048579bedb0",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK 标准教程5 （上）课本音频 13-1",
+          "order": 27
+        },
+        {
+          "resourceId": "b3bbf0fa-71a1-4de8-89bb-59c4763f7965",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK 标准教程5 （上）课本音频 13-2",
+          "order": 28
+        },
+        {
+          "resourceId": "54034e0f-f7d1-4e4e-b0c0-403666c435f2",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK 标准教程5 （上）课本音频 14-1",
+          "order": 29
+        },
+        {
+          "resourceId": "e664c330-5d21-41f0-879b-74ff05212a42",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK 标准教程5 （上）课本音频 14-2",
+          "order": 30
+        },
+        {
+          "resourceId": "b42c8544-20c8-4f44-ab3d-1be96c0c9f5e",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK 标准教程5 （上）课本音频 15-1",
+          "order": 31
+        },
+        {
+          "resourceId": "7eb3bde4-b830-4151-9d44-a15c334f7718",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK 标准教程5 （上）课本音频 15-2",
+          "order": 32
+        },
+        {
+          "resourceId": "43fa9276-d263-49ee-8a53-ebef559289f7",
+          "code": "16-1",
+          "lessonNumber": 16,
+          "title": "HSK 标准教程5 （上）课本音频 16-1",
+          "order": 33
+        },
+        {
+          "resourceId": "16001bfc-0091-4d77-a634-a39101838b3c",
+          "code": "16-2",
+          "lessonNumber": 16,
+          "title": "HSK 标准教程5 （上）课本音频 16-2",
+          "order": 34
+        },
+        {
+          "resourceId": "053f3e68-ef14-4d7e-9172-d75ef5fb7ea5",
+          "code": "17-1",
+          "lessonNumber": 17,
+          "title": "HSK 标准教程5 （上）课本音频 17-1",
+          "order": 35
+        },
+        {
+          "resourceId": "de3c0274-c0c8-4ec9-94cc-c5fedc49367b",
+          "code": "17-2",
+          "lessonNumber": 17,
+          "title": "HSK 标准教程5 （上）课本音频 17-2",
+          "order": 36
+        },
+        {
+          "resourceId": "e561251a-d19c-4458-9a51-a116fb1294ef",
+          "code": "18-1",
+          "lessonNumber": 18,
+          "title": "HSK 标准教程5 （上）课本音频 18-1",
+          "order": 37
+        },
+        {
+          "resourceId": "71272051-24a2-4ea8-b7c2-90da62e4e024",
+          "code": "18-2",
+          "lessonNumber": 18,
+          "title": "HSK 标准教程5 （上）课本音频 18-2",
+          "order": 38
+        }
+      ]
+    },
+    {
+      "bookId": "hsk5b",
+      "label": "HSK 5下",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=e26ee8ac-f5b4-46c2-a559-878a7bf9d8b5",
+      "trackCount": 37,
+      "tracks": [
+        {
+          "resourceId": "67e676b7-b522-474f-af6d-83872b1b0b3d",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程5（下） 课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "9f24e362-9b61-4973-b73f-e7ee3b57f509",
+          "code": "19-1",
+          "lessonNumber": 19,
+          "title": "HSK标准教程5（下） 课本音频 19-1",
+          "order": 1
+        },
+        {
+          "resourceId": "3476ac33-d671-4e3e-8139-2d758ab91f40",
+          "code": "19-2",
+          "lessonNumber": 19,
+          "title": "HSK标准教程5（下） 课本音频 19-2",
+          "order": 2
+        },
+        {
+          "resourceId": "fb4e853a-b80d-4a4e-b49a-6bdac2d83a82",
+          "code": "20-1",
+          "lessonNumber": 20,
+          "title": "HSK标准教程5（下） 课本音频 20-1",
+          "order": 3
+        },
+        {
+          "resourceId": "642fe784-ba92-40de-bd0f-1e13a469e7d2",
+          "code": "20-2",
+          "lessonNumber": 20,
+          "title": "HSK标准教程5（下） 课本音频 20-2",
+          "order": 4
+        },
+        {
+          "resourceId": "5789e4e4-aca5-4316-be42-96068e893958",
+          "code": "21-1",
+          "lessonNumber": 21,
+          "title": "HSK标准教程5（下） 课本音频 21-1",
+          "order": 5
+        },
+        {
+          "resourceId": "c43734cb-4003-4ce1-bc85-33451f57ec3f",
+          "code": "21-2",
+          "lessonNumber": 21,
+          "title": "HSK标准教程5（下） 课本音频 21-2",
+          "order": 6
+        },
+        {
+          "resourceId": "c9fa45db-b785-4462-a053-eec4b577622b",
+          "code": "22-1",
+          "lessonNumber": 22,
+          "title": "HSK标准教程5（下） 课本音频 22-1",
+          "order": 7
+        },
+        {
+          "resourceId": "eb543af7-a762-4b18-83c7-8843730e29bd",
+          "code": "22-2",
+          "lessonNumber": 22,
+          "title": "HSK标准教程5（下） 课本音频 22-2",
+          "order": 8
+        },
+        {
+          "resourceId": "92b97cc2-115a-4286-8459-fdc1acced24c",
+          "code": "23-1",
+          "lessonNumber": 23,
+          "title": "HSK标准教程5（下） 课本音频 23-1",
+          "order": 9
+        },
+        {
+          "resourceId": "3e5b09f6-ba7c-46a4-bfa1-0037b7e2ecee",
+          "code": "23-2",
+          "lessonNumber": 23,
+          "title": "HSK标准教程5（下） 课本音频 23-2",
+          "order": 10
+        },
+        {
+          "resourceId": "a2f60010-effc-4ba2-b86c-ba1681c7a375",
+          "code": "24-1",
+          "lessonNumber": 24,
+          "title": "HSK标准教程5（下） 课本音频 24-1",
+          "order": 11
+        },
+        {
+          "resourceId": "02697bb9-906d-4612-bd15-dca255a465fe",
+          "code": "24-2",
+          "lessonNumber": 24,
+          "title": "HSK标准教程5（下） 课本音频 24-2",
+          "order": 12
+        },
+        {
+          "resourceId": "22ffa5d2-9ca4-49ee-ad7a-d195af9eec25",
+          "code": "25-1",
+          "lessonNumber": 25,
+          "title": "HSK标准教程5（下） 课本音频 25-1",
+          "order": 13
+        },
+        {
+          "resourceId": "bd7c622a-8058-45dd-a777-9793a687d9f0",
+          "code": "25-2",
+          "lessonNumber": 25,
+          "title": "HSK标准教程5（下） 课本音频 25-2",
+          "order": 14
+        },
+        {
+          "resourceId": "e4cf7742-2502-4f65-85a4-275448e84899",
+          "code": "26-1",
+          "lessonNumber": 26,
+          "title": "HSK标准教程5（下） 课本音频 26-1",
+          "order": 15
+        },
+        {
+          "resourceId": "8e172137-69a9-4901-92c7-45aa8593ca16",
+          "code": "26-2",
+          "lessonNumber": 26,
+          "title": "HSK标准教程5（下） 课本音频 26-2",
+          "order": 16
+        },
+        {
+          "resourceId": "3f030627-29db-4d79-a899-30af71e4d958",
+          "code": "27-1",
+          "lessonNumber": 27,
+          "title": "HSK标准教程5（下） 课本音频 27-1",
+          "order": 17
+        },
+        {
+          "resourceId": "bb299b8a-c211-4e1f-a56e-41ddb2e09597",
+          "code": "27-2",
+          "lessonNumber": 27,
+          "title": "HSK标准教程5（下） 课本音频 27-2",
+          "order": 18
+        },
+        {
+          "resourceId": "5369e9c2-c8b8-4c8e-8e2c-d9d56e023a06",
+          "code": "28-1",
+          "lessonNumber": 28,
+          "title": "HSK标准教程5（下） 课本音频 28-1",
+          "order": 19
+        },
+        {
+          "resourceId": "1b74be59-25fd-4869-aa36-fd777d41b021",
+          "code": "28-2",
+          "lessonNumber": 28,
+          "title": "HSK标准教程5（下） 课本音频 28-2",
+          "order": 20
+        },
+        {
+          "resourceId": "9b37bf3d-a9b2-451f-bec1-316e52471ec6",
+          "code": "29-1",
+          "lessonNumber": 29,
+          "title": "HSK标准教程5（下） 课本音频 29-1",
+          "order": 21
+        },
+        {
+          "resourceId": "2486fef1-1050-420c-9a9b-a93f6bd42729",
+          "code": "29-2",
+          "lessonNumber": 29,
+          "title": "HSK标准教程5（下） 课本音频 29-2",
+          "order": 22
+        },
+        {
+          "resourceId": "1e7de0c3-b58f-42ea-836e-18ee55630af3",
+          "code": "30-1",
+          "lessonNumber": 30,
+          "title": "HSK标准教程5（下） 课本音频 30-1",
+          "order": 23
+        },
+        {
+          "resourceId": "ab17591b-74c8-4771-865e-34a251483bbe",
+          "code": "30-2",
+          "lessonNumber": 30,
+          "title": "HSK标准教程5（下） 课本音频 30-2",
+          "order": 24
+        },
+        {
+          "resourceId": "89987278-6c9d-4839-a332-1a8d2026cc5d",
+          "code": "31-1",
+          "lessonNumber": 31,
+          "title": "HSK标准教程5（下） 课本音频 31-1",
+          "order": 25
+        },
+        {
+          "resourceId": "b5204b89-d357-47d5-bf9e-6795062dcc81",
+          "code": "31-2",
+          "lessonNumber": 31,
+          "title": "HSK标准教程5（下） 课本音频 31-2",
+          "order": 26
+        },
+        {
+          "resourceId": "961ebe8e-449a-45a0-acc9-6ea6332b697c",
+          "code": "32-1",
+          "lessonNumber": 32,
+          "title": "HSK标准教程5（下） 课本音频 32-1",
+          "order": 27
+        },
+        {
+          "resourceId": "668c35f6-47cf-41b1-b8bd-37f5df670c0b",
+          "code": "32-2",
+          "lessonNumber": 32,
+          "title": "HSK标准教程5（下） 课本音频 32-2",
+          "order": 28
+        },
+        {
+          "resourceId": "d354e2b1-9335-42d1-a0c4-16929bce8f2e",
+          "code": "33-1",
+          "lessonNumber": 33,
+          "title": "HSK标准教程5（下） 课本音频 33-1",
+          "order": 29
+        },
+        {
+          "resourceId": "fab5ae16-a79c-4262-8958-756c865ed3b3",
+          "code": "33-2",
+          "lessonNumber": 33,
+          "title": "HSK标准教程5（下） 课本音频 33-2",
+          "order": 30
+        },
+        {
+          "resourceId": "899587da-6ba4-4de8-a7e7-9d7ec95714d7",
+          "code": "34-1",
+          "lessonNumber": 34,
+          "title": "HSK标准教程5（下） 课本音频 34-1",
+          "order": 31
+        },
+        {
+          "resourceId": "06168446-6961-434e-93f1-999c0f174129",
+          "code": "34-2",
+          "lessonNumber": 34,
+          "title": "HSK标准教程5（下） 课本音频 34-2",
+          "order": 32
+        },
+        {
+          "resourceId": "dc78c74e-cd83-4535-90b4-725e055e2e90",
+          "code": "35-1",
+          "lessonNumber": 35,
+          "title": "HSK标准教程5（下） 课本音频 35-1",
+          "order": 33
+        },
+        {
+          "resourceId": "2daf4f88-6247-40b0-9e77-b039202bdb4d",
+          "code": "35-2",
+          "lessonNumber": 35,
+          "title": "HSK标准教程5（下） 课本音频 35-2",
+          "order": 34
+        },
+        {
+          "resourceId": "86d098b9-2ae9-45f5-9005-23aafa37b6a9",
+          "code": "36-1",
+          "lessonNumber": 36,
+          "title": "HSK标准教程5（下） 课本音频 36-1",
+          "order": 35
+        },
+        {
+          "resourceId": "eba673ae-ea02-4dfd-8058-25e3ffe9b830",
+          "code": "36-2",
+          "lessonNumber": 36,
+          "title": "HSK标准教程5（下） 课本音频 36-2",
+          "order": 36
+        }
+      ]
+    },
+    {
+      "bookId": "hsk6a",
+      "label": "HSK 6上",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=9c4d9b7f-5cf5-4f5c-bc29-7b4b89feaec1",
+      "trackCount": 42,
+      "tracks": [
+        {
+          "resourceId": "b03bad62-f909-43ba-9a6a-9374ad9e103a",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程6 （上）课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "a3e150f1-4859-4a18-8eec-803e26b2faec",
+          "code": "01-1",
+          "lessonNumber": 1,
+          "title": "HSK标准教程6 （上）课本音频 01-1",
+          "order": 1
+        },
+        {
+          "resourceId": "84d8de2d-98e2-4a77-a31a-4ba420bcb926",
+          "code": "01-2",
+          "lessonNumber": 1,
+          "title": "HSK标准教程6 （上）课本音频 01-2",
+          "order": 2
+        },
+        {
+          "resourceId": "4a2c5316-d6c1-4d00-ab3f-d0bb2bd638f0",
+          "code": "02-1",
+          "lessonNumber": 2,
+          "title": "HSK标准教程6 （上）课本音频 02-1",
+          "order": 3
+        },
+        {
+          "resourceId": "d3695bef-1d81-40fa-aab3-160509b36fea",
+          "code": "02-2",
+          "lessonNumber": 2,
+          "title": "HSK标准教程6 （上）课本音频 02-2",
+          "order": 4
+        },
+        {
+          "resourceId": "4053983d-0969-415c-8a81-e4e1b217cec3",
+          "code": "03-1",
+          "lessonNumber": 3,
+          "title": "HSK标准教程6 （上）课本音频 03-1",
+          "order": 5
+        },
+        {
+          "resourceId": "558e13d0-80eb-49b9-b35a-2c79b09e1c21",
+          "code": "03-2",
+          "lessonNumber": 3,
+          "title": "HSK标准教程6 （上）课本音频 03-2",
+          "order": 6
+        },
+        {
+          "resourceId": "caa453f9-0802-4697-868c-a961aaebeca0",
+          "code": "04-1",
+          "lessonNumber": 4,
+          "title": "HSK标准教程6 （上）课本音频 04-1",
+          "order": 7
+        },
+        {
+          "resourceId": "f3d67190-29b4-431b-9d0c-cebfe0c49377",
+          "code": "04-2",
+          "lessonNumber": 4,
+          "title": "HSK标准教程6 （上）课本音频 04-2",
+          "order": 8
+        },
+        {
+          "resourceId": "9c4d7f36-0601-4b40-9a67-56ff71c6b638",
+          "code": "05-1",
+          "lessonNumber": 5,
+          "title": "HSK标准教程6 （上）课本音频 05-1",
+          "order": 9
+        },
+        {
+          "resourceId": "69b02be7-9f37-4d23-adbb-d2d66d913237",
+          "code": "05-2",
+          "lessonNumber": 5,
+          "title": "HSK标准教程6 （上）课本音频 05-2",
+          "order": 10
+        },
+        {
+          "resourceId": "b899e49e-2b90-4355-adbd-903a6261b364",
+          "code": "06-1",
+          "lessonNumber": 6,
+          "title": "HSK标准教程6 （上）课本音频 06-1",
+          "order": 11
+        },
+        {
+          "resourceId": "52a7df63-7af3-4281-b3f8-d4b3cac74471",
+          "code": "06-2",
+          "lessonNumber": 6,
+          "title": "HSK标准教程6 （上）课本音频 06-2",
+          "order": 12
+        },
+        {
+          "resourceId": "b084d6b2-6114-4799-a739-ca905ffdfb5b",
+          "code": "07-1",
+          "lessonNumber": 7,
+          "title": "HSK标准教程6 （上）课本音频 07-1",
+          "order": 13
+        },
+        {
+          "resourceId": "8f63f236-0565-4ffb-bb9c-02ecb56f74c6",
+          "code": "07-2",
+          "lessonNumber": 7,
+          "title": "HSK标准教程6 （上）课本音频 07-2",
+          "order": 14
+        },
+        {
+          "resourceId": "de885154-9d1c-4a1a-8305-98fd6b7f418e",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程6 （上）课本音频 08-1",
+          "order": 15
+        },
+        {
+          "resourceId": "f52066c5-2cc7-4ae5-8b0b-2a94e3cce641",
+          "code": "08-1",
+          "lessonNumber": 8,
+          "title": "HSK标准教程6 （上）课本音频 08-1",
+          "order": 16
+        },
+        {
+          "resourceId": "7d96be91-867e-4f65-8196-f48406948c9a",
+          "code": "08-2",
+          "lessonNumber": 8,
+          "title": "HSK标准教程6 （上）课本音频 08-2",
+          "order": 17
+        },
+        {
+          "resourceId": "3a02af80-c238-4120-9d1d-21197778490d",
+          "code": "09-1",
+          "lessonNumber": 9,
+          "title": "HSK标准教程6 （上）课本音频 09-1",
+          "order": 18
+        },
+        {
+          "resourceId": "b500fc84-0795-4335-ac7d-e7990816f1e8",
+          "code": "09-2",
+          "lessonNumber": 9,
+          "title": "HSK标准教程6 （上）课本音频 09-2",
+          "order": 19
+        },
+        {
+          "resourceId": "99b2340e-f566-42cb-844a-c339aaa32031",
+          "code": "10-1",
+          "lessonNumber": 10,
+          "title": "HSK标准教程6 （上）课本音频 10-1",
+          "order": 20
+        },
+        {
+          "resourceId": "47211240-48e4-40dc-9e27-7e233a69aa21",
+          "code": "10-2",
+          "lessonNumber": 10,
+          "title": "HSK标准教程6 （上）课本音频 10-2",
+          "order": 21
+        },
+        {
+          "resourceId": "450042de-2ce5-4418-9bda-b08645475497",
+          "code": "11-1",
+          "lessonNumber": 11,
+          "title": "HSK标准教程6 （上）课本音频 11-1",
+          "order": 22
+        },
+        {
+          "resourceId": "ec4b386d-800e-44b5-b6d0-ef9a71fa67a2",
+          "code": "11-2",
+          "lessonNumber": 11,
+          "title": "HSK标准教程6 （上）课本音频 11-2",
+          "order": 23
+        },
+        {
+          "resourceId": "74ae4a01-b9ab-47c3-859c-bff8e6b5966a",
+          "code": "12-1",
+          "lessonNumber": 12,
+          "title": "HSK标准教程6 （上）课本音频 12-1",
+          "order": 24
+        },
+        {
+          "resourceId": "bae7fb34-db09-425e-8376-a0e57231000a",
+          "code": "12-2",
+          "lessonNumber": 12,
+          "title": "HSK标准教程6 （上）课本音频 12-2",
+          "order": 25
+        },
+        {
+          "resourceId": "a1bf1dad-b7c0-4171-81fe-6417489204fd",
+          "code": "13-1",
+          "lessonNumber": 13,
+          "title": "HSK标准教程6 （上）课本音频 13-1",
+          "order": 26
+        },
+        {
+          "resourceId": "3107acaf-aa1f-4532-b28b-dd9db504bc2e",
+          "code": "13-2",
+          "lessonNumber": 13,
+          "title": "HSK标准教程6 （上）课本音频 13-2",
+          "order": 27
+        },
+        {
+          "resourceId": "4345fcee-54ea-4caf-9f8c-e9650254c3d2",
+          "code": "14-1",
+          "lessonNumber": 14,
+          "title": "HSK标准教程6 （上）课本音频 14-1",
+          "order": 28
+        },
+        {
+          "resourceId": "6c059c3e-c247-4aef-9a23-f88a8317dd92",
+          "code": "14-2",
+          "lessonNumber": 14,
+          "title": "HSK标准教程6 （上）课本音频 14-2",
+          "order": 29
+        },
+        {
+          "resourceId": "08bfa0f2-150f-4603-8494-75266787fb91",
+          "code": "15-1",
+          "lessonNumber": 15,
+          "title": "HSK标准教程6 （上）课本音频 15-1",
+          "order": 30
+        },
+        {
+          "resourceId": "3cba5799-7a70-4727-bcff-78d46c77030d",
+          "code": "15-2",
+          "lessonNumber": 15,
+          "title": "HSK标准教程6 （上）课本音频 15-2",
+          "order": 31
+        },
+        {
+          "resourceId": "b0c632ba-79b7-4e3f-a006-0b89d8088192",
+          "code": "16-1",
+          "lessonNumber": 16,
+          "title": "HSK标准教程6 （上）课本音频 16-1",
+          "order": 32
+        },
+        {
+          "resourceId": "3829c435-0040-46a9-bad4-57d2258552cb",
+          "code": "16-2",
+          "lessonNumber": 16,
+          "title": "HSK标准教程6 （上）课本音频 16-2",
+          "order": 33
+        },
+        {
+          "resourceId": "40b38bfe-57c0-4e22-af6b-7d7cd773cd06",
+          "code": "17-1",
+          "lessonNumber": 17,
+          "title": "HSK标准教程6 （上）课本音频 17-1",
+          "order": 34
+        },
+        {
+          "resourceId": "b6d8f0c7-6219-420d-bc1b-13e7f49e2203",
+          "code": "17-2",
+          "lessonNumber": 17,
+          "title": "HSK标准教程6 （上）课本音频 17-2",
+          "order": 35
+        },
+        {
+          "resourceId": "30de6e54-42d5-44f4-b95a-9f0b1375aac3",
+          "code": "18-1",
+          "lessonNumber": 18,
+          "title": "HSK标准教程6 （上）课本音频 18-1",
+          "order": 36
+        },
+        {
+          "resourceId": "2b67748b-da65-4e12-a4fc-0fe8d5fb5766",
+          "code": "18-2",
+          "lessonNumber": 18,
+          "title": "HSK标准教程6 （上）课本音频 18-2",
+          "order": 37
+        },
+        {
+          "resourceId": "53f80d2c-4900-43bd-8fef-dc3ce002d120",
+          "code": "19-1",
+          "lessonNumber": 19,
+          "title": "HSK标准教程6 （上）课本音频 19-1",
+          "order": 38
+        },
+        {
+          "resourceId": "a9011147-326a-4b83-828d-6609c7d022df",
+          "code": "19-2",
+          "lessonNumber": 19,
+          "title": "HSK标准教程6 （上）课本音频 19-2",
+          "order": 39
+        },
+        {
+          "resourceId": "5c2234ac-9bc0-4ff0-a7f6-c2dbfe9cd245",
+          "code": "20-1",
+          "lessonNumber": 20,
+          "title": "HSK标准教程6 （上）课本音频 20-1",
+          "order": 40
+        },
+        {
+          "resourceId": "308ae5bb-d2dc-49a9-b258-a0ffa50d5c8a",
+          "code": "20-2",
+          "lessonNumber": 20,
+          "title": "HSK标准教程6 （上）课本音频 20-2",
+          "order": 41
+        }
+      ]
+    },
+    {
+      "bookId": "hsk6b",
+      "label": "HSK 6下",
+      "seriesUrl": "https://www.blcup.com/MobileResSeries?rid=bc301459-7c99-47d1-90ea-6ccdfaf6ee06",
+      "trackCount": 41,
+      "tracks": [
+        {
+          "resourceId": "5b38aab6-ef71-4bbe-a5ff-047069f6f181",
+          "code": "00",
+          "lessonNumber": null,
+          "title": "HSK标准教程 6(下) 课本音频 00",
+          "order": 0
+        },
+        {
+          "resourceId": "592d8183-115c-418a-a4f7-2caac4dfe6b9",
+          "code": "21-1",
+          "lessonNumber": 21,
+          "title": "HSK标准教程 6(下) 课本音频 21-1",
+          "order": 1
+        },
+        {
+          "resourceId": "d7f63a6b-af73-49ab-8617-9338bd68082e",
+          "code": "21-2",
+          "lessonNumber": 21,
+          "title": "HSK标准教程 6(下) 课本音频 21-2",
+          "order": 2
+        },
+        {
+          "resourceId": "4f379f8f-cf95-4b95-b445-1d25d27a705f",
+          "code": "22-1",
+          "lessonNumber": 22,
+          "title": "HSK标准教程 6(下) 课本音频 22-1",
+          "order": 3
+        },
+        {
+          "resourceId": "2c987a6b-7d84-4e72-88ac-ff279f0043e7",
+          "code": "22-2",
+          "lessonNumber": 22,
+          "title": "HSK标准教程 6(下) 课本音频 22-2",
+          "order": 4
+        },
+        {
+          "resourceId": "a568d10d-cabf-4697-b2e6-2bff44bac207",
+          "code": "23-1",
+          "lessonNumber": 23,
+          "title": "HSK标准教程 6(下) 课本音频 23-1",
+          "order": 5
+        },
+        {
+          "resourceId": "a0ef8f0b-1fb3-4db2-95d1-1332e9aa06d4",
+          "code": "23-2",
+          "lessonNumber": 23,
+          "title": "HSK标准教程 6(下) 课本音频 23-2",
+          "order": 6
+        },
+        {
+          "resourceId": "0453d711-0a8b-4912-9427-c1c2d01adefa",
+          "code": "24-1",
+          "lessonNumber": 24,
+          "title": "HSK标准教程 6(下) 课本音频 24-1",
+          "order": 7
+        },
+        {
+          "resourceId": "3dcaf624-49cf-443c-ab7f-453e7121765a",
+          "code": "24-2",
+          "lessonNumber": 24,
+          "title": "HSK标准教程 6(下) 课本音频 24-2",
+          "order": 8
+        },
+        {
+          "resourceId": "9e9b1c67-118f-424f-8093-4484b4067b3b",
+          "code": "25-1",
+          "lessonNumber": 25,
+          "title": "HSK标准教程 6(下) 课本音频 25-1",
+          "order": 9
+        },
+        {
+          "resourceId": "2fe6f67c-0ab2-4b38-a847-281cc07697b9",
+          "code": "25-2",
+          "lessonNumber": 25,
+          "title": "HSK标准教程 6(下) 课本音频 25-2",
+          "order": 10
+        },
+        {
+          "resourceId": "f4d1372e-64da-4956-a9d3-8c58fcecd3bb",
+          "code": "26-1",
+          "lessonNumber": 26,
+          "title": "HSK标准教程 6(下) 课本音频 26-1",
+          "order": 11
+        },
+        {
+          "resourceId": "9f819964-ec02-4577-b5b8-d861953e3ef1",
+          "code": "26-2",
+          "lessonNumber": 26,
+          "title": "HSK标准教程 6(下) 课本音频 26-2",
+          "order": 12
+        },
+        {
+          "resourceId": "ffc3e960-76f3-45dd-85dd-2ea8feed9a1b",
+          "code": "27-1",
+          "lessonNumber": 27,
+          "title": "HSK标准教程 6(下) 课本音频 27-1",
+          "order": 13
+        },
+        {
+          "resourceId": "d72aed01-ea01-459d-a629-a8df96bc1ebc",
+          "code": "27-2",
+          "lessonNumber": 27,
+          "title": "HSK标准教程 6(下) 课本音频 27-2",
+          "order": 14
+        },
+        {
+          "resourceId": "f2b6f27d-3152-422b-99d4-3e69b3ef09ef",
+          "code": "28-1",
+          "lessonNumber": 28,
+          "title": "HSK标准教程 6(下) 课本音频 28-1",
+          "order": 15
+        },
+        {
+          "resourceId": "28424684-5e73-4dbb-b2f0-719820f0f16a",
+          "code": "28-2",
+          "lessonNumber": 28,
+          "title": "HSK标准教程 6(下) 课本音频 28-2",
+          "order": 16
+        },
+        {
+          "resourceId": "9f2438fc-bb90-427c-891c-50ee3a15b3df",
+          "code": "29-1",
+          "lessonNumber": 29,
+          "title": "HSK标准教程 6(下) 课本音频 29-1",
+          "order": 17
+        },
+        {
+          "resourceId": "61e3a41b-eb69-445c-a165-7d40ff239d12",
+          "code": "29-2",
+          "lessonNumber": 29,
+          "title": "HSK标准教程 6(下) 课本音频 29-2",
+          "order": 18
+        },
+        {
+          "resourceId": "f357f903-9be3-4fb6-a06d-151722b31f03",
+          "code": "30-1",
+          "lessonNumber": 30,
+          "title": "HSK标准教程 6(下) 课本音频 30-1",
+          "order": 19
+        },
+        {
+          "resourceId": "b3898f15-6c25-43a8-8ba4-a17ca08bc1d2",
+          "code": "30-2",
+          "lessonNumber": 30,
+          "title": "HSK标准教程 6(下) 课本音频 30-2",
+          "order": 20
+        },
+        {
+          "resourceId": "89ccd2f0-3433-46f6-b941-d0f707857ea6",
+          "code": "31-1",
+          "lessonNumber": 31,
+          "title": "HSK标准教程 6(下) 课本音频 31-1",
+          "order": 21
+        },
+        {
+          "resourceId": "1db9ad4f-846a-461c-b393-98f7cd11c6ad",
+          "code": "31-2",
+          "lessonNumber": 31,
+          "title": "HSK标准教程 6(下) 课本音频 31-2",
+          "order": 22
+        },
+        {
+          "resourceId": "a44624a3-7c8b-442c-b694-e880f6d0261b",
+          "code": "32-1",
+          "lessonNumber": 32,
+          "title": "HSK标准教程 6(下) 课本音频 32-1",
+          "order": 23
+        },
+        {
+          "resourceId": "47a84eb8-739a-4d08-94b9-e1603e20f070",
+          "code": "32-2",
+          "lessonNumber": 32,
+          "title": "HSK标准教程 6(下) 课本音频 32-2",
+          "order": 24
+        },
+        {
+          "resourceId": "3acbab98-97c9-4e7e-a6c7-cef5245944e0",
+          "code": "33-1",
+          "lessonNumber": 33,
+          "title": "HSK标准教程 6(下) 课本音频 33-1",
+          "order": 25
+        },
+        {
+          "resourceId": "ec78b66a-4d72-4586-8cf8-73c20067839a",
+          "code": "33-2",
+          "lessonNumber": 33,
+          "title": "HSK标准教程 6(下) 课本音频 33-2",
+          "order": 26
+        },
+        {
+          "resourceId": "f317456f-639c-4bf4-a847-8a52d5e3729a",
+          "code": "34-1",
+          "lessonNumber": 34,
+          "title": "HSK标准教程 6(下) 课本音频 34-1",
+          "order": 27
+        },
+        {
+          "resourceId": "fad62c3d-bd30-418e-b020-2c5f9e19de0e",
+          "code": "34-2",
+          "lessonNumber": 34,
+          "title": "HSK标准教程 6(下) 课本音频 34-2",
+          "order": 28
+        },
+        {
+          "resourceId": "79315c14-296e-41c5-b00b-c8e82a34a038",
+          "code": "35-1",
+          "lessonNumber": 35,
+          "title": "HSK标准教程 6(下) 课本音频 35-1",
+          "order": 29
+        },
+        {
+          "resourceId": "8ee5d5c8-84bd-46cb-b1ed-15fbdc8448b3",
+          "code": "35-2",
+          "lessonNumber": 35,
+          "title": "HSK标准教程 6(下) 课本音频 35-2",
+          "order": 30
+        },
+        {
+          "resourceId": "f0015a02-ad08-4e44-b7c9-0b6b9f3be0d2",
+          "code": "36-1",
+          "lessonNumber": 36,
+          "title": "HSK标准教程 6(下) 课本音频 36-1",
+          "order": 31
+        },
+        {
+          "resourceId": "6129ce10-335d-4e51-bcf1-a0a64a0f88db",
+          "code": "36-2",
+          "lessonNumber": 36,
+          "title": "HSK标准教程 6(下) 课本音频 36-2",
+          "order": 32
+        },
+        {
+          "resourceId": "63ce9449-4937-4667-b5c3-ad77c0d3b396",
+          "code": "37-1",
+          "lessonNumber": 37,
+          "title": "HSK标准教程 6(下) 课本音频 37-1",
+          "order": 33
+        },
+        {
+          "resourceId": "c1d7e885-251f-4dad-90f0-7ea0b01a390e",
+          "code": "37-2",
+          "lessonNumber": 37,
+          "title": "HSK标准教程 6(下) 课本音频 37-2",
+          "order": 34
+        },
+        {
+          "resourceId": "dd4a2a3d-37b8-4e99-9368-42b82767e409",
+          "code": "38-1",
+          "lessonNumber": 38,
+          "title": "HSK标准教程 6(下) 课本音频 38-1",
+          "order": 35
+        },
+        {
+          "resourceId": "fbd516db-bcb8-49bf-97e2-827e85fb6dcd",
+          "code": "38-2",
+          "lessonNumber": 38,
+          "title": "HSK标准教程 6(下) 课本音频 38-2",
+          "order": 36
+        },
+        {
+          "resourceId": "5191e57d-0451-4710-8609-a5a9bb156274",
+          "code": "39-1",
+          "lessonNumber": 39,
+          "title": "HSK标准教程 6(下) 课本音频 39-1",
+          "order": 37
+        },
+        {
+          "resourceId": "e10c8779-8aef-4269-8bf6-a3e17012acb2",
+          "code": "39-2",
+          "lessonNumber": 39,
+          "title": "HSK标准教程 6(下) 课本音频 39-2",
+          "order": 38
+        },
+        {
+          "resourceId": "c2608dd8-c98a-4ef0-8818-06491c66021a",
+          "code": "40-1",
+          "lessonNumber": 40,
+          "title": "HSK标准教程 6(下) 课本音频 40-1",
+          "order": 39
+        },
+        {
+          "resourceId": "7dd9b67f-4474-428b-87ae-3760c104ca76",
+          "code": "40-2",
+          "lessonNumber": 40,
+          "title": "HSK标准教程 6(下) 课本音频 40-2",
+          "order": 40
+        }
+      ]
+    }
+  ]
+}

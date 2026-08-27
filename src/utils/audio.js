@@ -7,6 +7,37 @@ const AUDIO_PATH_PREFIX = 'assets/audio/hsk';
 
 let activeAudio = null;
 
+export const claimWebAudio = (audio) => {
+    if (!audio || Platform.OS !== 'web') {
+        return null;
+    }
+
+    if (activeAudio && activeAudio !== audio) {
+        activeAudio.pause();
+    }
+
+    activeAudio = audio;
+    return activeAudio;
+};
+
+export const releaseWebAudio = (audio) => {
+    if (activeAudio === audio) {
+        activeAudio = null;
+    }
+};
+
+export const stopWebAudio = (audio = activeAudio, { reset = false } = {}) => {
+    if (!audio) {
+        return;
+    }
+
+    audio.pause();
+    if (reset) {
+        audio.currentTime = 0;
+    }
+    releaseWebAudio(audio);
+};
+
 const getBundledAssetUri = (bundledAsset) => {
     if (!bundledAsset) {
         return null;
@@ -70,14 +101,9 @@ export const playHskAudio = async (hanzi) => {
         return null;
     }
 
-    if (activeAudio) {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
-    }
-
     const audio = new window.Audio(audioUrl);
     audio.preload = 'auto';
-    activeAudio = audio;
+    claimWebAudio(audio);
 
     await audio.play();
     return audio;
