@@ -58,7 +58,7 @@ const getBundledAssetUri = (bundledAsset) => {
     }
 };
 
-const getStaticBaseUrl = () => {
+export const getStaticBaseUrl = () => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') {
         return '';
     }

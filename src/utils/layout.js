@@ -33,7 +33,7 @@ export const getResponsiveLayout = (width) => {
 
 export const getFloatingTabMetrics = (viewportWidth) => {
     const horizontalInset = 24;
-    const tabBarWidth = Math.min(Math.max(viewportWidth - horizontalInset * 2, 360), 840);
+    const tabBarWidth = Math.min(Math.max(viewportWidth - horizontalInset * 2, 360), 940);
 
     return {
         tabBarWidth,
