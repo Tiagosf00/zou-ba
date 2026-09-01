@@ -1,7 +1,23 @@
 {
-  "source": "https://huggingface.co/datasets/no7z/hsk-sentences-audio",
-  "sourceRevision": "735668a39ac8a0f21ff45def4c9d1b837ed191bf",
-  "license": "CC-BY-SA-4.0",
-  "fileCount": 8708,
-  "totalBytes": 159264574
+  "source": "https://ankiweb.net/shared/info/258311532",
+  "sourceRelease": "https://github.com/NewHSK3/new-hsk-3-anki-deck/releases/tag/v1.0",
+  "creator": "NewHSK3",
+  "usage": "Personal, classroom and educational use; noncommercial.",
+  "sourcePackages": [
+    "New_HSK_30_Mandarin_Chinese_Sentence_Deck.apkg",
+    "New.HSK.3.0__HSK.5.apkg",
+    "New.HSK.3.0__HSK.6.apkg"
+  ],
+  "sourceNoteCount": 16200,
+  "duplicateSentenceCount": 32,
+  "fileCount": 16168,
+  "totalBytes": 659262143,
+  "levelCounts": {
+    "1": 883,
+    "2": 592,
+    "3": 1494,
+    "4": 3000,
+    "5": 4799,
+    "6": 5400
+  }
 }

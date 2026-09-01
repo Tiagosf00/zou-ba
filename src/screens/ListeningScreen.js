@@ -143,6 +143,11 @@ const ListeningScreen = () => {
         for (const audioUrl of audioUrls) {
             const audio = new window.Audio(audioUrl);
             audio.preload = 'auto';
+            audio.playbackRate = mode === 'slow' ? 0.75 : 1;
+            audio.defaultPlaybackRate = audio.playbackRate;
+            if ('preservesPitch' in audio) {
+                audio.preservesPitch = true;
+            }
             audioRef.current = audio;
             audio.onended = () => {
                 if (audioRef.current === audio) {
@@ -372,7 +377,7 @@ const ListeningScreen = () => {
                 <View style={styles.audioError}>
                     <Ionicons color={colors.error} name="cloud-offline-outline" size={17} />
                     <Text style={styles.audioErrorText}>
-                        Audio could not be played. Check your connection and try again.
+                        Audio could not be played. Refresh the page and try again.
                     </Text>
                 </View>
             ) : null}
@@ -521,8 +526,8 @@ const ListeningScreen = () => {
                 >
                     <Ionicons color={colors.textMuted} name="information-circle-outline" size={15} />
                     <Text style={styles.attributionText}>
-                        CC BY-SA 4.0 dataset by no7z · synthetic CosyVoice2 speech · local audio
-                        with a Hugging Face fallback
+                        Sentences and AI-generated audio from the New HSK 3.0 Mandarin Chinese
+                        Sentence Deck by NewHSK3 · used for free educational practice
                     </Text>
                     <Ionicons color={colors.textMuted} name="open-outline" size={14} />
                 </Pressable>

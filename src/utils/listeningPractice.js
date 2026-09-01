@@ -1,9 +1,7 @@
 import { getStaticBaseUrl } from './audio';
 
-const DATASET_RESOLVE_URL =
-    'https://huggingface.co/datasets/no7z/hsk-sentences-audio/resolve/main/';
 const LOCAL_AUDIO_PATH = 'audio/hsk-sentences';
-const SAFE_AUDIO_PATH = /^audio\/hsk[1-6]-\d{4}(?:_slow)?\.mp3$/;
+const SAFE_AUDIO_PATH = /^audio\/hsk[1-6]-\d{4}\.mp3$/;
 
 const IGNORED_CHARACTERS =
     /[\s\u3000,，.。!！?？、;；:：'"“”‘’…—\-()（）\[\]【】《》〈〉]/g;
@@ -32,10 +30,7 @@ export const getListeningAudioUrls = (audioPath) => {
         return [];
     }
 
-    return [
-        `${getStaticBaseUrl()}${LOCAL_AUDIO_PATH}/${audioPath}`,
-        `${DATASET_RESOLVE_URL}${audioPath}`,
-    ];
+    return [`${getStaticBaseUrl()}${LOCAL_AUDIO_PATH}/${audioPath}`];
 };
 
 export const getListeningAudioUrl = (audioPath) => getListeningAudioUrls(audioPath)[0] || null;
