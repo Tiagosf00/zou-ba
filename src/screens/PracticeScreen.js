@@ -1658,7 +1658,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             textAlign: 'right',
         },
         answerCard: {
-            flexDirection: 'row',
+            flexDirection: 'column',
             alignItems: 'stretch',
             gap: 12,
             paddingVertical: 12,
@@ -1755,7 +1755,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             minWidth: 92,
             paddingHorizontal: 12,
             paddingVertical: 10,
-            alignSelf: 'center',
+            alignSelf: 'stretch',
         },
         nextButtonCompact: {
             minWidth: 0,

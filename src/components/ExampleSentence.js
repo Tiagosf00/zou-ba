@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -10,6 +10,8 @@ import { claimWebAudio, releaseWebAudio, stopWebAudio } from '../utils/audio';
 
 const ExampleContent = ({ item }) => {
     const { colors, typography } = useAppTheme();
+    const { width } = useWindowDimensions();
+    const isWide = width >= 768;
     const isFocused = useIsFocused();
     const examples = useMemo(() => getWordExamples(item), [item]);
     const [index, setIndex] = useState(0);
@@ -76,58 +78,88 @@ const ExampleContent = ({ item }) => {
     const translation = example.translation;
 
     return (
-        <View style={styles.container}>
-            <View style={styles.controls}>
-                <Text style={[styles.label, { color: colors.accent }]}>Example</Text>
-                {canPlay ? (
-                    <Pressable accessibilityRole="button" accessibilityLabel="Play example sentence"
-                        disabled={playState === 'loading'} onPress={play}
-                        style={styles.control}>
-                        <Ionicons name={playState === 'loading' ? 'hourglass-outline' : 'volume-high-outline'}
-                            size={18} color={colors.primaryStrong} />
-                        <Text style={{ color: colors.primaryStrong }}>
-                            {playState === 'playing' ? 'Replay sentence' : 'Play sentence'}
-                        </Text>
-                    </Pressable>
-                ) : null}
+        <View testID="word-example-card" style={[
+            styles.container,
+            { backgroundColor: colors.surfaceMuted, borderColor: colors.borderStrong },
+            isWide && styles.containerWide,
+        ]}>
+            <View style={styles.header}>
+                <View style={styles.heading}>
+                    <View style={[styles.headingIcon, { backgroundColor: colors.accentSoft }]}>
+                        <Ionicons name="chatbubble-ellipses-outline" size={19} color={colors.accent} />
+                    </View>
+                    <Text style={[styles.label, { color: colors.text }]}>In context</Text>
+                </View>
+                <View style={[styles.counter, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.counterText, { color: colors.textSecondary }]}>
+                        {index + 1} of {examples.length}
+                    </Text>
+                </View>
             </View>
-            <Text style={[styles.sentence, { color: colors.text, fontFamily: typography.headingFont }]}>
+            <Text selectable testID="word-example-chinese" style={[
+                styles.sentence, isWide && styles.sentenceWide,
+                { color: colors.text, fontFamily: typography.studyFont },
+            ]}>
                 {parts.map((part, index) => (
                     <React.Fragment key={`${item.id}-${index}`}>
                         {part}
                         {index < parts.length - 1 ? (
-                            <Text style={[styles.target, { color: colors.primaryStrong }]}>
+                            <Text style={[styles.target, { color: colors.primaryStrong, backgroundColor: colors.primarySoft }]}>
                                 {target}
                             </Text>
                         ) : null}
                     </React.Fragment>
                 ))}
             </Text>
-            {pinyin ? <Text style={[styles.pinyin, { color: colors.textSecondary }]}>{pinyin}</Text> : null}
+            {pinyin ? <Text selectable style={[styles.pinyin, { color: colors.textSecondary }]}>{pinyin}</Text> : null}
             {translation ? (
-                <Text style={[styles.translation, { color: colors.textSecondary }]}>
-                    {translation}
-                </Text>
+                <View style={[styles.translationBlock, { borderTopColor: colors.border }]}>
+                    <Text selectable style={[styles.translation, { color: colors.text }]}>
+                        {translation}
+                    </Text>
+                </View>
             ) : null}
+            <View style={styles.controls}>
+                {canPlay ? (
+                    <Pressable accessibilityRole="button" accessibilityLabel="Play example sentence"
+                        disabled={playState === 'loading'} onPress={play}
+                        style={({ pressed, hovered }) => [
+                            styles.control, styles.playButton,
+                            { backgroundColor: colors.primaryStrong },
+                            (pressed || hovered) && styles.interacting,
+                            playState === 'loading' && styles.loading,
+                        ]}>
+                        <Ionicons name={playState === 'loading' ? 'hourglass-outline' : 'volume-high-outline'}
+                            size={21} color={colors.onPrimary} />
+                        <Text style={[styles.controlText, { color: colors.onPrimary }]}>
+                            {playState === 'loading' ? 'Loading…' : playState === 'playing' ? 'Replay sentence' : 'Play sentence'}
+                        </Text>
+                    </Pressable>
+                ) : null}
+                {examples.length > 1 ? (
+                    <Pressable accessibilityRole="button" accessibilityLabel="Another example"
+                        onPress={() => { stop(); setPlayState('idle'); setIndex((value) => (value + 1) % examples.length); }}
+                        style={({ pressed, hovered }) => [
+                            styles.control, styles.nextButton,
+                            { backgroundColor: colors.surface, borderColor: colors.borderStrong },
+                            (pressed || hovered) && styles.interacting,
+                        ]}>
+                        <Text style={[styles.controlText, { color: colors.text }]}>Another example</Text>
+                        <Ionicons name="arrow-forward" size={18} color={colors.text} />
+                    </Pressable>
+                ) : null}
+            </View>
             {playState === 'error' ? (
-                <Text accessibilityRole="alert" style={{ color: colors.error }}>
+                <Text accessibilityRole="alert" style={[styles.error, { color: colors.error }]}>
                     Could not play this sentence. Tap Play sentence to retry.
                 </Text>
-            ) : null}
-            {examples.length > 1 ? (
-                <Pressable accessibilityRole="button" accessibilityLabel="Another example"
-                    onPress={() => { stop(); setPlayState('idle'); setIndex((value) => (value + 1) % examples.length); }}
-                    style={styles.control}>
-                    <Text style={{ color: colors.primaryStrong }}>Another example</Text>
-                    <Text style={{ color: colors.textSecondary }}>{index + 1}/{examples.length}</Text>
-                </Pressable>
             ) : null}
             {example.audioNormal ? (
                 <Pressable accessibilityRole="link" accessibilityLabel="Example source: NewHSK3 Anki deck"
                     onPress={() => Linking.openURL('https://ankiweb.net/shared/info/258311532')}
                     style={styles.source}>
                     <Text style={[styles.credit, { color: colors.textSecondary }]}>
-                        Sentences & AI audio: NewHSK3 ↗
+                        Source: NewHSK3 · AI audio ↗
                     </Text>
                 </Pressable>
             ) : null}
@@ -136,48 +168,76 @@ const ExampleContent = ({ item }) => {
 };
 
 const styles = StyleSheet.create({
+    container: {
+        marginTop: 18,
+        padding: 18,
+        borderWidth: 1,
+        borderRadius: 20,
+        gap: 12,
+        minWidth: 0,
+    },
+    containerWide: { padding: 24, gap: 14 },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 4,
+    },
+    heading: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+    headingIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+    counter: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+    counterText: { fontSize: 13, fontWeight: '600', lineHeight: 20 },
     controls: {
         flexDirection: 'row',
         alignItems: 'center',
         flexWrap: 'wrap',
-        gap: 12,
+        gap: 10,
+        marginTop: 6,
     },
     control: {
         flexDirection: 'row',
         alignItems: 'center',
-        alignSelf: 'flex-start',
-        gap: 6,
-        minHeight: 40,
-        paddingVertical: 6,
-        paddingHorizontal: 4,
+        justifyContent: 'center',
+        gap: 8,
+        minHeight: 48,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 13,
+        flexGrow: 1,
+        flexShrink: 1,
     },
-    source: { alignSelf: 'flex-start', paddingVertical: 6 },
-    credit: { fontSize: 11 },
-    container: {
-        gap: 3,
-        marginTop: 12,
-    },
+    playButton: { flexBasis: 165 },
+    nextButton: { flexBasis: 180, borderWidth: 1 },
+    controlText: { fontSize: 15, fontWeight: '700', lineHeight: 22, flexShrink: 1 },
+    interacting: { opacity: 0.84 },
+    loading: { opacity: 0.7 },
+    source: { alignSelf: 'flex-start', paddingVertical: 4 },
+    credit: { fontSize: 12, lineHeight: 18 },
     label: {
-        fontSize: 10,
-        fontWeight: '800',
-        letterSpacing: 0.8,
-        textTransform: 'uppercase',
+        fontSize: 16,
+        fontWeight: '700',
     },
     sentence: {
-        fontSize: 17,
-        lineHeight: 24,
+        fontSize: 26,
+        lineHeight: 42,
+        fontWeight: '500',
     },
+    sentenceWide: { fontSize: 30, lineHeight: 46 },
     target: {
         fontWeight: '900',
     },
     pinyin: {
-        fontSize: 12,
-        lineHeight: 17,
+        fontSize: 17,
+        lineHeight: 28,
     },
+    translationBlock: { borderTopWidth: 1, paddingTop: 14, marginTop: 2 },
     translation: {
-        fontSize: 13,
-        lineHeight: 19,
+        fontSize: 17,
+        lineHeight: 27,
     },
+    error: { fontSize: 14, lineHeight: 22 },
 });
 
 const ExampleSentence = ({ item }) => (
