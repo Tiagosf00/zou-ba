@@ -201,6 +201,8 @@ def collect_package_records(package_path: Path) -> list[dict]:
                                 "level": level,
                                 "noteId": note_id,
                                 "focusWord": fields.get("Focus Word Simplified", ""),
+                                "focusPinyin": fields.get("Focus Word Pinyin", ""),
+                                "focusMeaning": fields.get("Focus Word English", ""),
                                 "chinese": fields["Mandarin Sentence Simplified"],
                                 "traditional": fields.get("Mandarin Sentence Traditional", ""),
                                 "pinyin": fields.get("Mandarin Sentence Pinyin", ""),

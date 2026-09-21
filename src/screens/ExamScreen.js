@@ -17,6 +17,7 @@ import ModernButton from '../components/ModernButton';
 import AudioButton from '../components/AudioButton';
 import AudioChoiceButton from '../components/AudioChoiceButton';
 import AudioPrompt from '../components/AudioPrompt';
+import ExampleSentence from '../components/ExampleSentence';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -500,6 +501,7 @@ const ExamScreen = () => {
                 {getMeaningSummary(item)}
             </Text>
             {renderDetailedMeaning(item, detailKey)}
+            <ExampleSentence item={item} />
         </View>
     );
 

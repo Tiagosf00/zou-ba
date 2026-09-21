@@ -20,3 +20,17 @@ To rebuild the corpus, download the HSK 1-4 package from AnkiWeb and run:
 ```sh
 npm run download:sentence-audio -- --hsk1-4 /path/to/New_HSK_30_Mandarin_Chinese_Sentence_Deck.apkg
 ```
+
+Vocabulary answer details reuse these sentences and MP3s through
+`assets/hsk_word_examples.json`. Rebuild that lookup without changing vocabulary or
+extracting audio again:
+
+```sh
+python3 scripts/build_word_examples.py /path/to/HSK1-4.apkg /path/to/HSK5.apkg /path/to/HSK6.apkg
+```
+
+The lookup matches HSK level, focus word and tone-preserving pinyin, with reviewed
+sense filters for same-reading homographs. Its `unmatched` list records entries
+requiring review. Existing manually written examples remain a text-only fallback.
+The packages contain sentence recordings only; existing standalone word audio is
+unchanged.
