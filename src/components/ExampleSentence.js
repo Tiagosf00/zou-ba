@@ -124,34 +124,33 @@ const ExampleContent = ({ item }) => {
                     <Pressable accessibilityRole="button" accessibilityLabel="Play example sentence"
                         disabled={playState === 'loading'} onPress={play}
                         style={({ pressed, hovered }) => [
-                            styles.control, styles.playButton,
-                            { backgroundColor: colors.primaryStrong },
+                            styles.control,
+                            {
+                                backgroundColor: playState === 'playing' ? colors.primaryStrong : colors.surface,
+                                borderColor: playState === 'playing' ? colors.primaryStrong : colors.borderStrong,
+                            },
                             (pressed || hovered) && styles.interacting,
                             playState === 'loading' && styles.loading,
                         ]}>
                         <Ionicons name={playState === 'loading' ? 'hourglass-outline' : 'volume-high-outline'}
-                            size={21} color={colors.onPrimary} />
-                        <Text style={[styles.controlText, { color: colors.onPrimary }]}>
-                            {playState === 'loading' ? 'Loading…' : playState === 'playing' ? 'Replay sentence' : 'Play sentence'}
-                        </Text>
+                            size={21} color={playState === 'playing' ? colors.onPrimary : colors.primaryStrong} />
                     </Pressable>
                 ) : null}
                 {examples.length > 1 ? (
                     <Pressable accessibilityRole="button" accessibilityLabel="Another example"
                         onPress={() => { stop(); setPlayState('idle'); setIndex((value) => (value + 1) % examples.length); }}
                         style={({ pressed, hovered }) => [
-                            styles.control, styles.nextButton,
+                            styles.control,
                             { backgroundColor: colors.surface, borderColor: colors.borderStrong },
                             (pressed || hovered) && styles.interacting,
                         ]}>
-                        <Text style={[styles.controlText, { color: colors.text }]}>Another example</Text>
-                        <Ionicons name="arrow-forward" size={18} color={colors.text} />
+                        <Ionicons name="arrow-forward" size={21} color={colors.primaryStrong} />
                     </Pressable>
                 ) : null}
             </View>
             {playState === 'error' ? (
                 <Text accessibilityRole="alert" style={[styles.error, { color: colors.error }]}>
-                    Could not play this sentence. Tap Play sentence to retry.
+                    Could not play this sentence. Tap the speaker to retry.
                 </Text>
             ) : null}
             {example.audioNormal ? (
@@ -197,20 +196,14 @@ const styles = StyleSheet.create({
         marginTop: 6,
     },
     control: {
-        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 8,
-        minHeight: 48,
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 13,
-        flexGrow: 1,
-        flexShrink: 1,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        borderWidth: 1,
+        flexShrink: 0,
     },
-    playButton: { flexBasis: 165 },
-    nextButton: { flexBasis: 180, borderWidth: 1 },
-    controlText: { fontSize: 15, fontWeight: '700', lineHeight: 22, flexShrink: 1 },
     interacting: { opacity: 0.84 },
     loading: { opacity: 0.7 },
     source: { alignSelf: 'flex-start', paddingVertical: 4 },
