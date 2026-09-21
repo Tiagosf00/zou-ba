@@ -85,15 +85,41 @@ const ExampleContent = ({ item }) => {
         ]}>
             <View style={styles.header}>
                 <View style={styles.heading}>
-                    <View style={[styles.headingIcon, { backgroundColor: colors.accentSoft }]}>
-                        <Ionicons name="chatbubble-ellipses-outline" size={19} color={colors.accent} />
+                    <Text style={[styles.label, { color: colors.text }]}>Examples</Text>
+                    <View style={[styles.counter, { backgroundColor: colors.surface }]}>
+                        <Text style={[styles.counterText, { color: colors.textSecondary }]}>
+                            {index + 1}/{examples.length}
+                        </Text>
                     </View>
-                    <Text style={[styles.label, { color: colors.text }]}>In context</Text>
                 </View>
-                <View style={[styles.counter, { backgroundColor: colors.surface }]}>
-                    <Text style={[styles.counterText, { color: colors.textSecondary }]}>
-                        {index + 1} of {examples.length}
-                    </Text>
+                <View style={styles.controls}>
+                    {canPlay ? (
+                        <Pressable accessibilityRole="button" accessibilityLabel="Play example sentence"
+                            disabled={playState === 'loading'} onPress={play}
+                            style={({ pressed, hovered }) => [
+                                styles.control,
+                                {
+                                    backgroundColor: playState === 'playing' ? colors.primaryStrong : colors.surface,
+                                    borderColor: playState === 'playing' ? colors.primaryStrong : colors.borderStrong,
+                                },
+                                (pressed || hovered) && styles.interacting,
+                                playState === 'loading' && styles.loading,
+                            ]}>
+                            <Ionicons name={playState === 'loading' ? 'hourglass-outline' : 'volume-high-outline'}
+                                size={21} color={playState === 'playing' ? colors.onPrimary : colors.primaryStrong} />
+                        </Pressable>
+                    ) : null}
+                    {examples.length > 1 ? (
+                        <Pressable accessibilityRole="button" accessibilityLabel="Another example"
+                            onPress={() => { stop(); setPlayState('idle'); setIndex((value) => (value + 1) % examples.length); }}
+                            style={({ pressed, hovered }) => [
+                                styles.control,
+                                { backgroundColor: colors.surface, borderColor: colors.borderStrong },
+                                (pressed || hovered) && styles.interacting,
+                            ]}>
+                            <Ionicons name="arrow-forward" size={21} color={colors.primaryStrong} />
+                        </Pressable>
+                    ) : null}
                 </View>
             </View>
             <Text selectable testID="word-example-chinese" style={[
@@ -119,35 +145,6 @@ const ExampleContent = ({ item }) => {
                     </Text>
                 </View>
             ) : null}
-            <View style={styles.controls}>
-                {canPlay ? (
-                    <Pressable accessibilityRole="button" accessibilityLabel="Play example sentence"
-                        disabled={playState === 'loading'} onPress={play}
-                        style={({ pressed, hovered }) => [
-                            styles.control,
-                            {
-                                backgroundColor: playState === 'playing' ? colors.primaryStrong : colors.surface,
-                                borderColor: playState === 'playing' ? colors.primaryStrong : colors.borderStrong,
-                            },
-                            (pressed || hovered) && styles.interacting,
-                            playState === 'loading' && styles.loading,
-                        ]}>
-                        <Ionicons name={playState === 'loading' ? 'hourglass-outline' : 'volume-high-outline'}
-                            size={21} color={playState === 'playing' ? colors.onPrimary : colors.primaryStrong} />
-                    </Pressable>
-                ) : null}
-                {examples.length > 1 ? (
-                    <Pressable accessibilityRole="button" accessibilityLabel="Another example"
-                        onPress={() => { stop(); setPlayState('idle'); setIndex((value) => (value + 1) % examples.length); }}
-                        style={({ pressed, hovered }) => [
-                            styles.control,
-                            { backgroundColor: colors.surface, borderColor: colors.borderStrong },
-                            (pressed || hovered) && styles.interacting,
-                        ]}>
-                        <Ionicons name="arrow-forward" size={21} color={colors.primaryStrong} />
-                    </Pressable>
-                ) : null}
-            </View>
             {playState === 'error' ? (
                 <Text accessibilityRole="alert" style={[styles.error, { color: colors.error }]}>
                     Could not play this sentence. Tap the speaker to retry.
@@ -184,16 +181,13 @@ const styles = StyleSheet.create({
         gap: 8,
         marginBottom: 4,
     },
-    heading: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-    headingIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
-    counter: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+    heading: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    counter: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 20 },
     counterText: { fontSize: 13, fontWeight: '600', lineHeight: 20 },
     controls: {
         flexDirection: 'row',
         alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 10,
-        marginTop: 6,
+        gap: 8,
     },
     control: {
         alignItems: 'center',

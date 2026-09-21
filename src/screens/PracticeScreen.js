@@ -18,6 +18,7 @@ import AudioButton from '../components/AudioButton';
 import AudioChoiceButton from '../components/AudioChoiceButton';
 import AudioPrompt from '../components/AudioPrompt';
 import ExampleSentence from '../components/ExampleSentence';
+import { getWordExamples } from '../utils/wordExamples';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
@@ -488,8 +489,9 @@ const PracticeScreen = () => {
     };
     const renderDetailedMeaning = (item, detailKey, centered = false) => {
         const detailedMeaning = getDetailedMeaning(item);
+        const hasExamples = detailKey !== 'question' && getWordExamples(item).length > 0;
 
-        if (!detailedMeaning) {
+        if (!detailedMeaning && !hasExamples) {
             return null;
         }
 
@@ -498,6 +500,9 @@ const PracticeScreen = () => {
         return (
             <View style={[styles.detailSection, centered && styles.detailSectionCentered]}>
                 <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={hasExamples ? 'Meaning and examples' : 'Detailed meaning'}
+                    aria-expanded={Boolean(isExpanded)}
                     onPress={() => toggleDetailVisibility(detailKey)}
                     style={({ pressed }) => [
                         styles.detailToggle,
@@ -516,21 +521,26 @@ const PracticeScreen = () => {
                             centered && styles.detailToggleLabelCentered,
                         ]}
                     >
-                        {isExpanded ? 'Hide detail' : 'Detailed meaning'}
+                        {hasExamples ? 'Meaning & examples' : 'Detailed meaning'}
                     </Text>
                 </Pressable>
 
                 {isExpanded ? (
-                    <View style={[styles.detailPanel, centered && styles.detailPanelCentered]}>
-                        <Text
-                            style={[
-                                styles.detailText,
-                                centered && styles.detailTextCentered,
-                                isWebDesktop && styles.detailTextDesktop,
-                            ]}
-                        >
-                            {detailedMeaning}
-                        </Text>
+                    <View style={styles.detailContents}>
+                        {detailedMeaning ? (
+                            <View style={[styles.detailPanel, centered && styles.detailPanelCentered]}>
+                                <Text
+                                    style={[
+                                        styles.detailText,
+                                        centered && styles.detailTextCentered,
+                                        isWebDesktop && styles.detailTextDesktop,
+                                    ]}
+                                >
+                                    {detailedMeaning}
+                                </Text>
+                            </View>
+                        ) : null}
+                        {hasExamples ? <ExampleSentence item={item} /> : null}
                     </View>
                 ) : null}
             </View>
@@ -638,7 +648,6 @@ const PracticeScreen = () => {
                 {getMeaningSummary(item)}
             </Text>
             {renderDetailedMeaning(item, detailKey)}
-            <ExampleSentence item={item} />
         </View>
     );
     const optionGrid = (
@@ -1574,6 +1583,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 8,
             alignItems: 'flex-start',
         },
+        detailContents: { width: '100%' },
         detailSectionCentered: {
             width: '100%',
             alignItems: 'center',
