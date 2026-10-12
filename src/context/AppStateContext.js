@@ -15,6 +15,7 @@ import {
     normalizeAppState,
     pickNewerAppState,
     resolveCloudStateConflict,
+    resolveCloudSaveResponse,
     withUpdatedProgress,
     withUpdatedSettings,
 } from '../utils/appState';
@@ -138,12 +139,9 @@ export const AppStateProvider = ({ children }) => {
                 const savedState = normalizeAppState(response?.state || normalizedState);
 
                 lastSyncedUpdatedAtRef.current = savedState.updatedAt;
-                await persistStateLocally(normalizedSession.user.id, savedState);
-
+                // The app-state effect persists the chosen state, including newer local edits.
                 setAppState((currentState) =>
-                    compareAppStateFreshness(currentState, savedState) > 0
-                        ? currentState
-                        : savedState,
+                    resolveCloudSaveResponse(currentState, normalizedState, savedState),
                 );
                 setSyncState({
                     kind: 'synced',

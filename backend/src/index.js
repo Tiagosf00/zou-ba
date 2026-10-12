@@ -86,6 +86,7 @@ const expandCompactCardProgress = (entry) => {
         consecutiveCorrect: getNumericCount(entry[5]),
         lastReviewedAt,
         nextReviewAt,
+        ...(entry[8] != null && toIsoString(entry[8]) ? { introducedAt: toIsoString(entry[8]) } : {}),
     };
 };
 
@@ -108,6 +109,7 @@ export const expandCloudState = (value) => {
             version: value.p?.v || 1,
             profileId: value.p?.i || 'default',
             cards,
+            dailyStudy: value.p?.d || null,
             updatedAt: toIsoString(value.p?.u) || toIsoString(value.u) || getNowIso(),
         },
         updatedAt: toIsoString(value.u) || toIsoString(value.p?.u) || getNowIso(),
@@ -123,6 +125,7 @@ const compactCardProgress = (entry) => [
     getNumericCount(entry?.consecutiveCorrect),
     encodeDate(entry?.lastReviewedAt),
     encodeDate(entry?.nextReviewAt),
+    encodeDate(entry?.introducedAt),
 ];
 
 export const compactCloudState = (value) => {
@@ -149,6 +152,7 @@ export const compactCloudState = (value) => {
             i: progress.profileId || 'default',
             u: encodeDate(progress.updatedAt),
             c: cards,
+            d: progress.dailyStudy || null,
         },
         u: encodeDate(expandedState?.updatedAt),
     };
@@ -626,11 +630,29 @@ const mergeProgressCards = (existingCards = {}, incomingCards = {}) => {
                     return [[cardId, existingEntry]];
                 }
 
-                return compareCardProgress(incomingEntry, existingEntry) >= 0
-                    ? [[cardId, incomingEntry]]
-                    : [[cardId, existingEntry]];
+                const selected = compareCardProgress(incomingEntry, existingEntry) >= 0
+                    ? incomingEntry : existingEntry;
+                const introductions = [existingEntry.introducedAt, incomingEntry.introducedAt]
+                    .map(toTimestamp).filter((timestamp) => timestamp !== null);
+                return [[cardId, {
+                    ...selected,
+                    ...(introductions.length ? {
+                        introducedAt: new Date(Math.min(...introductions)).toISOString(),
+                    } : {}),
+                }]];
             }),
     );
+};
+
+const mergeDailyStudy = (existing, incoming) => {
+    if (!existing) return incoming || null;
+    if (!incoming) return existing;
+    const newer = (toTimestamp(incoming.updatedAt) ?? 0) >= (toTimestamp(existing.updatedAt) ?? 0)
+        ? incoming : existing;
+    return existing.dayKey === incoming.dayKey ? {
+        ...newer,
+        extraNewWords: Math.max(getNumericCount(existing.extraNewWords), getNumericCount(incoming.extraNewWords)),
+    } : newer;
 };
 
 export const mergeAppStateForSave = (
@@ -656,10 +678,12 @@ export const mergeAppStateForSave = (
     return {
         ...existingState,
         ...incomingState,
+        settings: { ...existingState.settings, ...incomingState.settings },
         progress: {
             ...existingProgress,
             ...incomingProgress,
             cards: mergedCards,
+            dailyStudy: mergeDailyStudy(existingProgress.dailyStudy, incomingProgress.dailyStudy),
             updatedAt,
         },
         updatedAt,

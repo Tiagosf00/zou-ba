@@ -26,6 +26,7 @@ const encodeCardProgress = (entry) => [
     entry.consecutiveCorrect || 0,
     encodeDate(entry.lastReviewedAt),
     encodeDate(entry.nextReviewAt),
+    encodeDate(entry.introducedAt),
 ];
 
 const decodeCardProgress = (entry) => {
@@ -49,6 +50,7 @@ const decodeCardProgress = (entry) => {
         consecutiveCorrect: Number.isFinite(entry[5]) ? entry[5] : 0,
         lastReviewedAt,
         nextReviewAt,
+        ...(entry[8] != null && toIsoString(entry[8]) ? { introducedAt: toIsoString(entry[8]) } : {}),
     };
 };
 
@@ -74,6 +76,7 @@ export const decodeCloudState = (value) => {
             version: value.p?.v || 1,
             profileId: value.p?.i || 'default',
             cards,
+            dailyStudy: value.p?.d || null,
             updatedAt: toIsoString(value.p?.u) || toIsoString(value.u) || new Date().toISOString(),
         },
         updatedAt: toIsoString(value.u) || toIsoString(value.p?.u) || new Date().toISOString(),
@@ -97,6 +100,7 @@ export const encodeCloudState = (value) => {
             i: normalizedState.progress?.profileId || 'default',
             u: encodeDate(normalizedState.progress?.updatedAt),
             c: cards,
+            d: normalizedState.progress?.dailyStudy || null,
         },
         u: encodeDate(normalizedState.updatedAt),
     };

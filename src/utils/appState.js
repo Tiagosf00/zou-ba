@@ -106,6 +106,7 @@ export const withUpdatedProgress = (currentState, nextProgress) => {
             DEFAULT_PROFILE_ID,
             normalizedProgress.cards,
             updatedAt,
+            normalizedProgress.dailyStudy,
         ),
         updatedAt,
     });
@@ -131,6 +132,16 @@ export const compareAppStateFreshness = (leftState, rightState) => {
     }
 
     return leftTimestamp > rightTimestamp ? 1 : -1;
+};
+
+export const resolveCloudSaveResponse = (currentState, sentState, savedState) => {
+    // Server timestamps can be newer than a local choice made during the request.
+    // Keep that choice pending for the next sync instead of rolling it back.
+    if (currentState.updatedAt !== sentState.updatedAt
+        && compareAppStateFreshness(currentState, sentState) >= 0) {
+        return currentState;
+    }
+    return compareAppStateFreshness(currentState, savedState) > 0 ? currentState : savedState;
 };
 
 export const isPristineAppState = (value) => {

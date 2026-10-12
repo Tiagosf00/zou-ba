@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Pressable,
@@ -131,6 +131,14 @@ const SettingsScreen = () => {
     const [password, setPassword] = useState('');
     const [feedback, setFeedback] = useState(null);
     const [isCustomEditorVisible, setIsCustomEditorVisible] = useState(false);
+    const [newWordInput, setNewWordInput] = useState(String(settings.newWordsPerDay));
+    useEffect(() => setNewWordInput(String(settings.newWordsPerDay)), [settings.newWordsPerDay]);
+
+    const setNewWordTarget = (text) => {
+        if (!/^\d{0,4}$/.test(text)) return;
+        setNewWordInput(text);
+        if (text !== '') updateSettings({ newWordsPerDay: Math.min(1000, Number(text)) });
+    };
 
     const inputMode = getPracticeMode(settings.inputMode);
     const outputMode = getPracticeMode(settings.outputMode);
@@ -749,6 +757,25 @@ const SettingsScreen = () => {
                             <View style={styles.modeList}>
                                 {renderModeRow('outputMode', settings.outputMode)}
                             </View>
+                        </Card>
+                    </View>
+
+                    <View style={[styles.sectionSlot, isWebDesktop && styles.sectionSlotHalf]}>
+                        <Card style={styles.card}>
+                            <Text style={styles.sectionTitle}>Learning pace</Text>
+                            <Text style={styles.inputLabel}>New words per day</Text>
+                            <TextInput
+                                accessibilityLabel="New words per day"
+                                keyboardType="number-pad"
+                                inputMode="numeric"
+                                value={newWordInput}
+                                onChangeText={setNewWordTarget}
+                                onBlur={() => setNewWordInput(String(settings.newWordsPerDay))}
+                                style={styles.textInput}
+                            />
+                            <Text style={styles.sectionSubtitle}>
+                                One new word every four reviews. Set 0 for reviews only.
+                            </Text>
                         </Card>
                     </View>
                 </View>

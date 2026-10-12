@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useIsFocused } from '@react-navigation/native';
 
 import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
@@ -30,6 +31,7 @@ import {
 } from '../utils/vocabularyPool';
 import {
     buildRound,
+    addExtraNewWords,
     createPracticeProgress,
     DEFAULT_PROFILE_ID,
     getDisplayLines,
@@ -37,9 +39,10 @@ import {
     getDetailedMeaning,
     getMeaningLines,
     getTrainingSnapshot,
+    getDailyStudySnapshot,
     MINIMUM_ITEMS_PER_ROUND,
     pickNextQuestion,
-    recordRoundResult,
+    recordStudyAnswer,
 } from '../utils/practice';
 
 import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
@@ -48,6 +51,7 @@ const PROFILE_ID = DEFAULT_PROFILE_ID;
 
 const PracticeScreen = () => {
     const { settings, progress, updateProgress, isHydrated } = useAppState();
+    const isFocused = useIsFocused();
     const { width, height } = useWindowDimensions();
     const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
     const desktopScale = isWebDesktop ? Math.min(Math.max((width - 1120) / 720, 0), 1) : 0;
@@ -95,6 +99,7 @@ const PracticeScreen = () => {
     const [selectedOption, setSelectedOption] = useState(null);
     const [answerState, setAnswerState] = useState(null);
     const [streak, setStreak] = useState(0);
+    const [clockNow, setClockNow] = useState(() => new Date());
     const [isSnapshotVisible, setIsSnapshotVisible] = useState(false);
     const [detailVisibility, setDetailVisibility] = useState({
         question: false,
@@ -142,7 +147,7 @@ const PracticeScreen = () => {
         });
     };
 
-    const loadRound = (cards = progressRef.current.cards) => {
+    const loadRound = (currentProgress = progressRef.current) => {
         if (filteredData.length < MINIMUM_ITEMS_PER_ROUND) {
             setRound(null);
             setSelectedOption(null);
@@ -151,11 +156,15 @@ const PracticeScreen = () => {
             return;
         }
 
+        const now = new Date();
+        const cards = currentProgress.cards;
+        const study = getDailyStudySnapshot(cards, settings, currentProgress.dailyStudy, now);
         const nextQuestion = pickNextQuestion(
             filteredData,
             cards,
-            new Date(),
+            now,
             recentQuestionIdsRef.current,
+            study,
         );
 
         if (nextQuestion) {
@@ -163,7 +172,10 @@ const PracticeScreen = () => {
         }
 
         setRound(
-            nextQuestion ? buildRound(filteredData, nextQuestion, settings.outputMode) : null,
+            nextQuestion ? {
+                ...buildRound(filteredData, nextQuestion, settings.outputMode),
+                isNew: !cards[nextQuestion.id],
+            } : null,
         );
         setSelectedOption(null);
         setAnswerState(null);
@@ -175,14 +187,24 @@ const PracticeScreen = () => {
     }, [progress]);
 
     useEffect(() => {
-        if (!isHydrated) {
+        if (!isHydrated || !isFocused) {
             return;
         }
 
         recentQuestionIdsRef.current = [];
         setStreak(0);
-        loadRound(progressRef.current.cards);
-    }, [isHydrated, poolKey]);
+        loadRound(progressRef.current);
+    }, [isHydrated, isFocused, poolKey, settings.newWordsPerDay, settings.studyTimeZone]);
+
+    useEffect(() => {
+        const timer = setInterval(() => setClockNow(new Date()), 30000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // Wake an empty queue when a review becomes due or a new study day starts.
+    useEffect(() => {
+        if (isHydrated && isFocused && !round) loadRound();
+    }, [clockNow, isHydrated, isFocused]);
 
     const handleSelection = (item) => {
         if (!round || answerState || !isHydrated) {
@@ -190,17 +212,17 @@ const PracticeScreen = () => {
         }
 
         const answerIsCorrect = item.id === round.question.id;
-        const nextCards = recordRoundResult(
-            progressRef.current.cards,
+        const nextProgress = recordStudyAnswer(
+            progressRef.current,
             round.question,
             answerIsCorrect,
+            settings,
             new Date(),
         );
 
         setSelectedOption(item);
         setAnswerState(answerIsCorrect ? 'correct' : 'wrong');
         resetDetailVisibility();
-        const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
         progressRef.current = nextProgress;
         updateProgress(nextProgress);
 
@@ -217,14 +239,14 @@ const PracticeScreen = () => {
             return;
         }
 
-        const nextCards = recordRoundResult(
-            progressRef.current.cards,
+        const nextProgress = recordStudyAnswer(
+            progressRef.current,
             round.question,
             false,
+            settings,
             new Date(),
             { countAsWrong: false },
         );
-        const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
 
         setSelectedOption(null);
         setAnswerState('revealed');
@@ -235,7 +257,13 @@ const PracticeScreen = () => {
     };
 
     const handleNextCard = () => {
-        loadRound(progressRef.current.cards);
+        loadRound(progressRef.current);
+    };
+    const handleLearnMore = () => {
+        const nextProgress = addExtraNewWords(progressRef.current, settings);
+        progressRef.current = nextProgress;
+        updateProgress(nextProgress);
+        if (!round) loadRound(nextProgress);
     };
     const openTrainingSnapshot = () => {
         setIsSnapshotVisible(true);
@@ -248,6 +276,18 @@ const PracticeScreen = () => {
         isHydrated && filteredData.length > 0
             ? getTrainingSnapshot(filteredData, progress.cards, new Date())
             : null;
+    const dailySnapshot = getDailyStudySnapshot(progress.cards, settings, progress.dailyStudy);
+    const dailyProgress = trainingSnapshot ? (
+        <View style={styles.dailyProgress}>
+            <Text style={styles.dailyProgressText}>
+                Reviews due: {trainingSnapshot.dueCount} · Unseen words remaining: {trainingSnapshot.newCount}
+            </Text>
+            {!dailySnapshot.canIntroduce && dailySnapshot.daily.extraNewWords < 1000 && trainingSnapshot.newCount > 0 ? (
+                <ModernButton title="Learn 5 more today" variant="secondary" onPress={handleLearnMore}
+                    style={styles.dailyExtraButton} />
+            ) : null}
+        </View>
+    ) : null;
     const reviewLadderMax = trainingSnapshot
         ? Math.max(1, ...trainingSnapshot.boxCounts)
         : 1;
@@ -263,7 +303,7 @@ const PracticeScreen = () => {
             <View style={styles.snapshotTriggerCopy}>
                 <Text style={styles.snapshotTriggerLabel}>Progress</Text>
                 <Text style={styles.snapshotTriggerValue}>
-                    {trainingSnapshot.readyNowCount} ready now
+                    New today: {dailySnapshot.introducedToday} / {dailySnapshot.allowance}
                 </Text>
             </View>
             <Ionicons color={colors.textMuted} name="chevron-forward" size={16} />
@@ -277,7 +317,7 @@ const PracticeScreen = () => {
                     {trainingSnapshot.studiedCount}/{trainingSnapshot.totalCount} words introduced
                 </Text>
                 <Text style={styles.snapshotSubtitle}>
-                    {trainingSnapshot.readyNowCount} ready now, {trainingSnapshot.scheduledCount}{' '}
+                    {trainingSnapshot.dueCount} reviews due, {trainingSnapshot.scheduledCount}{' '}
                     scheduled later.
                 </Text>
             </View>
@@ -300,8 +340,8 @@ const PracticeScreen = () => {
                 {[
                     {
                         id: 'ready',
-                        label: 'Ready now',
-                        value: trainingSnapshot.readyNowCount,
+                        label: 'Reviews due',
+                        value: trainingSnapshot.dueCount,
                     },
                     {
                         id: 'new',
@@ -388,9 +428,12 @@ const PracticeScreen = () => {
                         : 'Choose a few HSK levels in settings so we can build six answer choices.',
                 }
               : {
-                    eyebrow: 'Caught up',
-                    title: "You're done for now.",
-                    text: `No review or new cards are due across ${poolSummary}. Come back a little later or switch vocabulary pools to study something else.`,
+                    eyebrow: 'Practice',
+                    title: trainingSnapshot?.newCount > 0 && !dailySnapshot.canIntroduce
+                        ? "Today's new-word allowance is complete." : "You're done for now.",
+                    text: trainingSnapshot?.newCount > 0 && !dailySnapshot.canIntroduce
+                        ? `No reviews are due in ${poolSummary} right now. You can learn more today, or return when a review is due.`
+                        : `No review or new cards are ready across ${poolSummary}. Come back a little later or switch vocabulary pools to study something else.`,
                 };
 
         return (
@@ -402,6 +445,7 @@ const PracticeScreen = () => {
                         <Text style={styles.emptyTitle}>{emptyState.title}</Text>
                         <Text style={styles.emptyText}>{emptyState.text}</Text>
                         {trainingSnapshotTrigger}
+                        {dailyProgress}
                         {showRefreshButton ? (
                             <ModernButton
                                 title="Check again"
@@ -810,6 +854,7 @@ const PracticeScreen = () => {
                                     {outputMode.chipLabel.toLowerCase()}, across {poolSummary}.
                                 </Text>
                                 {trainingSnapshotTrigger}
+                                {dailyProgress}
                             </View>
 
                             <View
@@ -877,6 +922,9 @@ const PracticeScreen = () => {
                             {renderQuestionPrompt(question, settings.inputMode)}
 
                             <View style={styles.questionFooter}>
+                                <View style={styles.levelTag}>
+                                    <Text style={styles.levelTagText}>{round.isNew ? 'New' : 'Review'}</Text>
+                                </View>
                                 <View style={styles.levelTag}>
                                     <Text style={styles.levelTagText}>HSK {question.level}</Text>
                                 </View>
@@ -1077,6 +1125,18 @@ const PracticeScreen = () => {
 
 const createStyles = (colors, radii, shadows, typography, layout) =>
     StyleSheet.create({
+        dailyProgress: {
+            gap: 6,
+            marginTop: 8,
+        },
+        dailyProgressText: {
+            color: colors.textSecondary,
+            fontSize: 12,
+            lineHeight: 17,
+        },
+        dailyExtraButton: {
+            minHeight: 44,
+        },
         container: {
             flex: 1,
             backgroundColor: colors.background,

@@ -17,6 +17,53 @@ import {
     verifyPassword,
 } from '../src/index.js';
 
+test('study metadata survives stale saves, legacy clients and compact cloud storage', () => {
+    const daily = {
+        dayKey: '2026-10-12', reviewAnswersSinceNew: 3, extraNewWords: 5,
+        updatedAt: '2026-10-12T10:00:00.000Z',
+    };
+    const card = {
+        box: 2, lastResult: 'correct', correctCount: 3, wrongCount: 0, unknownCount: 0,
+        consecutiveCorrect: 3, lastReviewedAt: '2026-10-12T10:00:00.000Z',
+        nextReviewAt: '2026-10-15T10:00:00.000Z', introducedAt: '2026-10-12T08:00:00.000Z',
+    };
+    const existing = {
+        settings: { newWordsPerDay: 10, studyTimeZone: 'Asia/Shanghai' },
+        progress: { cards: { 1: card }, dailyStudy: daily },
+    };
+    const merged = mergeAppStateForSave(existing, {
+        settings: { themeMode: 'dark' },
+        progress: {
+            cards: { 1: { ...card, correctCount: 4, introducedAt: undefined } },
+            dailyStudy: { ...daily, reviewAnswersSinceNew: 0, extraNewWords: 0,
+                updatedAt: '2026-10-12T09:00:00.000Z' },
+        },
+    });
+    const restored = expandCloudState(compactCloudState(merged));
+    assert.equal(restored.progress.cards[1].correctCount, 4);
+    assert.equal(restored.progress.cards[1].introducedAt, card.introducedAt);
+    assert.deepEqual(restored.progress.dailyStudy, daily);
+    assert.equal(restored.settings.newWordsPerDay, 10);
+    assert.equal(restored.settings.studyTimeZone, 'Asia/Shanghai');
+    assert.deepEqual(mergeAppStateForSave(existing, { progress: { cards: {} } }).progress.dailyStudy, daily);
+});
+
+test('daily state uses the newer day, and overlapping introductions keep the earliest timestamp', () => {
+    const prior = { dayKey: '2026-10-12', reviewAnswersSinceNew: 4, extraNewWords: 10,
+        updatedAt: '2026-10-12T10:00:00.000Z' };
+    const today = { dayKey: '2026-10-13', reviewAnswersSinceNew: 0, extraNewWords: 0,
+        updatedAt: '2026-10-13T10:00:00.000Z' };
+    const early = { correctCount: 1, introducedAt: '2026-10-12T09:00:00.000Z' };
+    const late = { correctCount: 2, introducedAt: '2026-10-12T10:00:00.000Z' };
+    const merged = mergeAppStateForSave(
+        { progress: { cards: { 1: early }, dailyStudy: today } },
+        { progress: { cards: { 1: late }, dailyStudy: prior } },
+    );
+    assert.deepEqual(merged.progress.dailyStudy, today);
+    assert.equal(merged.progress.cards[1].correctCount, 2);
+    assert.equal(merged.progress.cards[1].introducedAt, early.introducedAt);
+});
+
 test('validateUsername normalizes and accepts lowercase handles', () => {
     const result = validateUsername('  Tiago_01 ');
 

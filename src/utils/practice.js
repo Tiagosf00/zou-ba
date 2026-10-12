@@ -9,6 +9,20 @@ const BOX_REVIEW_DELAYS = [
     30 * 24 * 60 * 60 * 1000,
 ];
 const FAILED_CARD_DELAY = 2 * 60 * 1000;
+export const REVIEWS_PER_NEW_WORD = 4;
+export const DEFAULT_NEW_WORDS_PER_DAY = 10;
+const studyDayFormatters = new Map();
+
+export const getStudyDay = (now = new Date(), timeZone = 'UTC') => {
+    if (!studyDayFormatters.has(timeZone)) {
+        studyDayFormatters.set(timeZone, new Intl.DateTimeFormat('en-US', {
+            timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+        }));
+    }
+    const parts = Object.fromEntries(studyDayFormatters.get(timeZone)
+        .formatToParts(new Date(now)).map(({ type, value }) => [type, value]));
+    return `${parts.year}-${parts.month}-${parts.day}`;
+};
 
 export const DEFAULT_PROFILE_ID = 'default';
 export const MINIMUM_ITEMS_PER_ROUND = OPTION_COUNT;
@@ -84,6 +98,41 @@ const sanitizeCardProgress = (entry) => {
         consecutiveCorrect: getNumericCount(entry.consecutiveCorrect),
         lastReviewedAt,
         nextReviewAt,
+        ...(getValidIsoString(entry.introducedAt)
+            ? { introducedAt: getValidIsoString(entry.introducedAt) } : {}),
+    };
+};
+
+export const normalizeDailyStudy = (value) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value.dayKey)
+        || !getValidIsoString(value.updatedAt)) {
+        return null;
+    }
+    return {
+        dayKey: value.dayKey,
+        reviewAnswersSinceNew: Math.min(REVIEWS_PER_NEW_WORD, getNumericCount(value.reviewAnswersSinceNew)),
+        extraNewWords: Math.min(1000, getNumericCount(value.extraNewWords)),
+        updatedAt: getValidIsoString(value.updatedAt),
+    };
+};
+
+export const getDailyStudySnapshot = (cards, settings = {}, dailyStudy, now = new Date()) => {
+    const timeZone = settings.studyTimeZone || 'UTC';
+    const dayKey = getStudyDay(now, timeZone);
+    const saved = normalizeDailyStudy(dailyStudy);
+    const daily = saved?.dayKey === dayKey ? saved : {
+        dayKey, reviewAnswersSinceNew: 0, extraNewWords: 0,
+        updatedAt: new Date(now).toISOString(),
+    };
+    const introducedToday = Object.values(cards || {}).filter((entry) =>
+        entry.introducedAt && getStudyDay(entry.introducedAt, timeZone) === dayKey).length;
+    const target = Number.isInteger(settings.newWordsPerDay)
+        ? Math.min(1000, Math.max(0, settings.newWordsPerDay)) : DEFAULT_NEW_WORDS_PER_DAY;
+    const allowance = target + daily.extraNewWords;
+    return {
+        daily, introducedToday, allowance,
+        canIntroduce: introducedToday < allowance,
+        newWordTurn: introducedToday === 0 || daily.reviewAnswersSinceNew >= REVIEWS_PER_NEW_WORD,
     };
 };
 
@@ -91,11 +140,13 @@ export const createPracticeProgress = (
     profileId = DEFAULT_PROFILE_ID,
     cards = {},
     updatedAt = new Date().toISOString(),
+    dailyStudy = null,
 ) => ({
     version: 1,
     profileId,
     cards,
     updatedAt,
+    dailyStudy: normalizeDailyStudy(dailyStudy),
 });
 
 export const normalizePracticeProgress = (
@@ -117,6 +168,7 @@ export const normalizePracticeProgress = (
         profileId,
         cards,
         getValidIsoString(value.updatedAt) || new Date().toISOString(),
+        value.dailyStudy,
     );
 };
 
@@ -276,7 +328,7 @@ const pickUniqueDistractors = (candidates, question, answerMode) => {
     return distractors;
 };
 
-export const pickNextQuestion = (items, cards, now = new Date(), recentIds = []) => {
+export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [], study = null) => {
     if (!items || items.length === 0) {
         return null;
     }
@@ -306,11 +358,14 @@ export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [])
         reviewDueItems.push(item);
     });
 
-    const pool = failedDueItems.length > 0
+    const reviewPool = failedDueItems.length > 0
         ? failedDueItems
-        : reviewDueItems.length > 0
-          ? reviewDueItems
-          : newItems;
+        : reviewDueItems;
+    // Reserve new-word slots even when failed cards keep returning.
+    const canIntroduce = study?.canIntroduce ?? true;
+    const newWordTurn = study?.newWordTurn ?? true;
+    const pool = newItems.length > 0 && canIntroduce && (newWordTurn || reviewPool.length === 0)
+        ? newItems : reviewPool;
 
     if (pool.length === 0) {
         return null;
@@ -490,6 +545,8 @@ export const recordRoundResult = (
                 consecutiveCorrect: (current?.consecutiveCorrect || 0) + 1,
                 lastReviewedAt,
                 nextReviewAt: new Date(reviewedAtTimestamp + delay).toISOString(),
+                ...(!current ? { introducedAt: lastReviewedAt }
+                    : current.introducedAt ? { introducedAt: current.introducedAt } : {}),
             },
         };
     }
@@ -507,8 +564,36 @@ export const recordRoundResult = (
             consecutiveCorrect: 0,
             lastReviewedAt,
             nextReviewAt: new Date(reviewedAtTimestamp + FAILED_CARD_DELAY).toISOString(),
+            ...(!current ? { introducedAt: lastReviewedAt }
+                : current.introducedAt ? { introducedAt: current.introducedAt } : {}),
         },
     };
+};
+
+export const recordStudyAnswer = (progress, item, wasCorrect, settings, now = new Date(), options = {}) => {
+    if (!item) return progress;
+    const { daily } = getDailyStudySnapshot(progress.cards, settings, progress.dailyStudy, now);
+    const isNew = !getCardProgress(progress.cards, item.id);
+    const updatedAt = new Date(now).toISOString();
+    return createPracticeProgress(progress.profileId,
+        recordRoundResult(progress.cards, item, wasCorrect, now, options), updatedAt, {
+            ...daily,
+            reviewAnswersSinceNew: isNew ? 0 : options.source === 'exam'
+                ? daily.reviewAnswersSinceNew
+                : Math.min(REVIEWS_PER_NEW_WORD, daily.reviewAnswersSinceNew + 1),
+            updatedAt,
+        });
+};
+
+export const addExtraNewWords = (progress, settings, now = new Date()) => {
+    const { daily, introducedToday, allowance } = getDailyStudySnapshot(progress.cards, settings, progress.dailyStudy, now);
+    const updatedAt = new Date(now).toISOString();
+    return createPracticeProgress(progress.profileId, progress.cards, updatedAt, {
+        ...daily,
+        // Exams or a lowered target may already have taken the count over today's allowance.
+        extraNewWords: Math.min(1000, daily.extraNewWords + Math.max(0, introducedToday - allowance) + 5),
+        reviewAnswersSinceNew: REVIEWS_PER_NEW_WORD, updatedAt,
+    });
 };
 
 export const buildRound = (items, preferredQuestion = null, answerMode = 'hanzi') => {

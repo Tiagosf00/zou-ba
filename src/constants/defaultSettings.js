@@ -1,4 +1,16 @@
 import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
+import { DEFAULT_NEW_WORDS_PER_DAY } from '../utils/practice';
+
+const getLocalTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+const sanitizeTimeZone = (value) => {
+    try {
+        if (typeof value !== 'string' || !value) return getLocalTimeZone();
+        new Intl.DateTimeFormat('en-US', { timeZone: value });
+        return value;
+    } catch {
+        return getLocalTimeZone();
+    }
+};
 
 export const VOCABULARY_POOLS = {
     HSK: 'hsk',
@@ -12,6 +24,8 @@ export const DEFAULT_SETTINGS = {
     inputMode: 'hanzi',
     outputMode: 'pinyin',
     themeMode: 'light',
+    newWordsPerDay: DEFAULT_NEW_WORDS_PER_DAY,
+    studyTimeZone: getLocalTimeZone(),
 };
 const VALID_MODES = ['hanzi', 'pinyin', 'eng', 'audio'];
 const VALID_CUSTOM_CARD_IDS = new Set(hskData.map((item) => Number(item.id)));
@@ -85,4 +99,7 @@ export const normalizeSettings = (value) => ({
     customCardIds: sanitizeCustomCardIds(value?.customCardIds),
     ...normalizeModePair(value?.inputMode, value?.outputMode),
     themeMode: value?.themeMode === 'dark' ? 'dark' : DEFAULT_SETTINGS.themeMode,
+    newWordsPerDay: Number.isInteger(value?.newWordsPerDay)
+        ? Math.min(1000, Math.max(0, value.newWordsPerDay)) : DEFAULT_NEW_WORDS_PER_DAY,
+    studyTimeZone: sanitizeTimeZone(value?.studyTimeZone),
 });

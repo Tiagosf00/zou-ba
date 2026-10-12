@@ -31,7 +31,7 @@ import {
     getDisplayLines,
     getDisplayText,
     getMeaningLines,
-    recordRoundResult,
+    recordStudyAnswer,
 } from '../utils/practice';
 
 import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
@@ -267,14 +267,14 @@ const ExamScreen = () => {
         const reviewedAt = new Date();
 
         // Feed exam answers into the same spaced-repetition history used by practice.
-        const nextCards = recordRoundResult(
-            progressRef.current.cards,
+        const nextProgress = recordStudyAnswer(
+            progressRef.current,
             round.question,
             outcome === 'correct',
+            settings,
             reviewedAt,
-            { countAsWrong: outcome !== 'unknown' },
+            { countAsWrong: outcome !== 'unknown', source: 'exam' },
         );
-        const nextProgress = createPracticeProgress(PROFILE_ID, nextCards);
 
         progressRef.current = nextProgress;
         updateProgress(nextProgress);
