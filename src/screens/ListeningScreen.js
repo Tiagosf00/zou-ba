@@ -272,20 +272,6 @@ const ListeningScreen = () => {
                 </View>
             </Card>
 
-            <Card style={styles.howToCard}>
-                <View style={styles.howToIcon}>
-                    <Ionicons color={colors.accent} name="ear-outline" size={22} />
-                </View>
-                <Text style={styles.howToTitle}>Listen before you peek</Text>
-                <Text style={styles.howToText}>
-                    Play the recording as often as you need, type what you hear, then check your
-                    answer. Spaces and punctuation do not affect grading.
-                </Text>
-                <View style={styles.howToHint}>
-                    <Ionicons color={colors.accent} name="checkmark-circle" size={16} />
-                    <Text style={styles.howToHintText}>Simplified and traditional are accepted.</Text>
-                </View>
-            </Card>
         </View>
     );
 
@@ -355,17 +341,6 @@ const ListeningScreen = () => {
                     <Text style={styles.topicTag}>{titleCase(sentence?.topic)}</Text>
                 </View>
                 <Text style={styles.deckPosition}>{filteredSentences.length.toLocaleString()} cards</Text>
-            </View>
-
-            <View style={styles.promptBlock}>
-                <View style={styles.promptIcon}>
-                    <Ionicons color={colors.primaryStrong} name="headset" size={34} />
-                </View>
-                <Text style={styles.promptEyebrow}>Listening card</Text>
-                <Text style={styles.promptTitle}>What did you hear?</Text>
-                <Text style={styles.promptText}>
-                    The sentence stays hidden until you submit or reveal it.
-                </Text>
             </View>
 
             <View style={styles.audioRow}>
@@ -452,15 +427,13 @@ const ListeningScreen = () => {
             >
                 <View style={styles.hero}>
                     <View style={styles.heroCopy}>
-                        <Text style={styles.heroEyebrow}>Sentence dictation</Text>
-                        <Text style={styles.heroTitle}>Hear it. Write it.</Text>
+                        <Text style={styles.heroTitle}>Listen</Text>
                         <Text style={styles.heroSubtitle}>
-                            Train your ear with {sentenceDeck.count.toLocaleString()} graded Chinese
-                            sentences, one focused card at a time.
+                            {sentenceDeck.count.toLocaleString()} sentences for dictation.
                         </Text>
                     </View>
                     <View style={styles.heroBadge}>
-                        <Ionicons color={colors.accent} name="sparkles" size={17} />
+                        <Ionicons color={colors.accent} name="headset-outline" size={17} />
                         <Text style={styles.heroBadgeText}>HSK 1–6 · two speeds</Text>
                     </View>
                 </View>
@@ -547,7 +520,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             maxWidth: layout.contentMaxWidth,
             alignSelf: 'center',
             paddingHorizontal: layout.isWebWide ? 36 : 18,
-            paddingTop: layout.isWebDesktop ? 46 : 24,
+            paddingTop: layout.isWebDesktop ? 42 : 24,
             paddingBottom: layout.isWebDesktop ? 132 : 34,
             gap: 24,
         },
@@ -565,16 +538,16 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 13,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1.3,
             textTransform: 'uppercase',
         },
         heroTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: layout.isWebDesktop ? 50 : 37,
-            fontWeight: '700',
-            lineHeight: layout.isWebDesktop ? 58 : 44,
+            fontSize: 30,
+            fontWeight: '600',
+            lineHeight: 40,
         },
         heroSubtitle: {
             color: colors.textSecondary,
@@ -589,7 +562,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 8,
             paddingHorizontal: 15,
             paddingVertical: 10,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -599,7 +572,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.accent,
             fontFamily: typography.uiFont,
             fontSize: 12,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         levelSelector: {
             marginHorizontal: layout.isWebWide ? -4 : -18,
@@ -629,7 +602,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.uiFont,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         levelChipLabelSelected: {
             color: colors.onPrimary,
@@ -666,7 +639,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.accent,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1.1,
             textTransform: 'uppercase',
         },
@@ -684,13 +657,13 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.headingFont,
             fontSize: 25,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         sessionMetricLabel: {
             color: colors.textSecondary,
             fontFamily: typography.uiFont,
             fontSize: 10,
-            fontWeight: '800',
+            fontWeight: '600',
             textTransform: 'uppercase',
         },
         metricDivider: {
@@ -756,14 +729,14 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         levelTag: {
             paddingHorizontal: 11,
             paddingVertical: 6,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.primarySoft,
         },
         levelTagText: {
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '900',
+            fontWeight: '600',
         },
         topicTag: {
             color: colors.textMuted,
@@ -795,7 +768,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '900',
+            fontWeight: '600',
             letterSpacing: 1.1,
             textTransform: 'uppercase',
         },
@@ -853,7 +826,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.uiFont,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         audioOptionTitleActive: {
             color: colors.onPrimary,
@@ -890,7 +863,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.uiFont,
             fontSize: 13,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         answerInput: {
             minHeight: 64,
@@ -933,7 +906,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         feedbackTitle: {
             fontFamily: typography.headingFont,
             fontSize: 18,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         answerComparison: {
             paddingBottom: 13,
@@ -945,7 +918,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.textMuted,
             fontFamily: typography.uiFont,
             fontSize: 10,
-            fontWeight: '900',
+            fontWeight: '600',
             letterSpacing: 0.9,
             textTransform: 'uppercase',
         },
@@ -962,7 +935,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.studyFont,
             fontSize: layout.isWebWide ? 28 : 24,
-            fontWeight: '800',
+            fontWeight: '600',
             lineHeight: layout.isWebWide ? 40 : 35,
         },
         traditionalAnswer: {
@@ -1006,7 +979,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.onPrimary,
             fontFamily: typography.uiFont,
             fontSize: 15,
-            fontWeight: '900',
+            fontWeight: '600',
         },
         secondaryButton: {
             minHeight: 54,
@@ -1024,7 +997,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         disabled: {
             opacity: 0.42,

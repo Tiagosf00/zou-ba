@@ -330,20 +330,6 @@ const useCourseAudioPlayer = (book) => {
     };
 };
 
-const EmptyPlayer = ({ styles }) => (
-    <Card tone="accent" style={styles.playerCard}>
-        <View style={styles.emptyPlayerIcon}>
-            <Ionicons name="headset-outline" size={28} style={styles.emptyPlayerIconGlyph} />
-        </View>
-        <Text style={styles.playerEyebrow}>Study player</Text>
-        <Text style={styles.emptyPlayerTitle}>Choose a track to start listening</Text>
-        <Text style={styles.emptyPlayerText}>
-            Open a lesson and select any recording. Your player and private transcript editor
-            will appear here.
-        </Text>
-    </Card>
-);
-
 const StudyPlayer = ({
     colors,
     copied,
@@ -699,9 +685,8 @@ const BooksScreen = () => {
         }
     };
 
-    const renderPlayer = () => (
+    const renderPlayer = () => player.selectedTrack && (
         <View style={styles.playerColumn}>
-            {player.selectedTrack ? (
                 <StudyPlayer
                     colors={colors}
                     copied={copied}
@@ -711,9 +696,6 @@ const BooksScreen = () => {
                     styles={styles}
                     transcript={transcript}
                 />
-            ) : (
-                <EmptyPlayer styles={styles} />
-            )}
         </View>
     );
 
@@ -900,11 +882,9 @@ const BooksScreen = () => {
             >
                 <View style={styles.hero}>
                     <View style={styles.heroCopy}>
-                        <Text style={styles.heroEyebrow}>HSK Standard Course</Text>
-                        <Text style={styles.heroTitle}>Listen alongside your books</Text>
+                        <Text style={styles.heroTitle}>Books</Text>
                         <Text style={styles.heroSubtitle}>
-                            Browse all {courseCatalog.totalTracks} official textbook recordings,
-                            slow them down, repeat difficult passages, and keep private notes.
+                            HSK Standard Course · Audio and notes
                         </Text>
                     </View>
                     <View style={styles.heroMetricRow}>
@@ -1002,7 +982,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             maxWidth: layout.contentMaxWidth,
             alignSelf: 'center',
             paddingHorizontal: layout.isWebWide ? 36 : 18,
-            paddingTop: layout.isWebDesktop ? 46 : 24,
+            paddingTop: layout.isWebDesktop ? 42 : 24,
             paddingBottom: layout.isWebDesktop ? 132 : 34,
             gap: 24,
         },
@@ -1020,16 +1000,16 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 13,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1.3,
             textTransform: 'uppercase',
         },
         heroTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: layout.isWebDesktop ? 48 : 36,
-            fontWeight: '700',
-            lineHeight: layout.isWebDesktop ? 56 : 42,
+            fontSize: 30,
+            fontWeight: '600',
+            lineHeight: 40,
         },
         heroSubtitle: {
             color: colors.textSecondary,
@@ -1059,7 +1039,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.headingFont,
             fontSize: 24,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         heroMetricLabel: {
             color: colors.textMuted,
@@ -1101,7 +1081,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.uiFont,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         bookChipLabelSelected: {
             color: colors.onPrimary,
@@ -1155,7 +1135,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 12,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1,
             textTransform: 'uppercase',
         },
@@ -1177,7 +1157,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 7,
             paddingHorizontal: 13,
             paddingVertical: 9,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -1186,7 +1166,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 12,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         searchBox: {
             minHeight: 50,
@@ -1265,7 +1245,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             height: 36,
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -1282,7 +1262,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.text,
             fontFamily: typography.uiFont,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         trackTitleSelected: {
             color: colors.accent,
@@ -1297,7 +1277,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             height: 28,
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.surface,
         },
         noResultsCard: {
@@ -1326,7 +1306,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             height: 54,
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.surface,
             marginBottom: 18,
         },
@@ -1337,7 +1317,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1,
             textTransform: 'uppercase',
         },
@@ -1373,7 +1353,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.accent,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         sourceLink: {
             flexDirection: 'row',
@@ -1384,7 +1364,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         playerTitle: {
             color: colors.text,
@@ -1426,7 +1406,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             height: 44,
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -1436,7 +1416,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             height: 62,
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.primaryStrong,
             ...shadows.sm,
         },
@@ -1456,7 +1436,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 7,
             paddingHorizontal: 13,
             paddingVertical: 9,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -1469,7 +1449,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.accent,
             fontFamily: typography.uiFont,
             fontSize: 12,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         studyControlTextActive: {
             color: colors.onPrimary,
@@ -1508,7 +1488,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.accent,
             fontFamily: typography.uiFont,
             fontSize: 10,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 0.9,
             textTransform: 'uppercase',
         },
@@ -1525,7 +1505,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 6,
             paddingHorizontal: 12,
             paddingVertical: 8,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.surface,
@@ -1534,7 +1514,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             color: colors.primaryStrong,
             fontFamily: typography.uiFont,
             fontSize: 11,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         transcriptInput: {
             minHeight: 180,

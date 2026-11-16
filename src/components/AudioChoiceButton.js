@@ -8,6 +8,7 @@ import AudioButton from './AudioButton';
 const AudioChoiceButton = ({
     actionLabel = 'Choose',
     choiceLabel,
+    hideLabel = false,
     disabled = false,
     hanzi,
     isDesktop = false,
@@ -69,7 +70,7 @@ const AudioChoiceButton = ({
                     label={`Play ${choiceLabel} audio`}
                     size={isDesktop ? 'large' : 'small'}
                 />
-                <View style={styles.copy}>
+                {!hideLabel && <View style={styles.copy}>
                     <Text
                         numberOfLines={1}
                         style={[
@@ -90,7 +91,7 @@ const AudioChoiceButton = ({
                     >
                         Audio
                     </Text>
-                </View>
+                </View>}
             </View>
 
             <Pressable

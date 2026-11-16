@@ -330,7 +330,8 @@ export const AppStateProvider = ({ children }) => {
     }, [appState, isHydrated, session, storageUserId, syncStateNow]);
 
     const updateSettings = useCallback((settingsPatch) => {
-        setAppState((currentState) => withUpdatedSettings(currentState, settingsPatch));
+        setAppState((currentState) => withUpdatedSettings(currentState,
+            typeof settingsPatch === 'function' ? settingsPatch(currentState.settings) : settingsPatch));
     }, []);
 
     const updateProgress = useCallback((nextProgress) => {

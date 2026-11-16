@@ -34,3 +34,12 @@ export const getVocabularyPoolItems = (items, settings) => {
     return items.filter((item) => selectedLevels.has(item.level));
 };
 
+// Personal review words stay available when the new-word level or custom set changes.
+export const getPracticePoolItems = (items, settings) => {
+    const ids = new Set([
+        ...getVocabularyPoolItems(items, settings).map(item => Number(item.id)),
+        ...(settings?.reviewCardIds || []),
+    ]);
+    return (items || []).filter(item => ids.has(Number(item.id)));
+};
+

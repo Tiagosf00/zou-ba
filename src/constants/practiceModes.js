@@ -29,6 +29,14 @@ export const PRACTICE_MODES = [
     },
 ];
 
+// Self review changes how Practice is graded, while retaining the choice format for exams.
+export const SELF_REVIEW_MODE = {
+    id: 'self-review',
+    label: 'Self review',
+    detail: 'Flashcards',
+    description: 'Reveal the answer, then mark whether you remembered it.',
+};
+
 const practiceModeMap = PRACTICE_MODES.reduce((result, mode) => {
     result[mode.id] = mode;
     return result;

@@ -1,2010 +1,342 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
-    useWindowDimensions,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
-
-import Card from '../components/Card';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
 import AudioButton from '../components/AudioButton';
 import AudioChoiceButton from '../components/AudioChoiceButton';
 import AudioPrompt from '../components/AudioPrompt';
-import ExampleSentence from '../components/ExampleSentence';
-import { getWordExamples } from '../utils/wordExamples';
+import ExampleSentence, { ExampleSource } from '../components/ExampleSentence';
+import AddReviewWord from '../components/AddReviewWord';
+import { Brand, ThemeButton } from '../components/AppNavigation';
 import { getPracticeMode } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
-import {
-    getVocabularyPoolItems,
-    getVocabularyPoolSummary,
-    isCustomVocabularyPool,
-} from '../utils/vocabularyPool';
-import {
-    buildRound,
-    addExtraNewWords,
-    createPracticeProgress,
-    DEFAULT_PROFILE_ID,
-    getDisplayLines,
-    getDisplayText,
-    getDetailedMeaning,
-    getMeaningLines,
-    getTrainingSnapshot,
-    getDailyStudySnapshot,
-    MINIMUM_ITEMS_PER_ROUND,
-    pickNextQuestion,
-    recordStudyAnswer,
-} from '../utils/practice';
-
+import { getPracticePoolItems } from '../utils/vocabularyPool';
+import { buildRound, addExtraNewWords, getDisplayLines, getDisplayText, getDetailedMeaning, getMeaningLines,
+    getTrainingSnapshot, getDailyStudySnapshot, MINIMUM_ITEMS_PER_ROUND, pickNextQuestion, recordStudyAnswer } from '../utils/practice';
 import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
 
-const PROFILE_ID = DEFAULT_PROFILE_ID;
-
-const PracticeScreen = () => {
-    const { settings, progress, updateProgress, isHydrated } = useAppState();
+const PracticeScreen = ({ navigation }) => {
+    const { settings, progress, updateSettings, updateProgress, isHydrated } = useAppState();
+    const { colors, typography } = useAppTheme();
+    const { width } = useWindowDimensions();
+    const { isWebWide, contentMaxWidth } = getResponsiveLayout(width);
+    const split = width >= 1120;
+    const styles = useMemo(() => createStyles(colors, typography, split), [colors, typography, split]);
     const isFocused = useIsFocused();
-    const { width, height } = useWindowDimensions();
-    const { isWebWide, isWebDesktop, contentMaxWidth } = getResponsiveLayout(width);
-    const desktopScale = isWebDesktop ? Math.min(Math.max((width - 1120) / 720, 0), 1) : 0;
-    const desktopSidebarWidth = isWebDesktop
-        ? Math.min(Math.max(width * 0.35, 500), 680)
-        : 430;
-    const desktopContentMinHeight = isWebDesktop ? Math.max(height - 40, 680) : height;
-    const { colors, radii, shadows, typography } = useAppTheme();
-    const styles = useMemo(
-        () =>
-            createStyles(colors, radii, shadows, typography, {
-                isWebWide,
-                isWebDesktop,
-                contentMaxWidth,
-                desktopContentMinHeight,
-                desktopScale,
-                desktopSidebarWidth,
-            }),
-        [
-            colors,
-            radii,
-            shadows,
-            typography,
-            isWebWide,
-            isWebDesktop,
-            contentMaxWidth,
-            desktopContentMinHeight,
-            desktopScale,
-            desktopSidebarWidth,
-        ],
-    );
-    const compactLayout = !isWebDesktop && height < 780;
-    const tightLayout = !isWebDesktop && height < 700;
-    const veryTightLayout = !isWebDesktop && height < 640;
-    const optionButtonHeight = isWebDesktop
-        ? Math.min(Math.max(width * 0.07, 120), 156)
-        : veryTightLayout
-          ? 72
-          : tightLayout
-            ? 80
-            : compactLayout
-              ? 88
-              : 96;
+    const [queue, setQueue] = useState(null);
     const [round, setRound] = useState(null);
-    const [selectedOption, setSelectedOption] = useState(null);
-    const [answerState, setAnswerState] = useState(null);
-    const [streak, setStreak] = useState(0);
-    const [clockNow, setClockNow] = useState(() => new Date());
-    const [isSnapshotVisible, setIsSnapshotVisible] = useState(false);
-    const [detailVisibility, setDetailVisibility] = useState({
-        question: false,
-        selected: false,
-        correct: false,
-    });
-    const progressRef = useRef(createPracticeProgress(PROFILE_ID));
-    const recentQuestionIdsRef = useRef([]);
+    const [selected, setSelected] = useState(null);
+    const [answer, setAnswer] = useState(null);
+    const [selfAnswerVisible, setSelfAnswerVisible] = useState(false);
+    const [choiceGridWidth, setChoiceGridWidth] = useState(0);
+    const [details, setDetails] = useState({});
+    const [snapshotVisible, setSnapshotVisible] = useState(false);
+    const [now, setNow] = useState(() => new Date());
+    const progressRef = useRef(progress);
+    const recentIds = useRef([]);
+    const answerLock = useRef(false);
+    const scrollRef = useRef(null);
+    const cardTop = useRef(0);
+    const feedbackScrolled = useRef(false);
+    const queueTabs = useRef({});
+    const poolKey = [settings.vocabularyPool, settings.hskLevels.join('-'), settings.customCardIds.join('-'), settings.reviewCardIds.join('-')].join(':');
+    const items = useMemo(() => getPracticePoolItems(hskData, settings), [poolKey]);
+    const training = useMemo(() => getTrainingSnapshot(items, progress.cards, now, settings.reviewCardIds), [items, progress.cards, now]);
+    const daily = getDailyStudySnapshot(progress.cards, settings, progress.dailyStudy, now);
+    const remaining = Math.min(training.newCount, Math.max(0, daily.allowance - daily.introducedToday));
+    const isSelfReview = settings.practiceAnswerStyle === 'self-review';
+    const minimumItems = isSelfReview || queue === 'review' ? 1 : MINIMUM_ITEMS_PER_ROUND;
+    const hasRevealed = Boolean(answer) || selfAnswerVisible;
+    // Keep the full reading on one line; long words get a wider choice, not tiny text.
+    const widePinyinChoices = settings.outputMode === 'pinyin' && choiceGridWidth > 0
+        && round?.options.some(item => item.pinyin.length * 10 + 36 > (choiceGridWidth - 10) / 2);
 
-    const inputMode = getPracticeMode(settings.inputMode);
-    const outputMode = getPracticeMode(settings.outputMode);
-    const poolKey = [
-        settings.vocabularyPool,
-        settings.hskLevels.join('-'),
-        settings.customCardIds.join('-'),
-    ].join(':');
-    const filteredData = useMemo(
-        () => getVocabularyPoolItems(hskData, settings),
-        [poolKey],
-    );
-    const recentQuestionLimit =
-        filteredData.length <= 12 ? 4 : filteredData.length <= 40 ? 6 : 8;
-    const poolSummary = getVocabularyPoolSummary(settings);
-    const usesCustomVocabulary = isCustomVocabularyPool(settings);
-
-    const getMeaningSummary = (item) => {
-        const lines = getMeaningLines(item);
-        const safeLines = lines.length > 0 ? lines : ['No meaning available.'];
-
-        return safeLines.join(', ');
+    const loadRound = (current = progressRef.current) => {
+        const at = new Date();
+        const study = getDailyStudySnapshot(current.cards, settings, current.dailyStudy, at);
+        const next = items.length >= minimumItems
+            ? pickNextQuestion(items, current.cards, at, recentIds.current, study, queue, settings.reviewCardIds) : null;
+        if (next) recentIds.current = [next.id, ...recentIds.current.filter(id => id !== next.id)].slice(0, items.length <= 12 ? 4 : 8);
+        // A single personally added word can still be reviewed with six answer options.
+        const choicePool = queue === 'review' && items.length < MINIMUM_ITEMS_PER_ROUND ? hskData : items;
+        setRound(next ? (isSelfReview ? { question: next, options: [] } : buildRound(choicePool, next, settings.outputMode)) : null);
+        setSelfAnswerVisible(false);
+        setAnswer(null); setSelected(null); setDetails({}); answerLock.current = false; feedbackScrolled.current = false;
     };
-
-    const rememberQuestion = (questionId) => {
-        recentQuestionIdsRef.current = [
-            questionId,
-            ...recentQuestionIdsRef.current.filter((recentId) => recentId !== questionId),
-        ].slice(0, recentQuestionLimit);
-    };
-
-    const resetDetailVisibility = () => {
-        setDetailVisibility({
-            question: false,
-            selected: false,
-            correct: false,
-        });
-    };
-
-    const loadRound = (currentProgress = progressRef.current) => {
-        if (filteredData.length < MINIMUM_ITEMS_PER_ROUND) {
-            setRound(null);
-            setSelectedOption(null);
-            setAnswerState(null);
-            resetDetailVisibility();
-            return;
-        }
-
-        const now = new Date();
-        const cards = currentProgress.cards;
-        const study = getDailyStudySnapshot(cards, settings, currentProgress.dailyStudy, now);
-        const nextQuestion = pickNextQuestion(
-            filteredData,
-            cards,
-            now,
-            recentQuestionIdsRef.current,
-            study,
-        );
-
-        if (nextQuestion) {
-            rememberQuestion(nextQuestion.id);
-        }
-
-        setRound(
-            nextQuestion ? {
-                ...buildRound(filteredData, nextQuestion, settings.outputMode),
-                isNew: !cards[nextQuestion.id],
-            } : null,
-        );
-        setSelectedOption(null);
-        setAnswerState(null);
-        resetDetailVisibility();
-    };
-
+    useEffect(() => { progressRef.current = progress; }, [progress]);
     useEffect(() => {
-        progressRef.current = progress;
-    }, [progress]);
-
+        if (isHydrated && queue === null) setQueue(getTrainingSnapshot(items, progress.cards, new Date(), settings.reviewCardIds).dueCount ? 'review' : 'new');
+    }, [isHydrated, queue, poolKey]);
     useEffect(() => {
-        if (!isHydrated || !isFocused) {
-            return;
-        }
-
-        recentQuestionIdsRef.current = [];
-        setStreak(0);
-        loadRound(progressRef.current);
-    }, [isHydrated, isFocused, poolKey, settings.newWordsPerDay, settings.studyTimeZone]);
-
+        if (!isHydrated || !isFocused || !queue) return;
+        recentIds.current = [];
+        loadRound();
+    }, [isHydrated, isFocused, queue, poolKey, settings.inputMode, settings.outputMode, settings.practiceAnswerStyle, settings.newWordsPerDay, settings.studyTimeZone]);
     useEffect(() => {
-        const timer = setInterval(() => setClockNow(new Date()), 30000);
+        const timer = setInterval(() => setNow(new Date()), 30000);
         return () => clearInterval(timer);
     }, []);
+    useEffect(() => { if (isHydrated && isFocused && queue && !round) loadRound(); }, [now, isHydrated, isFocused]);
 
-    // Wake an empty queue when a review becomes due or a new study day starts.
-    useEffect(() => {
-        if (isHydrated && isFocused && !round) loadRound();
-    }, [clockNow, isHydrated, isFocused]);
-
-    const handleSelection = (item) => {
-        if (!round || answerState || !isHydrated) {
-            return;
-        }
-
-        const answerIsCorrect = item.id === round.question.id;
-        const nextProgress = recordStudyAnswer(
-            progressRef.current,
-            round.question,
-            answerIsCorrect,
-            settings,
-            new Date(),
-        );
-
-        setSelectedOption(item);
-        setAnswerState(answerIsCorrect ? 'correct' : 'wrong');
-        resetDetailVisibility();
-        progressRef.current = nextProgress;
-        updateProgress(nextProgress);
-
-        if (answerIsCorrect) {
-            setStreak((current) => current + 1);
-            return;
-        }
-
-        setStreak(0);
+    const submit = (item, reveal = false) => {
+        if (!round || answerLock.current || !isHydrated) return;
+        answerLock.current = true;
+        const correct = !reveal && item.id === round.question.id;
+        const next = recordStudyAnswer(progressRef.current, round.question, correct, settings, new Date(), { countAsWrong: !reveal });
+        progressRef.current = next; updateProgress(next);
+        setSelected(item); setAnswer(reveal ? 'revealed' : correct ? 'correct' : 'wrong'); setDetails({});
+        setNow(new Date());
     };
-
-    const handleRevealAnswer = () => {
-        if (!round || answerState || !isHydrated) {
-            return;
-        }
-
-        const nextProgress = recordStudyAnswer(
-            progressRef.current,
-            round.question,
-            false,
-            settings,
-            new Date(),
-            { countAsWrong: false },
-        );
-
-        setSelectedOption(null);
-        setAnswerState('revealed');
-        resetDetailVisibility();
-        setStreak(0);
-        progressRef.current = nextProgress;
-        updateProgress(nextProgress);
+    const gradeRecall = (remembered) => {
+        // Revealing is read-only; only a deliberate rating advances the schedule.
+        if (!isSelfReview || !selfAnswerVisible || !round || answerLock.current || !isHydrated) return;
+        answerLock.current = true;
+        const next = recordStudyAnswer(progressRef.current, round.question, remembered, settings, new Date());
+        progressRef.current = next;
+        updateProgress(next);
+        setAnswer(remembered ? 'correct' : 'wrong');
+        setNow(new Date());
     };
-
-    const handleNextCard = () => {
-        loadRound(progressRef.current);
+    const learnMore = () => {
+        const next = addExtraNewWords(progressRef.current, settings);
+        progressRef.current = next; updateProgress(next); setNow(new Date());
+        if (queue !== 'new') setQueue('new'); else if (!round) loadRound(next);
     };
-    const handleLearnMore = () => {
-        const nextProgress = addExtraNewWords(progressRef.current, settings);
-        progressRef.current = nextProgress;
-        updateProgress(nextProgress);
-        if (!round) loadRound(nextProgress);
+    const nextWord = () => { loadRound(); scrollRef.current?.scrollTo({ y: 0, animated: true }); };
+    const meaning = item => getMeaningLines(item).join(', ');
+    const detail = (item, key) => {
+        const text = getDetailedMeaning(item);
+        if (!text) return null;
+        return <View style={{ gap: 8 }}>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: Boolean(details[key]) }}
+                onPress={() => setDetails(value => ({ ...value, [key]: !value[key] }))} style={styles.detailToggle}>
+                <Ionicons name={details[key] ? 'remove' : 'add'} size={16} color={colors.primaryStrong} />
+                <Text style={styles.link}>Detailed meaning</Text>
+            </Pressable>
+            {details[key] && <Text selectable style={styles.body}>{text}</Text>}
+        </View>;
     };
-    const openTrainingSnapshot = () => {
-        setIsSnapshotVisible(true);
-    };
-    const closeTrainingSnapshot = () => {
-        setIsSnapshotVisible(false);
-    };
-
-    const trainingSnapshot =
-        isHydrated && filteredData.length > 0
-            ? getTrainingSnapshot(filteredData, progress.cards, new Date())
-            : null;
-    const dailySnapshot = getDailyStudySnapshot(progress.cards, settings, progress.dailyStudy);
-    const dailyProgress = trainingSnapshot ? (
-        <View style={styles.dailyProgress}>
-            <Text style={styles.dailyProgressText}>
-                Reviews due: {trainingSnapshot.dueCount} · Unseen words remaining: {trainingSnapshot.newCount}
-            </Text>
-            {!dailySnapshot.canIntroduce && dailySnapshot.daily.extraNewWords < 1000 && trainingSnapshot.newCount > 0 ? (
-                <ModernButton title="Learn 5 more today" variant="secondary" onPress={handleLearnMore}
-                    style={styles.dailyExtraButton} />
-            ) : null}
+    const answerWord = (item, key, complete = false, showDetails = true) => <View style={{ gap: 8 }}>
+        <View style={styles.inline}>
+            <Text selectable style={styles.answerHanzi}>{item.hanzi}</Text>
+            <Text selectable style={styles.pinyin}>{item.pinyin}</Text>
+            <AudioButton hanzi={item.hanzi} label={`Play ${item.hanzi} audio`} />
         </View>
-    ) : null;
-    const reviewLadderMax = trainingSnapshot
-        ? Math.max(1, ...trainingSnapshot.boxCounts)
-        : 1;
-    const trainingSnapshotTrigger = trainingSnapshot ? (
-        <Pressable
-            onPress={openTrainingSnapshot}
-            style={({ pressed }) => [
-                styles.snapshotTrigger,
-                pressed && styles.snapshotTriggerPressed,
-            ]}
-        >
-            <Ionicons color={colors.accent} name="stats-chart" size={16} />
-            <View style={styles.snapshotTriggerCopy}>
-                <Text style={styles.snapshotTriggerLabel}>Progress</Text>
-                <Text style={styles.snapshotTriggerValue}>
-                    New today: {dailySnapshot.introducedToday} / {dailySnapshot.allowance}
-                </Text>
-            </View>
-            <Ionicons color={colors.textMuted} name="chevron-forward" size={16} />
-        </Pressable>
-    ) : null;
-    const trainingSnapshotContent = trainingSnapshot ? (
-        <View style={styles.snapshotContent}>
-            <View style={styles.snapshotHeader}>
-                <Text style={styles.snapshotEyebrow}>Training snapshot</Text>
-                <Text style={[styles.snapshotTitle, isWebDesktop && styles.snapshotTitleDesktop]}>
-                    {trainingSnapshot.studiedCount}/{trainingSnapshot.totalCount} words introduced
-                </Text>
-                <Text style={styles.snapshotSubtitle}>
-                    {trainingSnapshot.dueCount} reviews due, {trainingSnapshot.scheduledCount}{' '}
-                    scheduled later.
-                </Text>
-            </View>
+        <Text selectable style={styles.body}>{meaning(item)}</Text>
+        {complete ? (getDetailedMeaning(item) && <Text selectable style={styles.body}>{getDetailedMeaning(item)}</Text>) : showDetails && detail(item, key)}
+    </View>;
+    const emptyTitle = !isHydrated ? 'Loading your practice…'
+        : items.length < minimumItems ? (minimumItems === 1 ? 'Choose a word to practice' : 'Choose at least 6 words to practice')
+        : queue === 'review' ? 'No reviews due'
+        : training.newCount === 0 ? 'All words in this set introduced'
+        : "Today's new-word allowance is complete.";
 
-            <View style={styles.snapshotProgressTrack}>
-                <View
-                    style={[
-                        styles.snapshotProgressFill,
-                        {
-                            width: `${Math.max(
-                                trainingSnapshot.completionRatio * 100,
-                                trainingSnapshot.studiedCount > 0 ? 8 : 0,
-                            )}%`,
-                        },
-                    ]}
-                />
-            </View>
-
-            <View style={styles.snapshotMetricsGrid}>
-                {[
-                    {
-                        id: 'ready',
-                        label: 'Reviews due',
-                        value: trainingSnapshot.dueCount,
-                    },
-                    {
-                        id: 'new',
-                        label: 'New',
-                        value: trainingSnapshot.newCount,
-                    },
-                    {
-                        id: 'scheduled',
-                        label: 'Scheduled',
-                        value: trainingSnapshot.scheduledCount,
-                    },
-                    {
-                        id: 'mastered',
-                        label: 'Mastered',
-                        value: trainingSnapshot.masteredCount,
-                    },
-                ].map((metric) => (
-                    <View key={metric.id} style={styles.snapshotMetric}>
-                        <Text style={styles.snapshotMetricValue}>{metric.value}</Text>
-                        <Text style={styles.snapshotMetricLabel}>{metric.label}</Text>
-                    </View>
-                ))}
-            </View>
-
-            <View style={styles.snapshotSectionHeader}>
-                <Text style={styles.snapshotSectionTitle}>Review ladder</Text>
-                <Text style={styles.snapshotSectionHint}>Words currently in each stage</Text>
-            </View>
-
-            <View style={[styles.ladderGrid, isWebDesktop && styles.ladderGridDesktop]}>
-                {trainingSnapshot.boxCounts.map((count, index) => (
-                    <View
-                        key={`box-${index + 1}`}
-                        style={[styles.ladderCard, isWebDesktop && styles.ladderCardDesktop]}
-                    >
-                        <Text style={styles.ladderLabel}>Box {index + 1}</Text>
-                        <Text
-                            style={[
-                                styles.ladderValue,
-                                index === trainingSnapshot.boxCounts.length - 1 &&
-                                    styles.ladderValueMastered,
-                            ]}
-                        >
-                            {count}
-                        </Text>
-                        <View style={styles.ladderTrack}>
-                            <View
-                                style={[
-                                    styles.ladderFill,
-                                    {
-                                        width: `${Math.max(
-                                            (count / reviewLadderMax) * 100,
-                                            count > 0 ? 16 : 0,
-                                        )}%`,
-                                    },
-                                    index === trainingSnapshot.boxCounts.length - 1 &&
-                                        styles.ladderFillMastered,
-                                ]}
-                            />
-                        </View>
-                    </View>
-                ))}
-            </View>
-        </View>
-    ) : null;
-
-    if (!round) {
-        const showRefreshButton =
-            isHydrated && filteredData.length >= MINIMUM_ITEMS_PER_ROUND;
-        const emptyState = !isHydrated
-            ? {
-                  eyebrow: 'Practice',
-                  title: 'Restoring your review memory.',
-                  text: 'Loading the words you have already studied so your next cards stay meaningful.',
-              }
-            : filteredData.length < MINIMUM_ITEMS_PER_ROUND
-              ? {
-                    eyebrow: 'Practice',
-                    title: usesCustomVocabulary
-                        ? 'Not enough custom words yet.'
-                        : 'Not enough words for a round yet.',
-                    text: usesCustomVocabulary
-                        ? 'Add at least six words to your custom vocabulary pool in settings so we can build answer choices.'
-                        : 'Choose a few HSK levels in settings so we can build six answer choices.',
-                }
-              : {
-                    eyebrow: 'Practice',
-                    title: trainingSnapshot?.newCount > 0 && !dailySnapshot.canIntroduce
-                        ? "Today's new-word allowance is complete." : "You're done for now.",
-                    text: trainingSnapshot?.newCount > 0 && !dailySnapshot.canIntroduce
-                        ? `No reviews are due in ${poolSummary} right now. You can learn more today, or return when a review is due.`
-                        : `No review or new cards are ready across ${poolSummary}. Come back a little later or switch vocabulary pools to study something else.`,
-                };
-
-        return (
-            <SafeAreaView style={styles.container}>
-                <BackdropOrbs />
-                <View style={[styles.emptyState, isWebWide && styles.emptyStateWeb]}>
-                    <Card style={[styles.emptyCard, isWebWide && styles.emptyCardWeb]}>
-                        <Text style={styles.emptyEyebrow}>{emptyState.eyebrow}</Text>
-                        <Text style={styles.emptyTitle}>{emptyState.title}</Text>
-                        <Text style={styles.emptyText}>{emptyState.text}</Text>
-                        {trainingSnapshotTrigger}
-                        {dailyProgress}
-                        {showRefreshButton ? (
-                            <ModernButton
-                                title="Check again"
-                                onPress={handleNextCard}
-                                style={styles.emptyAction}
-                            />
-                        ) : null}
-                    </Card>
-                </View>
-                {trainingSnapshot ? (
-                    <Modal
-                        animationType="fade"
-                        onRequestClose={closeTrainingSnapshot}
-                        transparent
-                        visible={isSnapshotVisible}
-                    >
-                        <View style={styles.snapshotModalRoot}>
-                            <Pressable
-                                onPress={closeTrainingSnapshot}
-                                style={styles.snapshotBackdrop}
-                            />
-                            <ScrollView
-                                contentContainerStyle={styles.snapshotModalScroll}
-                                showsVerticalScrollIndicator={false}
-                            >
-                                <Card
-                                    style={[
-                                        styles.snapshotCard,
-                                        styles.snapshotModalCard,
-                                        isWebDesktop && styles.snapshotCardDesktop,
-                                        isWebDesktop && styles.snapshotModalCardDesktop,
-                                    ]}
-                                >
-                                    <View style={styles.snapshotModalTopRow}>
-                                        <View style={styles.snapshotModalBadge}>
-                                            <Ionicons
-                                                color={colors.accent}
-                                                name="stats-chart"
-                                                size={15}
-                                            />
-                                            <Text style={styles.snapshotModalBadgeText}>
-                                                Progress
-                                            </Text>
-                                        </View>
-
-                                        <Pressable
-                                            onPress={closeTrainingSnapshot}
-                                            style={({ pressed }) => [
-                                                styles.snapshotCloseButton,
-                                                pressed && styles.snapshotCloseButtonPressed,
-                                            ]}
-                                        >
-                                            <Ionicons
-                                                color={colors.textSecondary}
-                                                name="close"
-                                                size={18}
-                                            />
-                                        </Pressable>
-                                    </View>
-
-                                    {trainingSnapshotContent}
-                                </Card>
-                            </ScrollView>
-                        </View>
-                    </Modal>
-                ) : null}
-            </SafeAreaView>
-        );
-    }
-
-    const { question, options } = round;
-    const hasAnswered = answerState !== null;
-    const isCorrect = answerState === 'correct';
-    const didRevealAnswer = answerState === 'revealed';
-    const isDesktopHanziAnswers = isWebDesktop && settings.outputMode === 'hanzi';
-    const singleLinePinyinAnswers = settings.outputMode === 'pinyin';
-    const isAudioAnswers = settings.outputMode === 'audio';
-    const meanings = getMeaningLines(question);
-    const meaningLines = meanings.length > 0 ? meanings : ['No meaning available.'];
-    const toggleDetailVisibility = (key) => {
-        setDetailVisibility((current) => ({
-            ...current,
-            [key]: !current[key],
-        }));
-    };
-    const renderDetailedMeaning = (item, detailKey, centered = false) => {
-        const detailedMeaning = getDetailedMeaning(item);
-        const hasExamples = detailKey !== 'question' && getWordExamples(item).length > 0;
-
-        if (!detailedMeaning && !hasExamples) {
-            return null;
-        }
-
-        const isExpanded = detailVisibility[detailKey];
-
-        return (
-            <View style={[styles.detailSection, centered && styles.detailSectionCentered]}>
-                <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={hasExamples ? 'Meaning and examples' : 'Detailed meaning'}
-                    aria-expanded={Boolean(isExpanded)}
-                    onPress={() => toggleDetailVisibility(detailKey)}
-                    style={({ pressed }) => [
-                        styles.detailToggle,
-                        centered && styles.detailToggleCentered,
-                        pressed && styles.detailTogglePressed,
-                    ]}
-                >
-                    <Ionicons
-                        color={colors.accent}
-                        name={isExpanded ? 'remove' : 'add'}
-                        size={isWebDesktop ? 16 : 14}
-                    />
-                    <Text
-                        style={[
-                            styles.detailToggleLabel,
-                            centered && styles.detailToggleLabelCentered,
-                        ]}
-                    >
-                        {hasExamples ? 'Meaning & examples' : 'Detailed meaning'}
-                    </Text>
+    return <SafeAreaView style={styles.container}>
+        <BackdropOrbs />
+        <ScrollView ref={scrollRef} contentContainerStyle={[styles.scroll, { maxWidth: Math.min(contentMaxWidth, 1120) }]}>
+            {!isWebWide && <View style={styles.mobileBrand}><Brand /><ThemeButton /></View>}
+            <View style={styles.pageHeader}>
+                <Text role="heading" aria-level={1} style={styles.title}>Practice</Text>
+                <Pressable accessibilityRole="button" accessibilityLabel="Practice settings" onPress={() => navigation.navigate('Settings')} style={styles.settingsButton}>
+                    <Ionicons name="options-outline" size={18} color={colors.textSecondary} /><Text style={styles.meta}>Settings</Text>
                 </Pressable>
-
-                {isExpanded ? (
-                    <View style={styles.detailContents}>
-                        {detailedMeaning ? (
-                            <View style={[styles.detailPanel, centered && styles.detailPanelCentered]}>
-                                <Text
-                                    style={[
-                                        styles.detailText,
-                                        centered && styles.detailTextCentered,
-                                        isWebDesktop && styles.detailTextDesktop,
-                                    ]}
-                                >
-                                    {detailedMeaning}
-                                </Text>
-                            </View>
-                        ) : null}
-                        {hasExamples ? <ExampleSentence item={item} /> : null}
-                    </View>
-                ) : null}
             </View>
-        );
-    };
-
-    const renderQuestionPrompt = (item, inputModeId) => {
-        if (!item) {
-            return null;
-        }
-
-        if (inputModeId === 'audio') {
-            return (
-                <AudioPrompt
-                    compact={compactLayout}
-                    hanzi={item.hanzi}
-                    label="Play audio prompt"
-                />
-            );
-        }
-
-        if (inputModeId === 'eng') {
-            return (
-                <View style={[styles.meaningStack, compactLayout && styles.meaningStackCompact]}>
-                    {meaningLines.map((line) => (
-                        <Text
-                            key={line}
-                            style={[
-                                styles.meaningLine,
-                                isWebDesktop && styles.meaningLineDesktop,
-                                compactLayout && styles.meaningLineCompact,
-                                veryTightLayout && styles.meaningLineVeryCompact,
-                            ]}
-                        >
-                            {line}
-                        </Text>
-                    ))}
-                    {renderDetailedMeaning(item, 'question', true)}
-                </View>
-            );
-        }
-
-        return (
-            <Text
-                adjustsFontSizeToFit
-                minimumFontScale={0.72}
-                numberOfLines={inputModeId === 'pinyin' ? 2 : 1}
-                style={[
-                    styles.questionText,
-                    inputModeId === 'pinyin' && styles.questionTextPinyin,
-                    isWebDesktop && styles.questionTextDesktop,
-                    isWebDesktop &&
-                        inputModeId === 'pinyin' &&
-                        styles.questionTextPinyinDesktop,
-                    compactLayout && styles.questionTextCompact,
-                    compactLayout &&
-                        inputModeId === 'pinyin' &&
-                        styles.questionTextPinyinCompact,
-                    veryTightLayout && styles.questionTextVeryCompact,
-                ]}
-            >
-                {getDisplayText(item, inputModeId)}
-            </Text>
-        );
-    };
-
-    const renderAnswerRow = (item, label, detailKey, isSuccess = false, secondary = false) => (
-        <View
-            style={[
-                styles.answerRow,
-                secondary && styles.answerRowSecondary,
-                isWebDesktop && styles.answerRowDesktop,
-            ]}
-        >
-            <Text
-                style={[
-                    styles.answerLabel,
-                    isSuccess && styles.answerLabelSuccess,
-                    isWebDesktop && styles.answerLabelDesktop,
-                ]}
-            >
-                {label}
-            </Text>
-            <View style={styles.answerSummaryRow}>
-                <Text
-                    style={[
-                        styles.answerSummary,
-                        isWebDesktop && styles.answerSummaryDesktop,
-                    ]}
-                >
-                    {item.hanzi} · {item.pinyin}
-                </Text>
-                <AudioButton
-                    hanzi={item.hanzi}
-                    label={`Play ${item.hanzi} audio`}
-                    style={styles.inlineAudioButton}
-                />
-            </View>
-            <Text
-                style={[
-                    styles.answerTranslation,
-                    isWebDesktop && styles.answerTranslationDesktop,
-                ]}
-            >
-                {getMeaningSummary(item)}
-            </Text>
-            {renderDetailedMeaning(item, detailKey)}
-        </View>
-    );
-    const optionGrid = (
-        <View style={[styles.optionsGrid, isWebDesktop && styles.optionsGridDesktop]}>
-            {options.map((item, index) => {
-                const isSelected = selectedOption?.id === item.id;
-                const isAnswer = item.id === question.id;
-                let variant = 'secondary';
-                let audioActionLabel = 'Choose';
-
-                if (hasAnswered) {
-                    if (isAnswer) {
-                        variant = 'success';
-                        audioActionLabel = 'Correct';
-                    } else if (isSelected) {
-                        variant = 'danger';
-                        audioActionLabel = 'Picked';
-                    }
-                }
-
-                return (
-                    <View
-                        key={item.id}
-                        style={[styles.optionWrapper, isWebDesktop && styles.optionWrapperDesktop]}
-                    >
-                        {isAudioAnswers ? (
-                            <AudioChoiceButton
-                                actionLabel={audioActionLabel}
-                                choiceLabel={`Choice ${index + 1}`}
-                                disabled={hasAnswered}
-                                hanzi={item.hanzi}
-                                isDesktop={isWebDesktop}
-                                onSelect={() => handleSelection(item)}
-                                style={[
-                                    styles.optionButton,
-                                    { minHeight: optionButtonHeight },
-                                    compactLayout && styles.optionButtonCompact,
-                                    isWebDesktop && styles.optionButtonDesktop,
-                                ]}
-                                variant={variant}
-                            />
-                        ) : (
-                            <ModernButton
-                                title={
-                                    singleLinePinyinAnswers
-                                        ? getDisplayText(item, settings.outputMode)
-                                        : getDisplayLines(item, settings.outputMode)
+            <View style={styles.toolbar}>
+                <View accessibilityRole="tablist" style={styles.tabs}>
+                    {[['review', 'Review', training.dueCount], ['new', 'New words', remaining]].map(([id, label, count]) =>
+                        <Pressable key={id} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: queue === id }}
+                            ref={node => { queueTabs.current[id] = node; }} nativeID={`queue-${id}`} aria-controls="practice-panel"
+                            onKeyDown={event => {
+                                if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
+                                    event.preventDefault();
+                                    const target = event.key === 'Home' ? 'review' : event.key === 'End' ? 'new' : id === 'review' ? 'new' : 'review';
+                                    setQueue(target); queueTabs.current[target]?.focus();
                                 }
-                                onPress={() => handleSelection(item)}
-                                variant={variant}
-                                multiline={!singleLinePinyinAnswers}
-                                fitText={singleLinePinyinAnswers}
-                                minimumFontScale={isWebWide ? 0.86 : 0.78}
-                                disabled={hasAnswered}
-                                style={[
-                                    styles.optionButton,
-                                    { minHeight: optionButtonHeight },
-                                    compactLayout && styles.optionButtonCompact,
-                                    isWebDesktop && styles.optionButtonDesktop,
-                                ]}
-                                textStyle={[
-                                    styles.optionText,
-                                    compactLayout && styles.optionTextCompact,
-                                    singleLinePinyinAnswers && styles.optionTextPinyin,
-                                    isWebDesktop && styles.optionTextDesktop,
-                                    isDesktopHanziAnswers && styles.optionTextHanziDesktop,
-                                    isWebWide &&
-                                        singleLinePinyinAnswers &&
-                                        styles.optionTextPinyinWeb,
-                                ]}
-                            />
-                        )}
-                    </View>
-                );
-            })}
-
-            <View
-                style={[
-                    styles.revealOptionWrapper,
-                    isWebDesktop && styles.revealOptionWrapperDesktop,
-                ]}
-            >
-                <ModernButton
-                    title="I don't know"
-                    onPress={handleRevealAnswer}
-                    variant="secondary"
-                    disabled={hasAnswered}
-                    style={[
-                        styles.optionButton,
-                        styles.revealButton,
-                        styles.revealButtonCompact,
-                        styles.revealButtonWidth,
-                        compactLayout && styles.optionButtonCompact,
-                        compactLayout && styles.revealButtonCompactMobile,
-                        isWebDesktop && styles.optionButtonDesktop,
-                        isWebDesktop && styles.revealButtonDesktop,
-                        isWebDesktop && styles.revealButtonWidthDesktop,
-                    ]}
-                    textStyle={[
-                        styles.optionText,
-                        styles.revealButtonText,
-                        compactLayout && styles.optionTextCompact,
-                        isWebDesktop && styles.optionTextDesktop,
-                        isWebDesktop && styles.revealButtonTextDesktop,
-                    ]}
-                />
-            </View>
-        </View>
-    );
-
-    return (
-        <SafeAreaView style={styles.container}>
-            <BackdropOrbs />
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={[
-                    styles.content,
-                    compactLayout && styles.contentCompact,
-                    isWebWide && styles.contentWeb,
-                    isWebDesktop && styles.contentDesktop,
-                ]}
-                showsVerticalScrollIndicator={false}
-            >
-                <View
-                    style={[
-                        styles.practiceLayout,
-                        isWebDesktop && styles.practiceLayoutDesktop,
-                    ]}
-                >
-                    <View
-                        style={[
-                            styles.topSection,
-                            isWebDesktop && styles.topSectionDesktop,
-                        ]}
-                    >
-                        <View style={styles.hero}>
-                            <View style={styles.heroCopy}>
-                                <Text style={styles.eyebrow}>Practice</Text>
-                                <Text
-                                    style={[
-                                        styles.heroTitle,
-                                        isWebDesktop && styles.heroTitleDesktop,
-                                        compactLayout && styles.heroTitleCompact,
-                                        veryTightLayout && styles.heroTitleVeryCompact,
-                                    ]}
-                                >
-                                    Practice
-                                </Text>
-                                <Text
-                                    numberOfLines={
-                                        isWebDesktop ? 3 : hasAnswered ? 1 : compactLayout ? 2 : 3
-                                    }
-                                    style={[
-                                        styles.heroSubtitle,
-                                        isWebDesktop && styles.heroSubtitleDesktop,
-                                        compactLayout && styles.heroSubtitleCompact,
-                                    ]}
-                                >
-                                    See {inputMode.chipLabel.toLowerCase()}, answer with{' '}
-                                    {outputMode.chipLabel.toLowerCase()}, across {poolSummary}.
-                                </Text>
-                                {trainingSnapshotTrigger}
-                                {dailyProgress}
-                            </View>
-
-                            <View
-                                style={[
-                                    styles.streakBadge,
-                                    compactLayout && styles.streakBadgeCompact,
-                                    isWebDesktop && styles.streakBadgeDesktop,
-                                ]}
-                            >
-                                <Ionicons
-                                    color={colors.primaryStrong}
-                                    name="flame"
-                                    size={compactLayout ? 16 : 18}
-                                />
-                                <Text
-                                    style={[
-                                        styles.streakValue,
-                                        compactLayout && styles.streakValueCompact,
-                                        isWebDesktop && styles.streakValueDesktop,
-                                    ]}
-                                >
-                                    {streak}
-                                </Text>
-                                <Text
-                                    style={[
-                                        styles.streakLabel,
-                                        isWebDesktop && styles.streakLabelDesktop,
-                                    ]}
-                                >
-                                    streak
-                                </Text>
-                            </View>
-                        </View>
-
-                        <Card
-                            style={[
-                                styles.questionCard,
-                                isWebDesktop && styles.questionCardDesktop,
-                                compactLayout && styles.questionCardCompact,
-                                veryTightLayout && styles.questionCardVeryCompact,
-                                isCorrect && styles.questionCardCorrect,
-                                answerState === 'wrong' && styles.questionCardWrong,
-                            ]}
-            >
-                            <View style={styles.chipRow}>
-                                <View style={[styles.modeChip, compactLayout && styles.modeChipCompact]}>
-                                    <Ionicons color={colors.primaryStrong} name="eye" size={13} />
-                                    <Text style={styles.modeChipText}>See {inputMode.label}</Text>
-                                </View>
-
-                                <View
-                                    style={[
-                                        styles.modeChip,
-                                        styles.modeChipAccent,
-                                        compactLayout && styles.modeChipCompact,
-                                    ]}
-                                >
-                                    <Ionicons color={colors.accent} name="checkmark-circle" size={13} />
-                                    <Text style={[styles.modeChipText, styles.modeChipTextAccent]}>
-                                        Answer {outputMode.label}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            {renderQuestionPrompt(question, settings.inputMode)}
-
-                            <View style={styles.questionFooter}>
-                                <View style={styles.levelTag}>
-                                    <Text style={styles.levelTagText}>{round.isNew ? 'New' : 'Review'}</Text>
-                                </View>
-                                <View style={styles.levelTag}>
-                                    <Text style={styles.levelTagText}>HSK {question.level}</Text>
-                                </View>
-                            </View>
-
-                            {hasAnswered && isWebDesktop ? (
-                                <View style={styles.desktopFeedbackPanel}>
-                                    <View style={styles.answerCopy}>
-                                        <Text
-                                            style={[
-                                                styles.answerEyebrow,
-                                                isCorrect && styles.answerEyebrowSuccess,
-                                                didRevealAnswer && styles.answerEyebrowReveal,
-                                                isWebDesktop && styles.answerEyebrowDesktop,
-                                            ]}
-                                        >
-                                            {isCorrect
-                                                ? 'Word details'
-                                                : didRevealAnswer
-                                                  ? 'Answer revealed'
-                                                  : 'Review this pair'}
-                                        </Text>
-                                        {selectedOption
-                                            ? renderAnswerRow(
-                                                  selectedOption,
-                                                  isCorrect ? 'Picked word' : 'Your choice',
-                                                  'selected',
-                                              )
-                                            : null}
-
-                                        {didRevealAnswer ? (
-                                            <Text style={styles.revealNote}>
-                                                This counts as a failed review, so the card will
-                                                come back soon.
-                                            </Text>
-                                        ) : null}
-
-                                        {!isCorrect ? (
-                                            renderAnswerRow(
-                                                question,
-                                                didRevealAnswer ? 'Answer' : 'Correct answer',
-                                                'correct',
-                                                true,
-                                                !!selectedOption,
-                                            )
-                                        ) : null}
-                                    </View>
-
-                                    <ModernButton
-                                        title="Next card"
-                                        onPress={handleNextCard}
-                                        style={styles.desktopFeedbackButton}
-                                        variant="primary"
-                                    />
-                                </View>
-                            ) : null}
-
-                        </Card>
-
-                        {hasAnswered && !isWebDesktop ? (
-                            <Card
-                                style={[
-                                    styles.answerCard,
-                                    compactLayout && styles.answerCardCompact,
-                                    isWebDesktop && styles.answerCardDesktop,
-                                ]}
-                                tone={isCorrect ? 'accent' : didRevealAnswer ? 'default' : 'muted'}
-                            >
-                                <View style={styles.answerCopy}>
-                                    <Text
-                                        style={[
-                                            styles.answerEyebrow,
-                                            isCorrect && styles.answerEyebrowSuccess,
-                                            didRevealAnswer && styles.answerEyebrowReveal,
-                                        ]}
-                                    >
-                                        {isCorrect
-                                            ? 'Word details'
-                                            : didRevealAnswer
-                                              ? 'Answer revealed'
-                                              : 'Review this pair'}
-                                    </Text>
-                                    {selectedOption
-                                        ? renderAnswerRow(
-                                              selectedOption,
-                                              isCorrect ? 'Picked word' : 'Your choice',
-                                              'selected',
-                                          )
-                                        : null}
-
-                                    {didRevealAnswer ? (
-                                        <Text style={styles.revealNote}>
-                                            This counts as a failed review, so the card will come
-                                            back soon.
-                                        </Text>
-                                    ) : null}
-
-                                    {!isCorrect ? (
-                                        renderAnswerRow(
-                                            question,
-                                            didRevealAnswer ? 'Answer' : 'Correct answer',
-                                            'correct',
-                                            true,
-                                            !!selectedOption,
-                                        )
-                                    ) : null}
-                                </View>
-
-                                <ModernButton
-                                    title={tightLayout ? 'Next' : 'Next card'}
-                                    onPress={handleNextCard}
-                                    style={[
-                                        styles.nextButton,
-                                        compactLayout && styles.nextButtonCompact,
-                                        isWebDesktop && styles.nextButtonDesktop,
-                                    ]}
-                                    variant="primary"
-                                />
-                            </Card>
-                        ) : null}
-                    </View>
-
-                    {isWebDesktop ? (
-                        <Card style={styles.optionsPanel}>
-                            <View style={styles.optionsPanelHeader}>
-                                <Text style={styles.optionsEyebrow}>Answer choices</Text>
-                            </View>
-
-                            {optionGrid}
-                        </Card>
-                    ) : (
-                        <View
-                            style={[
-                                styles.optionsSection,
-                                hasAnswered && styles.optionsSectionAnswered,
-                            ]}
-                        >
-                            {optionGrid}
-                        </View>
-                    )}
+                            }}
+                            onPress={() => setQueue(id)} style={[styles.tab, queue === id && styles.tabActive]}>
+                            <Text style={[styles.tabLabel, queue === id && { color: colors.primaryStrong }]}>{label}</Text>
+                            <Text style={[styles.tabCount, queue === id && { color: colors.primaryStrong }]}>{count}</Text>
+                        </Pressable>)}
                 </View>
-            </ScrollView>
-            {trainingSnapshot ? (
-                <Modal
-                    animationType="fade"
-                    onRequestClose={closeTrainingSnapshot}
-                    transparent
-                    visible={isSnapshotVisible}
-                >
-                    <View style={styles.snapshotModalRoot}>
-                        <Pressable onPress={closeTrainingSnapshot} style={styles.snapshotBackdrop} />
-                        <ScrollView
-                            contentContainerStyle={styles.snapshotModalScroll}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            <Card
-                                style={[
-                                    styles.snapshotCard,
-                                    styles.snapshotModalCard,
-                                    isWebDesktop && styles.snapshotCardDesktop,
-                                    isWebDesktop && styles.snapshotModalCardDesktop,
-                                ]}
-                            >
-                                <View style={styles.snapshotModalTopRow}>
-                                    <View style={styles.snapshotModalBadge}>
-                                        <Ionicons
-                                            color={colors.accent}
-                                            name="stats-chart"
-                                            size={15}
-                                        />
-                                        <Text style={styles.snapshotModalBadgeText}>Progress</Text>
-                                    </View>
-
-                                    <Pressable
-                                        onPress={closeTrainingSnapshot}
-                                        style={({ pressed }) => [
-                                            styles.snapshotCloseButton,
-                                            pressed && styles.snapshotCloseButtonPressed,
-                                        ]}
-                                    >
-                                        <Ionicons
-                                            color={colors.textSecondary}
-                                            name="close"
-                                            size={18}
-                                        />
-                                    </Pressable>
-                                </View>
-
-                                {trainingSnapshotContent}
-                            </Card>
-                        </ScrollView>
+                <Text style={styles.meta}>{getPracticeMode(settings.inputMode).chipLabel} → {isSelfReview ? 'Self review' : getPracticeMode(settings.outputMode).chipLabel}</Text>
+            </View>
+            {queue === 'new' && <AddReviewWord cards={progress.cards} items={items} reviewCardIds={settings.reviewCardIds}
+                disabled={!isHydrated} onAdd={word => updateSettings(current => ({ reviewCardIds: [...new Set([...current.reviewCardIds, Number(word.id)])] }))} />}
+            {round ? <View nativeID="practice-panel" role="tabpanel" aria-labelledby={`queue-${queue}`} style={styles.card} onLayout={event => { cardTop.current = event.nativeEvent.layout.y; }}>
+                <View style={[styles.studyRow, isSelfReview && styles.selfStudyRow]}>
+                    <View style={[styles.prompt, isSelfReview && styles.selfPrompt]}>
+                        {settings.inputMode === 'audio' ? <AudioPrompt hanzi={round.question.hanzi} label="Play audio prompt" />
+                            : <Text selectable testID="practice-prompt" style={[styles.hanzi, settings.inputMode !== 'hanzi' && styles.textPrompt,
+                                hasRevealed && settings.inputMode === 'hanzi' && { fontSize: split ? 76 : 64, lineHeight: 104 }]}>
+                                {getDisplayText(round.question, settings.inputMode)}
+                            </Text>}
+                        {settings.inputMode === 'eng' && detail(round.question, 'prompt')}
+                        {answer && !isSelfReview && settings.inputMode === 'hanzi' && <Text style={styles.pinyin}>{round.question.pinyin}</Text>}
+                        {answer && !isSelfReview && <AudioButton hanzi={round.question.hanzi} label={`Play ${round.question.hanzi} audio`} />}
                     </View>
-                </Modal>
-            ) : null}
-        </SafeAreaView>
-    );
+                    {isSelfReview ? (!hasRevealed && <View style={styles.revealSelfRow}>
+                        <ModernButton title="Show answer" onPress={() => setSelfAnswerVisible(true)} style={styles.showAnswer} />
+                    </View>) : <View style={styles.answers}>
+                        <Text style={styles.answerHeading}>{settings.outputMode === 'audio' ? 'Choose the matching audio' : 'Choose the ' + (settings.outputMode === 'eng' ? 'meaning' : getPracticeMode(settings.outputMode).label.toLowerCase())}</Text>
+                        <View style={styles.grid} onLayout={event => setChoiceGridWidth(event.nativeEvent.layout.width)}>
+                            {round.options.map((item, index) => {
+                                const correct = Boolean(answer) && item.id === round.question.id;
+                                const wrong = answer === 'wrong' && item.id === selected?.id;
+                                const variant = correct ? 'success' : wrong ? 'danger' : 'secondary';
+                                return <View key={item.id} testID="practice-choice" style={[styles.option, widePinyinChoices && { width: '100%' }]}>
+                                    {settings.outputMode === 'audio' ? <AudioChoiceButton choiceLabel={`Audio ${String.fromCharCode(65 + index)}`} hideLabel
+                                        actionLabel={correct ? 'Correct' : wrong ? 'Picked' : 'Choose'} hanzi={item.hanzi} variant={variant}
+                                        disabled={Boolean(answer)} onSelect={() => submit(item)} style={{ minHeight: 94 }} />
+                                        : <ModernButton title={settings.outputMode === 'pinyin' ? getDisplayText(item, 'pinyin') : getDisplayLines(item, settings.outputMode)}
+                                            multiline={settings.outputMode !== 'pinyin'} wrapText={settings.outputMode !== 'pinyin'} fitText={settings.outputMode === 'pinyin'}
+                                            variant={variant} disabled={Boolean(answer)} onPress={() => submit(item)}
+                                            style={styles.answerButton} textStyle={[styles.answerText, settings.outputMode === 'hanzi' && { fontFamily: typography.studyFont, fontSize: 28, lineHeight: 40 }]} />}
+                                    {(correct || wrong) && settings.outputMode !== 'audio' && <View pointerEvents="none" style={styles.choiceStatus}>
+                                        <Ionicons name={correct ? 'checkmark-circle' : 'close-circle'} size={16} color={correct ? colors.success : colors.error} />
+                                    </View>}
+                                </View>;
+                            })}
+                        </View>
+                        {!answer && <ModernButton title="I don't know" variant="secondary" onPress={() => submit(null, true)} style={styles.unknown} textStyle={{ fontSize: 15 }} />}
+                    </View>}
+                </View>
+                {hasRevealed && <View testID="practice-feedback" style={styles.feedback} onLayout={event => {
+                    if (!split && !feedbackScrolled.current) {
+                        feedbackScrolled.current = true;
+                        scrollRef.current?.scrollTo({ y: cardTop.current + event.nativeEvent.layout.y - 16, animated: true });
+                    }
+                }}>
+                    {answer && <View accessibilityLiveRegion="polite" role="status" style={[styles.status, { backgroundColor: answer === 'correct' ? colors.successSoft : answer === 'wrong' ? colors.errorSoft : colors.backgroundMuted }]}>
+                        <Ionicons name={answer === 'correct' ? 'checkmark-circle-outline' : answer === 'wrong' ? 'close-circle-outline' : 'eye-outline'}
+                            size={22} color={answer === 'correct' ? colors.success : answer === 'wrong' ? colors.error : colors.textSecondary} />
+                        <View style={{ flex: 1, gap: 4 }}>
+                            <Text style={[styles.statusTitle, { color: answer === 'correct' ? colors.success : answer === 'wrong' ? colors.error : colors.text }]}>
+                                {isSelfReview ? (answer === 'correct' ? 'Remembered' : 'Not remembered') : answer === 'correct' ? 'Correct' : answer === 'wrong' ? 'Not quite' : 'Answer revealed'}
+                            </Text>
+                            {!isSelfReview && <Text style={styles.body}>{answer === 'wrong' && selected ? `You chose “${meaning(selected)}”. Correct: ${meaning(round.question)}.` : meaning(round.question)}</Text>}
+                        </View>
+                    </View>}
+                    <View style={styles.feedbackContent}>
+                        {isSelfReview ? <View testID="self-review-answer" style={styles.selfAnswer}>{answerWord(round.question, 'correct', true)}</View>
+                            : settings.inputMode !== 'hanzi' ? answerWord(round.question, 'correct', false, false) : null}
+                        <ExampleSentence item={round.question} showSource={false} />
+                        {answer === 'wrong' && selected && !isSelfReview && <View style={styles.selectedDetail}>
+                            <Pressable accessibilityRole="button" accessibilityState={{ expanded: Boolean(details.selected) }}
+                                style={styles.detailToggle} onPress={() => setDetails(value => ({ ...value, selected: !value.selected }))}>
+                                <Ionicons name={details.selected ? 'chevron-up' : 'chevron-down'} size={16} color={colors.textSecondary} />
+                                <Text style={styles.meta}>Your answer: {selected.hanzi} · {meaning(selected)}</Text>
+                            </Pressable>
+                            {details.selected && <View style={{ gap: 8, paddingTop: 12 }}>{answerWord(selected, 'selectedMeaning')}<ExampleSentence item={selected} /></View>}
+                        </View>}
+                        {isSelfReview && !answer ? <View testID="recall-rating" style={styles.recallRating}>
+                            <ModernButton title="Didn't remember" variant="secondary" onPress={() => gradeRecall(false)} style={styles.recallButton} textStyle={{ color: colors.error }} />
+                            <ModernButton title="Remembered" onPress={() => gradeRecall(true)} style={styles.recallButton} />
+                        </View> : <View style={styles.feedbackActions}>
+                            {!isSelfReview && <View style={styles.feedbackMeaning}>{detail(round.question, 'correct')}</View>}
+                            <ModernButton title="Next word →" onPress={nextWord} style={styles.next} />
+                        </View>}
+                    </View>
+                </View>}
+            </View> : <View nativeID="practice-panel" role="tabpanel" aria-labelledby={`queue-${queue}`} style={[styles.card, styles.empty]}>
+                <Ionicons name={queue === 'review' ? 'checkmark-circle-outline' : 'library-outline'} size={32} color={colors.primaryStrong} />
+                <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+                {isHydrated && items.length >= minimumItems && <Text style={[styles.body, { textAlign: 'center' }]}>
+                    {queue === 'review' ? `${training.scheduledCount} words scheduled for later.` : `${daily.introducedToday} of ${daily.allowance} new words introduced today.`}
+                </Text>}
+                {items.length < minimumItems ? <ModernButton title="Choose vocabulary" onPress={() => navigation.navigate('Settings')} />
+                    : queue === 'review' && remaining > 0 ? <ModernButton title="Practice new words" onPress={() => setQueue('new')} />
+                    : queue === 'new' && training.dueCount > 0 ? <ModernButton title="Review words" onPress={() => setQueue('review')} /> : null}
+            </View>}
+            <View style={styles.progressRow}>
+                <Text style={styles.meta}>New today: {daily.introducedToday} / {daily.allowance}</Text>
+                <Pressable accessibilityRole="button" onPress={() => setSnapshotVisible(true)} style={styles.detailToggle}>
+                    <Text style={styles.link}>Study progress</Text><Ionicons name="arrow-forward" size={16} color={colors.primaryStrong} />
+                </Pressable>
+            </View>
+            {hasRevealed && round && <ExampleSource item={round.question} style={styles.sourceFooter} />}
+            {!daily.canIntroduce && daily.daily.extraNewWords < 1000 && training.newCount > 0 && <ModernButton title="Learn 5 more today" variant="secondary" onPress={learnMore} style={{ alignSelf: 'flex-start' }} />}
+        </ScrollView>
+        <Modal visible={snapshotVisible} transparent animationType="fade" onRequestClose={() => setSnapshotVisible(false)}>
+            <View style={styles.modalOverlay}>
+                <Pressable accessibilityLabel="Close study progress" onPress={() => setSnapshotVisible(false)} style={StyleSheet.absoluteFill} />
+                <View accessibilityViewIsModal style={styles.modal}>
+                    <View style={styles.pageHeader}><Text style={styles.emptyTitle}>Study progress</Text><Pressable accessibilityRole="button" accessibilityLabel="Close study progress" onPress={() => setSnapshotVisible(false)} style={{ padding: 12 }}><Ionicons name="close" size={22} color={colors.text} /></Pressable></View>
+                    <ScrollView contentContainerStyle={{ gap: 20 }}>
+                        <Text style={styles.body}>{training.studiedCount} / {training.totalCount} words introduced · {training.masteredCount} mastered</Text>
+                        <Text style={styles.meta}>{training.dueCount} due now · {training.scheduledCount} scheduled · {training.newCount} unseen</Text>
+                        <Text style={styles.answerHeading}>Review stages</Text>
+                        {training.boxCounts.map((count, index) => <View key={index} style={styles.inline}>
+                            <Text style={[styles.meta, { width: 62 }]}>Stage {index}</Text>
+                            <View style={{ flex: 1, height: 8, backgroundColor: colors.backgroundMuted, borderRadius: 4 }}><View style={{ height: 8, borderRadius: 4, backgroundColor: colors.primary, width: `${count / Math.max(1, ...training.boxCounts) * 100}%` }} /></View>
+                            <Text style={[styles.meta, { width: 36, textAlign: 'right' }]}>{count}</Text>
+                        </View>)}
+                        <ModernButton title="View your progress" onPress={() => { setSnapshotVisible(false); navigation.navigate('Stats'); }} />
+                    </ScrollView>
+                </View>
+            </View>
+        </Modal>
+    </SafeAreaView>;
 };
 
-const createStyles = (colors, radii, shadows, typography, layout) =>
-    StyleSheet.create({
-        dailyProgress: {
-            gap: 6,
-            marginTop: 8,
-        },
-        dailyProgressText: {
-            color: colors.textSecondary,
-            fontSize: 12,
-            lineHeight: 17,
-        },
-        dailyExtraButton: {
-            minHeight: 44,
-        },
-        container: {
-            flex: 1,
-            backgroundColor: colors.background,
-        },
-        scrollView: {
-            flex: 1,
-        },
-        content: {
-            flexGrow: 1,
-            paddingHorizontal: 16,
-            paddingTop: 8,
-            paddingBottom: 12,
-            gap: 12,
-        },
-        contentCompact: {
-            gap: 10,
-            paddingTop: 6,
-        },
-        contentWeb: {
-            width: '100%',
-            maxWidth: layout.contentMaxWidth,
-            alignSelf: 'center',
-            paddingHorizontal: 24,
-            paddingTop: 24,
-            paddingBottom: 148,
-            gap: 18,
-        },
-        contentDesktop: {
-            minHeight: layout.desktopContentMinHeight,
-            justifyContent: 'center',
-            paddingTop: 32,
-            paddingBottom: 108,
-            paddingHorizontal: 36,
-            gap: 28,
-        },
-        practiceLayout: {
-            gap: 12,
-        },
-        practiceLayoutDesktop: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 32,
-        },
-        topSection: {
-            gap: 10,
-        },
-        topSectionDesktop: {
-            width: layout.desktopSidebarWidth,
-            gap: 18,
-        },
-        hero: {
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: 12,
-        },
-        heroCopy: {
-            flex: 1,
-            gap: 4,
-        },
-        eyebrow: {
-            color: colors.primaryStrong,
-            fontSize: 11,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        heroTitle: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 30,
-            lineHeight: 34,
-        },
-        heroTitleDesktop: {
-            fontSize: 40 + Math.round(layout.desktopScale * 6),
-            lineHeight: 44 + Math.round(layout.desktopScale * 8),
-        },
-        heroTitleCompact: {
-            fontSize: 25,
-            lineHeight: 28,
-        },
-        heroTitleVeryCompact: {
-            fontSize: 22,
-            lineHeight: 25,
-        },
-        heroSubtitle: {
-            color: colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
-        },
-        heroSubtitleDesktop: {
-            fontSize: 16,
-            lineHeight: 24,
-            maxWidth: 360,
-        },
-        heroSubtitleCompact: {
-            fontSize: 13,
-            lineHeight: 18,
-        },
-        streakBadge: {
-            minWidth: 76,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            backgroundColor: colors.surface,
-            borderRadius: radii.md,
-            borderWidth: 1,
-            borderColor: colors.border,
-            ...shadows.sm,
-        },
-        streakBadgeCompact: {
-            minWidth: 70,
-            paddingVertical: 8,
-        },
-        streakBadgeDesktop: {
-            minWidth: 104,
-            paddingHorizontal: 18,
-            paddingVertical: 16,
-            borderRadius: radii.lg,
-        },
-        streakValue: {
-            color: colors.text,
-            fontSize: 24,
-            fontWeight: '800',
-            lineHeight: 28,
-        },
-        streakValueCompact: {
-            fontSize: 22,
-            lineHeight: 24,
-        },
-        streakValueDesktop: {
-            fontSize: 30 + Math.round(layout.desktopScale * 4),
-            lineHeight: 34 + Math.round(layout.desktopScale * 4),
-        },
-        streakLabel: {
-            color: colors.textSecondary,
-            fontSize: 10,
-            fontWeight: '700',
-            textTransform: 'uppercase',
-            letterSpacing: 1,
-        },
-        streakLabelDesktop: {
-            fontSize: 11,
-            letterSpacing: 1.2,
-        },
-        snapshotTrigger: {
-            marginTop: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            alignSelf: 'flex-start',
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            borderRadius: radii.md,
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-            ...shadows.sm,
-        },
-        snapshotTriggerPressed: {
-            transform: [{ scale: 0.985 }],
-        },
-        snapshotTriggerCopy: {
-            gap: 1,
-        },
-        snapshotTriggerLabel: {
-            color: colors.textSecondary,
-            fontSize: 10,
-            fontWeight: '800',
-            letterSpacing: 0.8,
-            textTransform: 'uppercase',
-        },
-        snapshotTriggerValue: {
-            color: colors.text,
-            fontSize: 13,
-            lineHeight: 17,
-            fontWeight: '700',
-        },
-        snapshotCard: {
-            gap: 14,
-            padding: 18,
-        },
-        snapshotCardDesktop: {
-            gap: 18,
-            padding: 22,
-        },
-        snapshotContent: {
-            gap: 14,
-        },
-        snapshotHeader: {
-            gap: 4,
-        },
-        snapshotEyebrow: {
-            color: colors.accent,
-            fontSize: 11,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        snapshotTitle: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 24,
-            lineHeight: 28,
-        },
-        snapshotTitleDesktop: {
-            fontSize: 28,
-            lineHeight: 32,
-        },
-        snapshotSubtitle: {
-            color: colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
-        },
-        snapshotProgressTrack: {
-            height: 10,
-            borderRadius: radii.pill,
-            backgroundColor: colors.surfaceMuted,
-            overflow: 'hidden',
-        },
-        snapshotProgressFill: {
-            height: '100%',
-            borderRadius: radii.pill,
-            backgroundColor: colors.primaryStrong,
-        },
-        snapshotMetricsGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-        },
-        snapshotMetric: {
-            width: '48%',
-            gap: 2,
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-            borderRadius: radii.md,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        snapshotMetricValue: {
-            color: colors.text,
-            fontSize: 22,
-            lineHeight: 26,
-            fontWeight: '800',
-        },
-        snapshotMetricLabel: {
-            color: colors.textSecondary,
-            fontSize: 11,
-            fontWeight: '700',
-            letterSpacing: 0.8,
-            textTransform: 'uppercase',
-        },
-        snapshotSectionHeader: {
-            gap: 2,
-        },
-        snapshotSectionTitle: {
-            color: colors.text,
-            fontSize: 15,
-            lineHeight: 20,
-            fontWeight: '800',
-        },
-        snapshotSectionHint: {
-            color: colors.textMuted,
-            fontSize: 12,
-            lineHeight: 17,
-        },
-        ladderGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-        },
-        ladderGridDesktop: {
-            gap: 10,
-        },
-        ladderCard: {
-            width: '31%',
-            gap: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-            borderRadius: radii.md,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        ladderCardDesktop: {
-            width: '15.4%',
-        },
-        ladderLabel: {
-            color: colors.textMuted,
-            fontSize: 10,
-            fontWeight: '800',
-            letterSpacing: 0.8,
-            textTransform: 'uppercase',
-        },
-        ladderValue: {
-            color: colors.text,
-            fontSize: 22,
-            lineHeight: 26,
-            fontWeight: '800',
-        },
-        ladderValueMastered: {
-            color: colors.success,
-        },
-        ladderTrack: {
-            height: 7,
-            borderRadius: radii.pill,
-            backgroundColor: colors.backgroundMuted,
-            overflow: 'hidden',
-        },
-        ladderFill: {
-            height: '100%',
-            borderRadius: radii.pill,
-            backgroundColor: colors.accent,
-        },
-        ladderFillMastered: {
-            backgroundColor: colors.success,
-        },
-        snapshotModalRoot: {
-            flex: 1,
-            justifyContent: 'center',
-        },
-        snapshotBackdrop: {
-            ...StyleSheet.absoluteFillObject,
-            backgroundColor: colors.overlay,
-        },
-        snapshotModalScroll: {
-            flexGrow: 1,
-            justifyContent: 'center',
-            paddingHorizontal: 18,
-            paddingVertical: 28,
-        },
-        snapshotModalCard: {
-            width: '100%',
-            maxWidth: 760,
-            alignSelf: 'center',
-        },
-        snapshotModalCardDesktop: {
-            maxWidth: 820,
-        },
-        snapshotModalTopRow: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-        },
-        snapshotModalBadge: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-            borderRadius: radii.pill,
-            backgroundColor: colors.accentSoft,
-            alignSelf: 'flex-start',
-        },
-        snapshotModalBadgeText: {
-            color: colors.accent,
-            fontSize: 11,
-            fontWeight: '800',
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-        },
-        snapshotCloseButton: {
-            width: 36,
-            height: 36,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: radii.pill,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        snapshotCloseButtonPressed: {
-            transform: [{ scale: 0.96 }],
-        },
-        questionCard: {
-            gap: 12,
-            padding: 18,
-        },
-        questionCardDesktop: {
-            gap: 18,
-            padding: 26,
-            minHeight: 390,
-            justifyContent: 'center',
-        },
-        questionCardCompact: {
-            gap: 10,
-            padding: 16,
-        },
-        questionCardVeryCompact: {
-            paddingVertical: 14,
-        },
-        questionCardCorrect: {
-            borderColor: colors.success,
-            shadowColor: colors.success,
-        },
-        questionCardWrong: {
-            borderColor: colors.error,
-            shadowColor: colors.error,
-        },
-        chipRow: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 8,
-        },
-        modeChip: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 5,
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-            borderRadius: radii.pill,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        modeChipCompact: {
-            paddingHorizontal: 9,
-            paddingVertical: 5,
-        },
-        modeChipAccent: {
-            backgroundColor: colors.accentSoft,
-            borderColor: 'transparent',
-        },
-        modeChipText: {
-            color: colors.textSecondary,
-            fontSize: 12,
-            fontWeight: '700',
-        },
-        modeChipTextAccent: {
-            color: colors.accent,
-        },
-        questionLabel: {
-            color: colors.textSecondary,
-            fontSize: 12,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        questionLabelDesktop: {
-            fontSize: 15,
-            letterSpacing: 1.6,
-        },
-        questionText: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 50,
-            lineHeight: 54,
-            textAlign: 'center',
-        },
-        questionTextDesktop: {
-            fontSize: 70 + Math.round(layout.desktopScale * 10),
-            lineHeight: 76 + Math.round(layout.desktopScale * 12),
-        },
-        questionTextCompact: {
-            fontSize: 42,
-            lineHeight: 46,
-        },
-        questionTextVeryCompact: {
-            fontSize: 36,
-            lineHeight: 40,
-        },
-        questionTextPinyin: {
-            fontSize: 32,
-            lineHeight: 38,
-        },
-        questionTextPinyinDesktop: {
-            fontSize: 44 + Math.round(layout.desktopScale * 6),
-            lineHeight: 50 + Math.round(layout.desktopScale * 8),
-        },
-        questionTextPinyinCompact: {
-            fontSize: 28,
-            lineHeight: 34,
-        },
-        meaningStack: {
-            gap: 8,
-            alignItems: 'center',
-        },
-        meaningStackCompact: {
-            gap: 6,
-        },
-        meaningLine: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 24,
-            lineHeight: 29,
-            textAlign: 'center',
-        },
-        meaningLineDesktop: {
-            fontSize: 30 + Math.round(layout.desktopScale * 4),
-            lineHeight: 36 + Math.round(layout.desktopScale * 4),
-        },
-        meaningLineCompact: {
-            fontSize: 21,
-            lineHeight: 25,
-        },
-        meaningLineVeryCompact: {
-            fontSize: 18,
-            lineHeight: 22,
-        },
-        detailSection: {
-            gap: 8,
-            alignItems: 'flex-start',
-        },
-        detailContents: { width: '100%' },
-        detailSectionCentered: {
-            width: '100%',
-            alignItems: 'center',
-        },
-        detailToggle: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-            paddingHorizontal: 10,
-            paddingVertical: 7,
-            borderRadius: radii.pill,
-            backgroundColor: colors.accentSoft,
-            borderWidth: 1,
-            borderColor: 'transparent',
-        },
-        detailToggleCentered: {
-            alignSelf: 'center',
-        },
-        detailTogglePressed: {
-            transform: [{ scale: 0.98 }],
-        },
-        detailToggleLabel: {
-            color: colors.accent,
-            fontSize: 11,
-            lineHeight: 14,
-            fontWeight: '800',
-            letterSpacing: 0.7,
-            textTransform: 'uppercase',
-        },
-        detailToggleLabelCentered: {
-            textAlign: 'center',
-        },
-        detailPanel: {
-            width: '100%',
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-            borderRadius: radii.md,
-            backgroundColor: colors.surfaceMuted,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        detailPanelCentered: {
-            alignSelf: 'stretch',
-        },
-        detailText: {
-            color: colors.textSecondary,
-            fontSize: 13,
-            lineHeight: 19,
-        },
-        detailTextCentered: {
-            textAlign: 'center',
-        },
-        detailTextDesktop: {
-            fontSize: 15,
-            lineHeight: 23,
-        },
-        questionFooter: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 12,
-        },
-        levelTag: {
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-            borderRadius: radii.pill,
-            backgroundColor: colors.primarySoft,
-            alignSelf: 'flex-start',
-        },
-        levelTagText: {
-            color: colors.primaryStrong,
-            fontSize: 11,
-            fontWeight: '800',
-            letterSpacing: 0.6,
-            textTransform: 'uppercase',
-        },
-        helperText: {
-            flex: 1,
-            color: colors.textSecondary,
-            fontSize: 12,
-            lineHeight: 16,
-            textAlign: 'right',
-        },
-        answerCard: {
-            flexDirection: 'column',
-            alignItems: 'stretch',
-            gap: 12,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
-        },
-        answerCardCompact: {
-            flexDirection: 'column',
-            gap: 10,
-        },
-        answerCardDesktop: {
-            gap: 14,
-        },
-        desktopFeedbackPanel: {
-            marginTop: 6,
-            gap: 18,
-            paddingTop: 18,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
-        },
-        answerCopy: {
-            flex: 1,
-            gap: 8,
-        },
-        answerEyebrow: {
-            color: colors.error,
-            fontSize: 11,
-            fontWeight: '800',
-            letterSpacing: 1,
-            textTransform: 'uppercase',
-        },
-        answerEyebrowDesktop: {
-            fontSize: 14,
-            letterSpacing: 1.3,
-        },
-        answerEyebrowSuccess: {
-            color: colors.success,
-        },
-        answerRow: {
-            gap: 2,
-        },
-        answerRowDesktop: {
-            gap: 8,
-        },
-        answerRowSecondary: {
-            marginTop: 2,
-            paddingTop: 8,
-            borderTopWidth: 1,
-            borderTopColor: colors.border,
-        },
-        answerLabel: {
-            color: colors.textSecondary,
-            fontSize: 10,
-            fontWeight: '800',
-            letterSpacing: 0.9,
-            textTransform: 'uppercase',
-        },
-        answerLabelDesktop: {
-            fontSize: 12,
-            letterSpacing: 1.1,
-        },
-        answerLabelSuccess: {
-            color: colors.success,
-        },
-        answerSummaryRow: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 8,
-        },
-        answerSummary: {
-            color: colors.text,
-            fontSize: 15,
-            lineHeight: 19,
-            fontWeight: '700',
-        },
-        answerSummaryDesktop: {
-            fontSize: 24,
-            lineHeight: 30,
-        },
-        inlineAudioButton: {
-            marginTop: 1,
-        },
-        answerTranslation: {
-            color: colors.textSecondary,
-            fontSize: 13,
-            lineHeight: 17,
-        },
-        answerTranslationDesktop: {
-            fontSize: 18,
-            lineHeight: 27,
-        },
-        nextButton: {
-            minHeight: 48,
-            minWidth: 92,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
-            alignSelf: 'stretch',
-        },
-        nextButtonCompact: {
-            minWidth: 0,
-            alignSelf: 'stretch',
-        },
-        nextButtonDesktop: {
-            minWidth: 0,
-            alignSelf: 'stretch',
-        },
-        desktopFeedbackButton: {
-            minHeight: 50,
-            alignSelf: 'stretch',
-        },
-        optionsSection: {
-            flexGrow: 1,
-            justifyContent: 'center',
-        },
-        optionsSectionAnswered: {
-            flexGrow: 0,
-            justifyContent: 'flex-start',
-        },
-        optionsPanel: {
-            flex: 1,
-            gap: 18,
-            padding: 24,
-        },
-        optionsPanelHeader: {
-            gap: 10,
-            width: '100%',
-            maxWidth: 1120,
-            alignSelf: 'center',
-        },
-        optionsEyebrow: {
-            color: colors.primaryStrong,
-            fontSize: 13,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        optionsTitle: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 38 + Math.round(layout.desktopScale * 4),
-            lineHeight: 42 + Math.round(layout.desktopScale * 6),
-            maxWidth: 600,
-        },
-        optionsGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            justifyContent: 'space-between',
-            rowGap: 10,
-        },
-        optionsGridDesktop: {
-            width: '100%',
-            maxWidth: 1120,
-            alignSelf: 'center',
-            rowGap: 14,
-        },
-        optionWrapper: {
-            width: '48%',
-        },
-        optionWrapperDesktop: {
-            width: '48.7%',
-        },
-        revealOptionWrapper: {
-            width: '100%',
-            alignItems: 'center',
-        },
-        revealOptionWrapperDesktop: {
-            width: '100%',
-        },
-        optionButton: {
-            paddingHorizontal: 10,
-        },
-        revealButton: {
-            backgroundColor: colors.surface,
-            borderColor: colors.accentSoft,
-        },
-        revealButtonCompact: {
-            minHeight: 62,
-        },
-        revealButtonWidth: {
-            width: '48%',
-        },
-        revealButtonCompactMobile: {
-            minHeight: 56,
-        },
-        revealButtonDesktop: {
-            minHeight: 82,
-        },
-        revealButtonWidthDesktop: {
-            width: '32%',
-        },
-        optionButtonCompact: {
-            paddingHorizontal: 8,
-        },
-        optionButtonDesktop: {
-            borderRadius: radii.lg,
-            paddingHorizontal: 24,
-        },
-        optionText: {
-            fontSize: 18,
-            lineHeight: 24,
-        },
-        optionTextPinyin: {
-            fontSize: 17,
-            lineHeight: 24,
-        },
-        optionTextDesktop: {
-            fontSize: 24 + Math.round(layout.desktopScale * 2),
-            lineHeight: 31 + Math.round(layout.desktopScale * 2),
-        },
-        optionTextHanziDesktop: {
-            fontSize: 34 + Math.round(layout.desktopScale * 4),
-            lineHeight: 40 + Math.round(layout.desktopScale * 4),
-        },
-        optionTextPinyinWeb: {
-            fontSize: 21,
-            lineHeight: 30,
-        },
-        revealButtonText: {
-            color: colors.text,
-            fontSize: 16,
-            lineHeight: 20,
-        },
-        revealButtonTextDesktop: {
-            fontSize: 19,
-            lineHeight: 24,
-        },
-        optionTextCompact: {
-            fontSize: 16,
-            lineHeight: 22,
-        },
-        answerEyebrowReveal: {
-            color: colors.accent,
-        },
-        revealNote: {
-            color: colors.textSecondary,
-            fontSize: 13,
-            lineHeight: 19,
-        },
-        emptyState: {
-            flex: 1,
-            justifyContent: 'center',
-            paddingHorizontal: 20,
-            gap: 12,
-        },
-        emptyStateWeb: {
-            width: '100%',
-            maxWidth: 760,
-            alignSelf: 'center',
-        },
-        emptyCard: {
-            gap: 10,
-        },
-        emptyCardWeb: {
-            padding: 28,
-        },
-        emptyAction: {
-            marginTop: 6,
-        },
-        emptyEyebrow: {
-            color: colors.primaryStrong,
-            fontSize: 12,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        emptyTitle: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 30,
-            lineHeight: 34,
-        },
-        emptyText: {
-            color: colors.textSecondary,
-            fontSize: 16,
-            lineHeight: 24,
-        },
-    });
-
+const createStyles = (c, t, split) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    scroll: { width: '100%', alignSelf: 'center', paddingHorizontal: split ? 24 : 18, paddingTop: split ? 42 : 16, paddingBottom: 110, gap: split ? 24 : 18 },
+    mobileBrand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+    title: { fontFamily: t.uiFont, fontSize: 30, lineHeight: 40, fontWeight: '600', color: c.text },
+    settingsButton: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: c.border, borderRadius: 6 },
+    toolbar: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
+    tabs: { flexDirection: 'row', borderBottomWidth: 1, borderColor: c.border, gap: 20 },
+    tab: { flexDirection: 'row', gap: 9, alignItems: 'center', minHeight: 48, borderBottomWidth: 2, borderBottomColor: 'transparent' },
+    tabActive: { borderBottomColor: c.primary },
+    tabLabel: { fontFamily: t.uiFont, color: c.textSecondary, fontSize: 15, fontWeight: '600' },
+    tabCount: { color: c.textSecondary, fontSize: 13, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: c.backgroundMuted, borderRadius: 4 },
+    meta: { fontFamily: t.uiFont, fontSize: 13, color: c.textSecondary, lineHeight: 21, flexShrink: 1 },
+    card: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 10, overflow: 'hidden' },
+    studyRow: { flexDirection: split ? 'row' : 'column' },
+    selfStudyRow: { flexDirection: 'column' },
+    selfPrompt: { width: '100%', minHeight: split ? 220 : 160, borderRightWidth: 0, borderBottomWidth: 0 },
+    revealSelfRow: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 28 },
+    showAnswer: { width: '100%', maxWidth: 320, minHeight: 48 },
+    selfAnswer: { paddingBottom: 20, borderBottomWidth: 1, borderColor: c.border, marginBottom: 8 },
+    recallRating: { flexDirection: split ? 'row' : 'column', gap: 12, marginTop: 16 },
+    recallButton: { flex: split ? 1 : undefined, minHeight: 48 },
+    prompt: { width: split ? '41%' : '100%', alignItems: 'center', justifyContent: 'center', padding: split ? 30 : 16, gap: split ? 14 : 8, minHeight: split ? 350 : 160, borderRightWidth: split ? 1 : 0, borderBottomWidth: split ? 0 : 1, borderColor: c.border },
+    hanzi: { color: c.text, fontFamily: t.studyFont, fontSize: split ? 94 : 72, lineHeight: split ? 140 : 108, textAlign: 'center', fontWeight: '400', maxWidth: '100%' },
+    textPrompt: { fontSize: split ? 30 : 26, lineHeight: 42 },
+    pinyin: { color: c.textSecondary, fontFamily: t.studyFont, fontSize: 18, lineHeight: 28 },
+    answers: { flex: 1, minWidth: 0, padding: split ? 28 : 16, gap: split ? 16 : 12 },
+    answerHeading: { color: c.textSecondary, fontFamily: t.uiFont, fontSize: 14, fontWeight: '500' },
+    grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    option: { width: '48%', flexGrow: 1, minWidth: 0 },
+    answerButton: { minHeight: split ? 78 : 64, height: '100%', paddingHorizontal: 14, paddingVertical: 12 },
+    answerText: { fontFamily: t.uiFont, fontSize: 18, lineHeight: 27, fontWeight: '400' },
+    choiceStatus: { position: 'absolute', right: 6, top: 6 },
+    unknown: { minHeight: 46, backgroundColor: c.backgroundMuted, borderColor: c.borderStrong },
+    feedback: { borderTopWidth: 1, borderColor: c.border },
+    status: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: split ? 28 : 20, paddingVertical: 18 },
+    statusTitle: { fontSize: 16, fontWeight: '600', fontFamily: t.uiFont },
+    feedbackContent: { paddingHorizontal: split ? 28 : 20, paddingVertical: 22, gap: 12 },
+    feedbackActions: { flexDirection: split ? 'row' : 'column', alignItems: split ? 'flex-end' : 'stretch', justifyContent: 'flex-end', gap: 12, borderTopWidth: 1, borderColor: c.border, paddingTop: 12, marginTop: 4 },
+    feedbackMeaning: { flex: split ? 1 : undefined, minWidth: 0 },
+    sourceFooter: { alignSelf: 'flex-end', marginTop: -18 },
+    body: { color: c.text, fontFamily: t.uiFont, fontSize: 16, lineHeight: 26 },
+    detailToggle: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44 },
+    link: { color: c.primaryStrong, fontFamily: t.uiFont, fontSize: 14, fontWeight: '500' },
+    inline: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 12 },
+    answerHanzi: { fontFamily: t.studyFont, fontSize: 28, lineHeight: 40, color: c.text },
+    selectedDetail: { borderTopWidth: 1, borderColor: c.border, paddingTop: 10 },
+    nextRow: { alignItems: split ? 'flex-end' : 'stretch', marginTop: 8 },
+    next: { minWidth: 156, minHeight: 48 },
+    progressRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+    empty: { alignItems: 'center', padding: 36, gap: 20, minHeight: 280, justifyContent: 'center' },
+    emptyTitle: { fontFamily: t.uiFont, fontSize: 22, lineHeight: 32, fontWeight: '600', color: c.text },
+    modalOverlay: { flex: 1, backgroundColor: c.overlay, alignItems: 'center', justifyContent: 'center', padding: 20 },
+    modal: { backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 10, padding: 24, width: '100%', maxWidth: 560, maxHeight: '85%', gap: 22 },
+});
 export default PracticeScreen;

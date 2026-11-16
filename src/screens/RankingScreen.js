@@ -247,9 +247,8 @@ const RankingScreen = () => {
             >
                 <View style={[styles.heroRow, isWebDesktop && styles.heroRowDesktop]}>
                     <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
-                        <Text style={styles.eyebrow}>Ranking</Text>
                         <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Global user ranking
+                            Ranking
                         </Text>
                         <Text
                             style={[
@@ -480,14 +479,14 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         heroTitle: {
             fontFamily: typography.headingFont,
-            fontSize: 34,
+            fontSize: 30,
             lineHeight: 40,
-            fontWeight: '700',
+            fontWeight: '600',
             color: colors.text,
         },
         heroTitleDesktop: {
-            fontSize: 40,
-            lineHeight: 46,
+            fontSize: 30,
+            lineHeight: 40,
         },
         heroSubtitle: {
             fontFamily: typography.uiFont,
@@ -517,7 +516,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         summaryTitle: {
             fontFamily: typography.headingFont,
-            fontSize: 28,
+            fontSize: 23,
             lineHeight: 34,
             fontWeight: '700',
             color: colors.text,
@@ -601,7 +600,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             minWidth: 74,
             paddingHorizontal: 12,
             paddingVertical: 10,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
@@ -611,7 +610,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             fontFamily: typography.uiFont,
             fontSize: 14,
             lineHeight: 18,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         rankIdentity: {
             flex: 1,

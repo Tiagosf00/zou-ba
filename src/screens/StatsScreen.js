@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useIsFocused } from '@react-navigation/native';
 
 import Card from '../components/Card';
+import ProgressOverview from '../components/ProgressOverview';
 import BackdropOrbs from '../components/BackdropOrbs';
 import AudioButton from '../components/AudioButton';
 import { useAppState } from '../context/AppStateContext';
@@ -75,18 +76,6 @@ const StatsScreen = () => {
         setExpandedLevel((currentLevel) => (currentLevel === level ? null : level));
     };
 
-    const summaryTitle =
-        stats.totalCorrectCount > 0
-            ? `${stats.totalCorrectCount} correct answers saved`
-            : 'No correct answers saved yet';
-    const summarySubtitle =
-        stats.studiedCount > 0
-            ? `${stats.studiedCount} words tracked so far across your saved training history.`
-            : 'Start a few rounds and each word will begin building its own answer history here.';
-    const lastUpdatedLabel = progress.updatedAt
-        ? new Date(progress.updatedAt).toLocaleString()
-        : null;
-
     if (!isHydrated || !isFocused) {
         return (
             <SafeAreaView style={styles.container}>
@@ -116,109 +105,10 @@ const StatsScreen = () => {
                 ]}
                 showsVerticalScrollIndicator={false}
             >
-                <View style={[styles.heroRow, isWebDesktop && styles.heroRowDesktop]}>
-                    <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
-                        <Text style={styles.eyebrow}>Stats</Text>
-                        <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Word stats by HSK level
-                        </Text>
-                        <Text
-                            style={[
-                                styles.heroSubtitle,
-                                isWebDesktop && styles.heroSubtitleDesktop,
-                            ]}
-                        >
-                            Expand any level to see every word and how many times you answered it
-                            correctly.
-                        </Text>
-                    </View>
-
-                    <Card
-                        tone="accent"
-                        style={[styles.summaryCard, isWebDesktop && styles.summaryCardDesktop]}
-                    >
-                        <Text style={styles.summaryEyebrow}>All levels</Text>
-                        <Text
-                            style={[
-                                styles.summaryTitle,
-                                isWebDesktop && styles.summaryTitleDesktop,
-                            ]}
-                        >
-                            {summaryTitle}
-                        </Text>
-                        <Text style={styles.summarySubtitle}>{summarySubtitle}</Text>
-                        <View style={styles.summaryChipRow}>
-                            <View style={styles.summaryChip}>
-                                <Ionicons color={colors.accent} name="library" size={14} />
-                                <Text style={styles.summaryChipText}>
-                                    {stats.totalWords} words
-                                </Text>
-                            </View>
-                            <View style={styles.summaryChip}>
-                                <Ionicons color={colors.accent} name="school" size={14} />
-                                <Text style={styles.summaryChipText}>
-                                    {stats.masteredCount} mastered
-                                </Text>
-                            </View>
-                            <View style={styles.summaryChip}>
-                                <Ionicons
-                                    color={colors.accent}
-                                    name="close-circle-outline"
-                                    size={14}
-                                />
-                                <Text style={styles.summaryChipText}>
-                                    {stats.totalWrongCount} wrong
-                                </Text>
-                            </View>
-                            <View style={styles.summaryChip}>
-                                <Ionicons
-                                    color={colors.accent}
-                                    name="help-circle-outline"
-                                    size={14}
-                                />
-                                <Text style={styles.summaryChipText}>
-                                    {stats.totalUnknownCount} I don't know
-                                </Text>
-                            </View>
-                        </View>
-                        {lastUpdatedLabel ? (
-                            <Text style={styles.summaryTimestamp}>
-                                Updated {lastUpdatedLabel}
-                            </Text>
-                        ) : null}
-                    </Card>
-                </View>
-
+                <Text style={[styles.heroTitle, { fontSize: 30, lineHeight: 40, fontWeight: '600', marginBottom: 4 }]}>Your progress</Text>
+                <ProgressOverview stats={stats} progress={progress} />
+                <Text style={[styles.heroTitle, { fontSize: 20, lineHeight: 28 }]}>By HSK level</Text>
                 <View style={styles.statsColumn}>
-                    <View style={[styles.metricsGrid, isWebDesktop && styles.metricsGridDesktop]}>
-                        {[
-                            {
-                                id: 'correct',
-                                label: 'Correct answers',
-                                value: stats.totalCorrectCount,
-                                icon: 'checkmark-circle',
-                            },
-                            {
-                                id: 'studied',
-                                label: 'Words studied',
-                                value: stats.studiedCount,
-                                icon: 'bar-chart',
-                            },
-                        ].map((metric) => (
-                            <Card key={metric.id} style={styles.metricCard}>
-                                <View style={styles.metricIcon}>
-                                    <Ionicons
-                                        color={colors.primaryStrong}
-                                        name={metric.icon}
-                                        size={18}
-                                    />
-                                </View>
-                                <Text style={styles.metricValue}>{metric.value}</Text>
-                                <Text style={styles.metricLabel}>{metric.label}</Text>
-                            </Card>
-                        ))}
-                    </View>
-
                     <View style={styles.levelSection}>
                         {stats.levels.map((levelStats) => {
                             const isExpanded = expandedLevel === levelStats.level;
@@ -403,32 +293,8 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             maxWidth: layout.contentMaxWidth,
         },
         scrollContentDesktop: {
-            paddingTop: 26,
+            paddingTop: 42,
             gap: 22,
-        },
-        heroRow: {
-            gap: 16,
-        },
-        heroRowDesktop: {
-            flexDirection: 'row',
-            alignItems: 'stretch',
-        },
-        hero: {
-            gap: 12,
-            flex: 1,
-            paddingTop: 10,
-        },
-        heroDesktop: {
-            maxWidth: layout.contentMaxWidth - layout.desktopAsideWidth - 24,
-            paddingTop: 18,
-        },
-        eyebrow: {
-            color: colors.primaryStrong,
-            fontSize: 13,
-            fontWeight: '700',
-            letterSpacing: 1.4,
-            textTransform: 'uppercase',
-            fontFamily: typography.uiFont,
         },
         heroTitle: {
             color: colors.text,
@@ -437,124 +303,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             fontWeight: '700',
             fontFamily: typography.headingFont,
         },
-        heroTitleDesktop: {
-            fontSize: 50,
-            lineHeight: 56,
-        },
-        heroSubtitle: {
-            color: colors.textSecondary,
-            fontSize: 16,
-            lineHeight: 24,
-            maxWidth: 760,
-            fontFamily: typography.uiFont,
-        },
-        heroSubtitleDesktop: {
-            fontSize: 18,
-            lineHeight: 28,
-            maxWidth: 860,
-        },
-        summaryCard: {
-            gap: 10,
-            padding: 18,
-        },
-        summaryCardDesktop: {
-            width: layout.desktopAsideWidth,
-            flexShrink: 0,
-        },
-        summaryEyebrow: {
-            color: colors.accent,
-            fontSize: 12,
-            fontWeight: '700',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-            fontFamily: typography.uiFont,
-        },
-        summaryTitle: {
-            color: colors.text,
-            fontSize: 28,
-            lineHeight: 34,
-            fontWeight: '700',
-            fontFamily: typography.headingFont,
-        },
-        summaryTitleDesktop: {
-            fontSize: 32,
-            lineHeight: 38,
-        },
-        summarySubtitle: {
-            color: colors.textSecondary,
-            fontSize: 15,
-            lineHeight: 22,
-            fontFamily: typography.uiFont,
-        },
-        summaryChipRow: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 10,
-        },
-        summaryChip: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 9,
-            borderRadius: radii.pill,
-            backgroundColor: colors.surface,
-            borderWidth: 1,
-            borderColor: colors.border,
-        },
-        summaryChipText: {
-            color: colors.text,
-            fontSize: 13,
-            fontWeight: '600',
-            fontFamily: typography.uiFont,
-        },
-        summaryTimestamp: {
-            color: colors.textMuted,
-            fontSize: 12,
-            fontFamily: typography.uiFont,
-        },
         statsColumn: {
             width: '100%',
-            maxWidth: layout.isWebDesktop ? 980 : undefined,
+            maxWidth: '100%',
             alignSelf: 'center',
             gap: 12,
-        },
-        metricsGrid: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 12,
-            alignItems: 'stretch',
-        },
-        metricsGridDesktop: {
-            justifyContent: 'flex-start',
-        },
-        metricCard: {
-            gap: 7,
-            minHeight: 92,
-            padding: 14,
-            width: layout.isWebDesktop ? 204 : '100%',
-            maxWidth: layout.isWebDesktop ? 204 : undefined,
-        },
-        metricIcon: {
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: colors.primarySoft,
-        },
-        metricValue: {
-            color: colors.text,
-            fontSize: 26,
-            lineHeight: 30,
-            fontWeight: '700',
-            fontFamily: typography.headingFont,
-        },
-        metricLabel: {
-            color: colors.textSecondary,
-            fontSize: 14,
-            lineHeight: 20,
-            fontFamily: typography.uiFont,
         },
         levelSection: {
             gap: 12,
@@ -619,7 +372,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         levelProgressTrack: {
             height: 10,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             overflow: 'hidden',
             backgroundColor: colors.surfaceMuted,
             borderWidth: 1,
@@ -627,7 +380,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         levelProgressFill: {
             height: '100%',
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.success,
         },
         levelHeaderMeta: {
@@ -639,7 +392,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         levelMetaChip: {
             paddingHorizontal: 10,
             paddingVertical: 6,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             backgroundColor: colors.surfaceMuted,
             borderWidth: 1,
             borderColor: colors.border,
@@ -707,7 +460,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         countPill: {
             paddingHorizontal: 10,
             paddingVertical: 6,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
             borderWidth: 1,
         },
         countPillSuccess: {

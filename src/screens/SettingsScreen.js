@@ -17,7 +17,7 @@ import CustomVocabularyEditor from '../components/CustomVocabularyEditor';
 import BackdropOrbs from '../components/BackdropOrbs';
 import ModernButton from '../components/ModernButton';
 import { pickDistinctMode, VOCABULARY_POOLS } from '../constants/defaultSettings';
-import { getPracticeMode, PRACTICE_MODES } from '../constants/practiceModes';
+import { getPracticeMode, PRACTICE_MODES, SELF_REVIEW_MODE } from '../constants/practiceModes';
 import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
@@ -30,6 +30,7 @@ const MODE_ICONS = {
     pinyin: 'musical-notes',
     eng: 'chatbubble-ellipses',
     audio: 'volume-high',
+    'self-review': 'albums-outline',
 };
 
 const THEME_OPTIONS = [
@@ -175,18 +176,24 @@ const SettingsScreen = () => {
     };
 
     const setMode = (type, modeId) => {
+        if (type === 'outputMode' && modeId === 'self-review') {
+            updateSettings({ practiceAnswerStyle: 'self-review' });
+            return;
+        }
+        const answerStylePatch = type === 'outputMode' ? { practiceAnswerStyle: 'choice' } : {};
         const otherType = type === 'inputMode' ? 'outputMode' : 'inputMode';
         const otherModeId = settings[otherType];
 
         if (modeId === otherModeId) {
             updateSettings({
+                ...answerStylePatch,
                 [type]: modeId,
                 [otherType]: pickDistinctMode(settings[type], modeId),
             });
             return;
         }
 
-        updateSettings({ [type]: modeId });
+        updateSettings({ ...answerStylePatch, [type]: modeId });
     };
 
     const handleAuthError = (error) => {
@@ -263,12 +270,16 @@ const SettingsScreen = () => {
     };
 
     const renderModeRow = (type, selectedModeId) => {
-        return PRACTICE_MODES.map((mode) => {
+        const modes = type === 'outputMode' ? [...PRACTICE_MODES, SELF_REVIEW_MODE] : PRACTICE_MODES;
+        return modes.map((mode) => {
             const isActive = selectedModeId === mode.id;
 
             return (
                 <Pressable
                     key={`${type}-${mode.id}`}
+                    accessibilityRole="radio"
+                    accessibilityLabel={`${type === 'inputMode' ? 'Prompt' : 'Answer'} format: ${mode.label}`}
+                    accessibilityState={{ checked: isActive }}
                     onPress={() => setMode(type, mode.id)}
                     style={({ pressed }) => [
                         styles.modeRow,
@@ -313,61 +324,7 @@ const SettingsScreen = () => {
                 ]}
                 showsVerticalScrollIndicator={false}
             >
-                <View style={[styles.heroRow, isWebDesktop && styles.heroRowDesktop]}>
-                    <View style={[styles.hero, isWebDesktop && styles.heroDesktop]}>
-                        <Text style={styles.eyebrow}>Settings</Text>
-                        <Text style={[styles.heroTitle, isWebDesktop && styles.heroTitleDesktop]}>
-                            Settings
-                        </Text>
-                        <Text
-                            style={[
-                                styles.heroSubtitle,
-                                isWebDesktop && styles.heroSubtitleDesktop,
-                            ]}
-                        >
-                            Right now you see {inputMode.label.toLowerCase()} and answer with{' '}
-                            {outputMode.label.toLowerCase()}.
-                        </Text>
-                    </View>
-
-                    <Card
-                        tone="accent"
-                        style={[
-                            styles.summaryCard,
-                            isWebDesktop && styles.summaryCardDesktop,
-                        ]}
-                    >
-                        <Text style={styles.summaryEyebrow}>Current session</Text>
-                        <Text
-                            style={[
-                                styles.summaryTitle,
-                                isWebDesktop && styles.summaryTitleDesktop,
-                            ]}
-                        >
-                            See {inputMode.label}. Answer with {outputMode.label}.
-                        </Text>
-                        <View style={styles.summaryChipRow}>
-                            <View style={styles.summaryChip}>
-                                <Ionicons color={colors.accent} name="albums" size={14} />
-                                <Text style={styles.summaryChipText}>{levelSummary}</Text>
-                            </View>
-                            <View style={styles.summaryChip}>
-                                <Ionicons
-                                    color={colors.accent}
-                                    name={themeMode === 'dark' ? 'moon' : 'sunny'}
-                                    size={14}
-                                />
-                                <Text style={styles.summaryChipText}>
-                                    {themeMode === 'dark' ? 'Night mode' : 'Day mode'}
-                                </Text>
-                            </View>
-                            <View style={styles.summaryChip}>
-                                <Ionicons color={colors.accent} name={syncBadge.icon} size={14} />
-                                <Text style={styles.summaryChipText}>{syncBadge.label}</Text>
-                            </View>
-                        </View>
-                    </Card>
-                </View>
+                <Text style={[styles.heroTitle, { fontSize: 30, lineHeight: 40, fontWeight: '600' }]}>Settings</Text>
 
                 <View style={[styles.sectionsGrid, isWebDesktop && styles.sectionsGridDesktop]}>
                     <View style={[styles.sectionSlot, styles.accountSectionSlot]}>
@@ -752,11 +709,14 @@ const SettingsScreen = () => {
                         <Card style={styles.card}>
                             <Text style={styles.sectionTitle}>Answer format</Text>
                             <Text style={styles.sectionSubtitle}>
-                                What you tap in the answer grid.
+                                Choose from options or rate your own recall.
                             </Text>
                             <View style={styles.modeList}>
-                                {renderModeRow('outputMode', settings.outputMode)}
+                                {renderModeRow('outputMode', settings.practiceAnswerStyle === 'self-review' ? 'self-review' : settings.outputMode)}
                             </View>
+                            {settings.practiceAnswerStyle === 'self-review' && <Text style={styles.sectionSubtitle}>
+                                Self review applies to Practice. Exams keep {getPracticeMode(settings.outputMode).label.toLowerCase()} choices.
+                            </Text>}
                         </Card>
                     </View>
 
@@ -818,93 +778,11 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             paddingHorizontal: 28,
             gap: 24,
         },
-        heroRow: {
-            gap: 18,
-        },
-        heroRowDesktop: {
-            flexDirection: 'row',
-            alignItems: 'stretch',
-            gap: 24,
-        },
-        hero: {
-            gap: 8,
-        },
-        heroDesktop: {
-            flex: 1,
-            justifyContent: 'center',
-            maxWidth: 560,
-        },
-        eyebrow: {
-            color: colors.primaryStrong,
-            fontSize: 12,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
         heroTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: 34,
-            lineHeight: 39,
-        },
-        heroTitleDesktop: {
-            fontSize: 46,
-            lineHeight: 52,
-        },
-        heroSubtitle: {
-            color: colors.textSecondary,
-            fontSize: 16,
-            lineHeight: 24,
-        },
-        heroSubtitleDesktop: {
-            fontSize: 17,
-            lineHeight: 26,
-            maxWidth: 520,
-        },
-        summaryCard: {
-            gap: 12,
-        },
-        summaryCardDesktop: {
-            width: layout.desktopAsideWidth,
-            gap: 16,
-            padding: 26,
-        },
-        summaryEyebrow: {
-            color: colors.accent,
-            fontSize: 12,
-            fontWeight: '800',
-            letterSpacing: 1.2,
-            textTransform: 'uppercase',
-        },
-        summaryTitle: {
-            color: colors.text,
-            fontFamily: typography.headingFont,
-            fontSize: 28,
-            lineHeight: 32,
-        },
-        summaryTitleDesktop: {
-            fontSize: 34,
-            lineHeight: 38,
-        },
-        summaryChipRow: {
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            gap: 10,
-        },
-        summaryChip: {
-            alignSelf: 'flex-start',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: radii.pill,
-            backgroundColor: colors.surface,
-        },
-        summaryChipText: {
-            color: colors.text,
-            fontSize: 13,
-            fontWeight: '700',
+            fontSize: 30,
+            lineHeight: 40,
         },
         sectionsGrid: {
             gap: 18,
@@ -935,7 +813,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         sectionTitle: {
             color: colors.text,
             fontFamily: typography.headingFont,
-            fontSize: 27,
+            fontSize: 20,
             lineHeight: 31,
         },
         sectionSubtitle: {
@@ -957,7 +835,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             gap: 8,
             paddingHorizontal: 12,
             paddingVertical: 8,
-            borderRadius: radii.pill,
+            borderRadius: radii.sm,
         },
         syncBadgeAccent: {
             backgroundColor: colors.accentSoft,
@@ -975,10 +853,6 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
             backgroundColor: colors.surfaceMuted,
             color: colors.textSecondary,
         },
-        syncBadgeText: {
-            fontSize: 13,
-            fontWeight: '800',
-        },
         syncBadgeTextAccent: {
             color: colors.accent,
         },
@@ -990,6 +864,10 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         },
         syncBadgeTextMuted: {
             color: colors.textSecondary,
+        },
+        syncBadgeText: {
+            fontSize: 13,
+            fontWeight: '600',
         },
         accountStatusCard: {
             gap: 10,
@@ -1012,7 +890,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         accountEyebrow: {
             color: colors.primaryStrong,
             fontSize: 12,
-            fontWeight: '800',
+            fontWeight: '600',
             letterSpacing: 1,
             textTransform: 'uppercase',
         },
@@ -1041,7 +919,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         inputLabel: {
             color: colors.text,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         textInput: {
             minHeight: 52,
@@ -1083,17 +961,17 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         feedbackTitleSuccess: {
             color: colors.success,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         feedbackTitleError: {
             color: colors.error,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         feedbackTitleMuted: {
             color: colors.text,
             fontSize: 14,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         feedbackTextSuccess: {
             color: colors.text,
@@ -1153,7 +1031,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         themeLabel: {
             color: colors.text,
             fontSize: 16,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         themeLabelActive: {
             color: colors.primaryStrong,
@@ -1237,7 +1115,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         poolLabel: {
             color: colors.text,
             fontSize: 16,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         poolLabelActive: {
             color: colors.primaryStrong,
@@ -1261,7 +1139,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         customPoolTitle: {
             color: colors.text,
             fontSize: 18,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         customPoolText: {
             color: colors.textSecondary,
@@ -1282,7 +1160,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         customEditorButtonText: {
             color: colors.onPrimary,
             fontSize: 15,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         modeList: {
             gap: 12,
@@ -1326,7 +1204,7 @@ const createStyles = (colors, radii, shadows, typography, layout) =>
         modeLabel: {
             color: colors.text,
             fontSize: 16,
-            fontWeight: '800',
+            fontWeight: '600',
         },
         modeLabelDesktop: {
             fontSize: 17,

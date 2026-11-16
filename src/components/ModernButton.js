@@ -12,6 +12,7 @@ const ModernButton = ({
     variant = 'primary',
     multiline = false,
     fitText = false,
+    wrapText = false,
     minimumFontScale = 0.82,
 }) => {
     const { colors, radii, shadows, typography } = useAppTheme();
@@ -46,10 +47,12 @@ const ModernButton = ({
     );
     const resolvedVariant = variantStyles[variant] || variantStyles.primary;
     const lines = Array.isArray(title) ? title : [title];
-    const resolvedNumberOfLines = Array.isArray(title) ? 1 : multiline ? 3 : 1;
+    const resolvedNumberOfLines = wrapText ? undefined : Array.isArray(title) ? 1 : multiline ? 3 : 1;
 
     return (
         <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ disabled: Boolean(disabled) }}
             onPress={onPress}
             disabled={disabled}
             style={({ pressed }) => [
@@ -91,9 +94,9 @@ const ModernButton = ({
 const createStyles = (colors, radii, typography) =>
     StyleSheet.create({
         button: {
-            minHeight: 84,
+            minHeight: 46,
             paddingHorizontal: 16,
-            paddingVertical: 15,
+            paddingVertical: 8,
             borderRadius: radii.md,
             borderWidth: 1,
             justifyContent: 'center',
@@ -109,17 +112,17 @@ const createStyles = (colors, radii, typography) =>
             gap: 4,
             alignItems: 'center',
             justifyContent: 'center',
-            paddingVertical: Platform.OS === 'web' ? 3 : 2,
+            paddingVertical: 0,
         },
         text: {
-            fontFamily: typography.studyFont,
-            fontSize: 18,
-            fontWeight: '700',
+            fontFamily: typography.uiFont,
+            fontSize: 16,
+            fontWeight: '600',
             lineHeight: 26,
             textAlign: 'center',
             flexShrink: 1,
-            paddingTop: 1,
-            paddingBottom: Platform.OS === 'web' ? 3 : 2,
+            paddingTop: 0,
+            paddingBottom: 0,
         },
         secondaryLine: {
             fontSize: 15,

@@ -1,5 +1,5 @@
 const OPTION_COUNT = 6;
-const MAX_BOX = 5;
+export const MAX_BOX = 5;
 const BOX_REVIEW_DELAYS = [
     10 * 60 * 1000,
     24 * 60 * 60 * 1000,
@@ -328,7 +328,7 @@ const pickUniqueDistractors = (candidates, question, answerMode) => {
     return distractors;
 };
 
-export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [], study = null) => {
+export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [], study = null, queue = 'mixed', reviewCardIds = []) => {
     if (!items || items.length === 0) {
         return null;
     }
@@ -337,12 +337,13 @@ export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [],
     const failedDueItems = [];
     const reviewDueItems = [];
     const newItems = [];
+    const personalReviews = new Set(reviewCardIds);
 
     items.forEach((item) => {
         const entry = getCardProgress(cards, item.id);
 
         if (!entry) {
-            newItems.push(item);
+            (personalReviews.has(Number(item.id)) ? reviewDueItems : newItems).push(item);
             return;
         }
 
@@ -364,8 +365,10 @@ export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [],
     // Reserve new-word slots even when failed cards keep returning.
     const canIntroduce = study?.canIntroduce ?? true;
     const newWordTurn = study?.newWordTurn ?? true;
-    const pool = newItems.length > 0 && canIntroduce && (newWordTurn || reviewPool.length === 0)
-        ? newItems : reviewPool;
+    const pool = queue === 'review' ? reviewPool
+        : queue === 'new' ? (canIntroduce ? newItems : [])
+        : newItems.length > 0 && canIntroduce && (newWordTurn || reviewPool.length === 0)
+            ? newItems : reviewPool;
 
     if (pool.length === 0) {
         return null;
@@ -375,7 +378,7 @@ export const pickNextQuestion = (items, cards, now = new Date(), recentIds = [],
         compareQuestionPriority(firstItem, secondItem, cards, recentIds))[0];
 };
 
-export const getTrainingSnapshot = (items, cards, now = new Date()) => {
+export const getTrainingSnapshot = (items, cards, now = new Date(), reviewCardIds = []) => {
     const nowTimestamp = now instanceof Date ? now.getTime() : new Date(now).getTime();
     const boxCounts = Array.from({ length: MAX_BOX + 1 }, () => 0);
     let studiedCount = 0;
@@ -383,12 +386,14 @@ export const getTrainingSnapshot = (items, cards, now = new Date()) => {
     let dueCount = 0;
     let scheduledCount = 0;
     let masteredCount = 0;
+    const personalReviews = new Set(reviewCardIds);
 
     (items || []).forEach((item) => {
         const entry = getCardProgress(cards, item.id);
 
         if (!entry) {
-            newCount += 1;
+            if (personalReviews.has(Number(item.id))) dueCount += 1;
+            else newCount += 1;
             return;
         }
 

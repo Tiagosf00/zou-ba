@@ -3,18 +3,19 @@ import { Platform } from 'react-native';
 export const IS_WEB = Platform.OS === 'web';
 export const WEB_WIDE_BREAKPOINT = 900;
 export const WEB_DESKTOP_BREAKPOINT = 1120;
-export const WEB_CONTENT_MAX_WIDTH = 1720;
-export const WEB_CONTENT_NARROW_WIDTH = 1240;
+export const SIDEBAR_WIDTH = 208;
+export const WEB_CONTENT_MAX_WIDTH = 1200;
+export const WEB_CONTENT_NARROW_WIDTH = 1000;
 
 export const getResponsiveLayout = (width) => {
     const isWebWide = IS_WEB && width >= WEB_WIDE_BREAKPOINT;
     const isWebDesktop = IS_WEB && width >= WEB_DESKTOP_BREAKPOINT;
     const desktopContentWidth = Math.min(
-        Math.max(width - 96, 1200),
+        Math.max(width - SIDEBAR_WIDTH - 64, 0),
         WEB_CONTENT_MAX_WIDTH,
     );
     const wideContentWidth = Math.min(
-        Math.max(width - 72, 980),
+        Math.max(width - SIDEBAR_WIDTH - 48, 0),
         WEB_CONTENT_NARROW_WIDTH,
     );
 

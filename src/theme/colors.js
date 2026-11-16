@@ -1,138 +1,27 @@
 import { Platform } from 'react-native';
-
-const headingFont = Platform.select({
-    ios: 'Georgia',
-    android: 'serif',
-    default: 'serif',
-});
-
-const uiFont = Platform.select({
-    ios: 'System',
-    android: 'sans-serif',
-    default: '"Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif',
-});
-
-const studyFont = Platform.select({
-    ios: 'System',
-    android: 'sans-serif-medium',
-    default:
-        '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Segoe UI", sans-serif',
-});
-
+const uiFont = Platform.select({ ios: 'System', android: 'sans-serif', default: '"Segoe UI", "Helvetica Neue", Arial, sans-serif' });
+const studyFont = Platform.select({ ios: 'PingFang SC', android: 'sans-serif', default: '"Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif' });
 export const lightColors = {
-    primary: '#C56C49',
-    primaryStrong: '#A55335',
-    primarySoft: '#F3D3C1',
-    accent: '#2F7B73',
-    accentSoft: '#DCEDE9',
-
-    background: '#F6F0E7',
-    backgroundMuted: '#EDE1D2',
-    surface: '#FFF9F1',
-    surfaceMuted: '#F4E8DA',
-
-    text: '#2C241C',
-    textSecondary: '#6F6256',
-    textMuted: '#9B8D80',
-    onPrimary: '#FFF8F3',
-
-    success: '#3E7E68',
-    successSoft: '#D9ECE4',
-    error: '#B75D4E',
-    errorSoft: '#F7DED9',
-
-    border: '#DECDBC',
-    borderStrong: '#CCB09A',
-    shadow: '#7E624D',
-    overlay: 'rgba(44, 33, 24, 0.22)',
+ primary: '#AD4936', primaryStrong: '#AD4936', primarySoft: '#F3E7E0', accent: '#427963', accentSoft: '#E9F1EB',
+ background: '#F5F3EF', backgroundMuted: '#F0EFEA', surface: '#FFFEFA', surfaceMuted: '#FAF9F6',
+ text: '#2D3031', textSecondary: '#626965', textMuted: '#727674', onPrimary: '#FFFAF6',
+ success: '#427963', successSoft: '#E9F1EB', error: '#A44C3A', errorSoft: '#F7EAE3',
+ border: '#DEDFD9', borderStrong: '#BBBFB7', shadow: '#555A55', overlay: 'rgba(29,34,31,0.3)', skyline: '#B98A70',
 };
-
 export const darkColors = {
-    primary: '#D38C67',
-    primaryStrong: '#F0B493',
-    primarySoft: '#4A2F24',
-    accent: '#6DB8AC',
-    accentSoft: '#1E3C3A',
-
-    background: '#161210',
-    backgroundMuted: '#1E1916',
-    surface: '#221C18',
-    surfaceMuted: '#2B2420',
-
-    text: '#F6EFE6',
-    textSecondary: '#C8B8A6',
-    textMuted: '#8F7F71',
-    onPrimary: '#1A130F',
-
-    success: '#79C3A2',
-    successSoft: '#1F3A31',
-    error: '#E69484',
-    errorSoft: '#472A24',
-
-    border: '#3B312B',
-    borderStrong: '#5A493E',
-    shadow: '#000000',
-    overlay: 'rgba(0, 0, 0, 0.42)',
+ primary: '#9AC9BB', primaryStrong: '#9AC9BB', primarySoft: '#2B3E39', accent: '#93C5AD', accentSoft: '#273B32',
+ background: '#171C1E', backgroundMuted: '#2A3335', surface: '#202628', surfaceMuted: '#1A2022',
+ text: '#E8EDEB', textSecondary: '#B2BEB9', textMuted: '#A1ADA9', onPrimary: '#172521',
+ success: '#93C5AD', successSoft: '#273B32', error: '#DDBA7B', errorSoft: '#3B3426',
+ border: '#354043', borderStrong: '#53625F', shadow: '#000000', overlay: 'rgba(0,0,0,0.5)', skyline: '#729B8D',
 };
-
-export const radii = {
-    sm: 14,
-    md: 20,
-    lg: 28,
-    pill: 999,
-};
-
-export const spacing = {
-    xs: 8,
-    sm: 12,
-    md: 16,
-    lg: 20,
-    xl: 24,
-    xxl: 32,
-};
-
-export const typography = {
-    headingFont,
-    uiFont,
-    studyFont,
-};
-
-export const createShadows = (colors) => ({
-    sm: {
-        shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: colors.shadow === '#000000' ? 0.2 : 0.08,
-        shadowRadius: 12,
-        elevation: 2,
-    },
-    md: {
-        shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: colors.shadow === '#000000' ? 0.24 : 0.12,
-        shadowRadius: 18,
-        elevation: 5,
-    },
-    lg: {
-        shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: 18 },
-        shadowOpacity: colors.shadow === '#000000' ? 0.3 : 0.16,
-        shadowRadius: 28,
-        elevation: 10,
-    },
-});
-
+export const radii = { sm: 6, md: 8, lg: 10, pill: 999 };
+export const spacing = { xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 };
+export const typography = { headingFont: uiFont, uiFont, studyFont, brandFont: 'Georgia' };
+export const createShadows = () => ({ sm: {}, md: {}, lg: {} });
 export const getTheme = (mode = 'light') => {
-    const colors = mode === 'dark' ? darkColors : lightColors;
-
-    return {
-        mode,
-        colors,
-        radii,
-        spacing,
-        typography,
-        shadows: createShadows(colors),
-    };
+ const colors = mode === 'dark' ? darkColors : lightColors;
+ return { mode, colors, radii, spacing, typography, shadows: createShadows(colors) };
 };
-
 export const colors = lightColors;
 export const shadows = createShadows(lightColors);

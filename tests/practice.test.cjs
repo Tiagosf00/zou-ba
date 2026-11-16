@@ -34,6 +34,9 @@ const {
 const { createAppState, normalizeAppState, withUpdatedProgress, withUpdatedSettings, resolveCloudSaveResponse } = loadAppModule('../src/utils/appState.js');
 const { encodeCloudState, decodeCloudState } = loadAppModule('../src/utils/cloudStateCodec.js');
 const { normalizeSettings } = loadAppModule('../src/constants/defaultSettings.js');
+const { getPracticePoolItems } = loadAppModule('../src/utils/vocabularyPool.js');
+const { getTrainingSnapshot } = loadAppModule('../src/utils/practice.js');
+const { createWordSearchIndex, searchVocabulary } = loadAppModule('../src/utils/wordSearch.js');
 const now = new Date('2026-10-12T01:00:00.000Z');
 const settings = { newWordsPerDay: 10, studyTimeZone: 'Asia/Shanghai' };
 const items = Array.from({ length: 1000 }, (_, i) => ({ id: i + 1 }));
@@ -46,6 +49,52 @@ const backlog = () => createPracticeProgress('default',
     Object.fromEntries(items.slice(0, 300).map(({ id }) => [id, { ...oldEntry }])), now.toISOString());
 const snapshot = (progress, at = now, prefs = settings) => getDailyStudySnapshot(progress.cards, prefs, progress.dailyStudy, at);
 const next = (progress, pool = items, at = now, prefs = settings) => pickNextQuestion(pool, progress.cards, at, [], snapshot(progress, at, prefs));
+
+test('personal review words survive sync and level changes without inventing answers', async () => {
+    const { compactCloudState, expandCloudState } = await import('../backend/src/index.js');
+    const vocabulary = require('../assets/hsk_1_6_pdf_dataset_english.json');
+    const word = vocabulary.find(item => item.level === 4);
+    const original = createAppState({ settings: { hskLevels: [1], newWordsPerDay: 0 }, progress: createPracticeProgress() });
+    const added = withUpdatedSettings(original, { reviewCardIds: [word.id, String(word.id), -99] });
+    assert.deepEqual(added.settings.reviewCardIds, [Number(word.id)]);
+    assert.deepEqual(added.progress, original.progress, 'Adding does not record a correct, wrong or unknown answer');
+    for (const restored of [decodeCloudState(encodeCloudState(added)), expandCloudState(encodeCloudState(added)), decodeCloudState(compactCloudState(added))]) {
+        assert.deepEqual(normalizeAppState(restored).settings.reviewCardIds, added.settings.reviewCardIds);
+    }
+    const prefs = { ...added.settings, vocabularyPool: 'custom', customCardIds: [] };
+    const pool = getPracticePoolItems(vocabulary, prefs);
+    assert.deepEqual(pool.map(item => item.id), [word.id]);
+    const study = getDailyStudySnapshot({}, prefs, null, now);
+    assert.equal(study.canIntroduce, false);
+    assert.equal(pickNextQuestion(pool, {}, now, [], study, 'review', prefs.reviewCardIds).id, word.id);
+    assert.equal(pickNextQuestion(pool, {}, now, [], study, 'new', prefs.reviewCardIds), null);
+    const training = getTrainingSnapshot(pool, {}, now, prefs.reviewCardIds);
+    assert.equal(training.dueCount, 1);
+    assert.equal(training.newCount, 0);
+    assert.equal(training.studiedCount, 0);
+    const answered = recordStudyAnswer(added.progress, word, true, prefs, now);
+    assert.equal(answered.cards[word.id].correctCount, 1);
+    assert.equal(pickNextQuestion(pool, answered.cards, now, [], study, 'review', prefs.reviewCardIds), null, 'Added words obey their review interval after answering');
+    const alreadyStudied = withUpdatedSettings(createAppState({ progress: answered }), { reviewCardIds: [word.id] });
+    assert.deepEqual(alreadyStudied.progress.cards, answered.cards, 'Adding an existing word never resets its schedule');
+    assert.equal(getTrainingSnapshot(pool, answered.cards, now, prefs.reviewCardIds).scheduledCount, 1);
+});
+
+test('word search finds Chinese, tone-marked/spaced/numbered pinyin and English, ranking exact matches first', () => {
+    const words = [
+        { id: 1, level: 1, hanzi: '你好', pinyin: 'nǐ hǎo', translations: { eng: ['hello'] } },
+        { id: 2, level: 1, hanzi: '你', pinyin: 'nǐ', translations: { eng: ['you'] } },
+        { id: 3, level: 2, hanzi: '绿色', pinyin: 'lǜ sè', translations: { eng: ['green'] } },
+    ];
+    const index = createWordSearchIndex(words);
+    for (const query of ['你好', 'ni hao', 'nǐ hǎo', 'ni3hao3', 'NIHAO', '  hello  ']) {
+        assert.equal(searchVocabulary(index, query)[0].id, 1, query);
+    }
+    for (const query of ['lvse', 'lu:se', 'lǜ sè', 'green']) assert.equal(searchVocabulary(index, query)[0].id, 3, query);
+    assert.equal(searchVocabulary(index, '你')[0].id, 2);
+    assert.deepEqual(searchVocabulary(index, 'no-matching-word'), []);
+    assert.deepEqual(searchVocabulary(index, '  '), []);
+});
 
 test('300 overdue / 700 unseen: ten new words within fifty answers, despite reviews remaining', () => {
     let progress = backlog();
@@ -217,4 +266,31 @@ test('an in-flight cloud save cannot roll back a newer daily allowance or target
     assert.equal(resolveCloudSaveResponse(sent, sent, saved), saved);
     const nextSaved = { ...current, updatedAt: new Date(now.getTime() + 3000).toISOString() };
     assert.equal(resolveCloudSaveResponse(current, current, nextSaved), nextSaved);
+});
+
+
+test('explicit Review and New words queues stay separate and respect the daily allowance', () => {
+    const progress = backlog();
+    const study = snapshot(progress);
+    const review = pickNextQuestion(items, progress.cards, now, [], study, 'review');
+    const unseen = pickNextQuestion(items, progress.cards, now, [], study, 'new');
+    assert.ok(progress.cards[review.id]);
+    assert.ok(!progress.cards[unseen.id]);
+    assert.equal(pickNextQuestion(items, {}, now, [], study, 'review'), null);
+    assert.equal(pickNextQuestion(items, progress.cards, now, [], { ...study, canIntroduce: false }, 'new'), null);
+    assert.ok(pickNextQuestion(items, progress.cards, now, [], { ...study, canIntroduce: false }, 'review'));
+    assert.equal(pickNextQuestion(items.slice(0, 300), progress.cards, now, [], study, 'new'), null);
+});
+
+
+test('self review is a persisted Practice preference and preserves the exam answer format', async () => {
+    const { compactCloudState, expandCloudState } = await import('../backend/src/index.js');
+    const prefs = normalizeSettings({ inputMode: 'hanzi', outputMode: 'pinyin', practiceAnswerStyle: 'self-review' });
+    assert.equal(prefs.practiceAnswerStyle, 'self-review');
+    assert.equal(prefs.outputMode, 'pinyin');
+    assert.equal(normalizeSettings({}).practiceAnswerStyle, 'choice');
+    assert.equal(normalizeSettings({ practiceAnswerStyle: 'invalid' }).practiceAnswerStyle, 'choice');
+    const state = createAppState({ settings: prefs });
+    assert.deepEqual(normalizeAppState(decodeCloudState(encodeCloudState(state))), state);
+    assert.deepEqual(normalizeAppState(expandCloudState(compactCloudState(state))), state);
 });
