@@ -90,7 +90,7 @@ async function pinyinCheck(){
   let saved=await evaluate(`JSON.parse(localStorage.getItem('${storageKey}'))`);
   assert(saved.progress.cards[target.id].correctCount===1,'Double clicks count once');
   assert(saved.progress.cards[target.id].introducedAt,'New introduction is recorded on rating');
-  await clickText('Next word →');await waitFor("document.body.innerText.includes('All words in this set introduced')");
+  await waitFor("document.body.innerText.includes('All words in this set introduced')");
   // Revisit the same word as a due review, then rate failed recall.
   saved.progress.cards[target.id].nextReviewAt='2026-01-01T00:00:00.000Z';
   await setState(saved);await clickText('Show answer');await clickText("Didn't remember");
@@ -99,6 +99,16 @@ async function pinyinCheck(){
   const entry=saved.progress.cards[target.id];
   assert(entry.correctCount===1&&entry.unknownCount===0&&entry.box===0,'Failed recall is one incorrect review');
   assert(Date.parse(entry.nextReviewAt)-Date.parse(entry.lastReviewedAt)===120000,'Failed recall keeps the two-minute retry');
+  await waitFor("document.body.innerText.includes('No reviews due')");
+  // Either rating advances to a fresh, unrevealed card without a Next word click.
+  for(const rating of ['Remembered', "Didn't remember"]){
+   await setState({settings:{...prefs,customCardIds:[target.id,longest[0].id]},progress:{cards:{}}});
+   const first=await evaluate("document.querySelector('[data-testid=practice-prompt]').textContent");
+   await clickText('Show answer');await clickText(rating);
+   await waitFor(`document.querySelector('[data-testid=practice-prompt]')?.textContent!==${JSON.stringify(first)} && !!document.querySelector('[data-testid=practice-prompt]')`);
+   assert(await evaluate("!document.querySelector('[data-testid=self-review-answer]')&&!document.querySelector('[data-testid=recall-rating]')"),'Next card starts unrevealed');
+   assert(await evaluate("Array.from(document.querySelectorAll('[role=button]')).some(e=>e.textContent==='Show answer')"),'Next card is ready to reveal');
+  }
   await clickLabel('Settings');await clickLabel('Answer format: Pinyin');await waitFor(`JSON.parse(localStorage.getItem('${storageKey}')).settings.practiceAnswerStyle==='choice'`);
   for(const width of [320,390,1120]){
    await viewport(width,900);await setState(seed);await pinyinCheck();

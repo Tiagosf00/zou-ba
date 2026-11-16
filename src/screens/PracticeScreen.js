@@ -66,8 +66,10 @@ const PracticeScreen = ({ navigation }) => {
         const choicePool = queue === 'review' && items.length < MINIMUM_ITEMS_PER_ROUND ? hskData : items;
         setRound(next ? (isSelfReview ? { question: next, options: [] } : buildRound(choicePool, next, settings.outputMode)) : null);
         setSelfAnswerVisible(false);
-        setAnswer(null); setSelected(null); setDetails({}); answerLock.current = false; feedbackScrolled.current = false;
+        setAnswer(null); setSelected(null); setDetails({}); feedbackScrolled.current = false;
     };
+    // Keep ratings locked until the next card has rendered, including rapid double clicks.
+    useEffect(() => { answerLock.current = false; }, [round]);
     useEffect(() => { progressRef.current = progress; }, [progress]);
     useEffect(() => {
         if (isHydrated && queue === null) setQueue(getTrainingSnapshot(items, progress.cards, new Date(), settings.reviewCardIds).dueCount ? 'review' : 'new');
@@ -99,8 +101,8 @@ const PracticeScreen = ({ navigation }) => {
         const next = recordStudyAnswer(progressRef.current, round.question, remembered, settings, new Date());
         progressRef.current = next;
         updateProgress(next);
-        setAnswer(remembered ? 'correct' : 'wrong');
         setNow(new Date());
+        nextWord();
     };
     const learnMore = () => {
         const next = addExtraNewWords(progressRef.current, settings);
