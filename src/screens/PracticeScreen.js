@@ -16,6 +16,7 @@ import { useAppState } from '../context/AppStateContext';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { getResponsiveLayout } from '../utils/layout';
 import { getPracticePoolItems } from '../utils/vocabularyPool';
+import { getWordExamples } from '../utils/wordExamples';
 import { buildRound, addExtraNewWords, getDisplayLines, getDisplayText, getDetailedMeaning, getMeaningLines,
     getTrainingSnapshot, getDailyStudySnapshot, MINIMUM_ITEMS_PER_ROUND, pickNextQuestion, recordStudyAnswer } from '../utils/practice';
 import hskData from '../../assets/hsk_1_6_pdf_dataset_english.json';
@@ -52,6 +53,7 @@ const PracticeScreen = ({ navigation }) => {
     const isSelfReview = settings.practiceAnswerStyle === 'self-review';
     const minimumItems = isSelfReview || queue === 'review' ? 1 : MINIMUM_ITEMS_PER_ROUND;
     const hasRevealed = Boolean(answer) || selfAnswerVisible;
+    const hasExamples = useMemo(() => getWordExamples(round?.question).length > 0, [round?.question]);
     // Keep the full reading on one line; long words get a wider choice, not tiny text.
     const widePinyinChoices = settings.outputMode === 'pinyin' && choiceGridWidth > 0
         && round?.options.some(item => item.pinyin.length * 10 + 36 > (choiceGridWidth - 10) / 2);
@@ -123,15 +125,29 @@ const PracticeScreen = ({ navigation }) => {
             {details[key] && <Text selectable style={styles.body}>{text}</Text>}
         </View>;
     };
-    const answerWord = (item, key, complete = false, showDetails = true) => <View style={{ gap: 8 }}>
+    const answerWord = (item, key, showDetails = true) => <View style={{ gap: 8 }}>
         <View style={styles.inline}>
             <Text selectable style={styles.answerHanzi}>{item.hanzi}</Text>
             <Text selectable style={styles.pinyin}>{item.pinyin}</Text>
             <AudioButton hanzi={item.hanzi} label={`Play ${item.hanzi} audio`} />
         </View>
         <Text selectable style={styles.body}>{meaning(item)}</Text>
-        {complete ? (getDetailedMeaning(item) && <Text selectable style={styles.body}>{getDetailedMeaning(item)}</Text>) : showDetails && detail(item, key)}
+        {showDetails && detail(item, key)}
     </View>;
+    const fullAnswer = item => {
+        const explanation = getDetailedMeaning(item);
+        const normalizeMeaning = text => (text || '').trim().toLowerCase().replace(/^means\s+/, '').replace(/[.!]+$/, '').trim();
+        const hasExtraMeaning = explanation && normalizeMeaning(explanation) !== normalizeMeaning(meaning(item));
+        return <View testID="self-review-answer" style={styles.selfAnswer}>
+            <View style={styles.revealedHeading}>
+                <Text selectable testID="revealed-hanzi" style={styles.revealedHanzi}>{item.hanzi}</Text>
+                <AudioButton hanzi={item.hanzi} label={`Play ${item.hanzi} audio`} />
+            </View>
+            <Text selectable testID="revealed-pinyin" style={styles.revealedPinyin}>{item.pinyin}</Text>
+            <Text selectable testID="revealed-meaning" style={styles.revealedMeaning}>{meaning(item)}</Text>
+            {hasExtraMeaning && <Text selectable style={styles.revealedDetail}>{explanation}</Text>}
+        </View>;
+    };
     const emptyTitle = !isHydrated ? 'Loading your practice…'
         : items.length < minimumItems ? (minimumItems === 1 ? 'Choose a word to practice' : 'Choose at least 6 words to practice')
         : queue === 'review' ? 'No reviews due'
@@ -170,7 +186,7 @@ const PracticeScreen = ({ navigation }) => {
             {queue === 'new' && <AddReviewWord cards={progress.cards} items={items} reviewCardIds={settings.reviewCardIds}
                 disabled={!isHydrated} onAdd={word => updateSettings(current => ({ reviewCardIds: [...new Set([...current.reviewCardIds, Number(word.id)])] }))} />}
             {round ? <View nativeID="practice-panel" role="tabpanel" aria-labelledby={`queue-${queue}`} style={styles.card} onLayout={event => { cardTop.current = event.nativeEvent.layout.y; }}>
-                <View style={[styles.studyRow, isSelfReview && styles.selfStudyRow]}>
+                {!(isSelfReview && hasRevealed) && <View style={[styles.studyRow, isSelfReview && styles.selfStudyRow]}>
                     <View style={[styles.prompt, isSelfReview && styles.selfPrompt]}>
                         {settings.inputMode === 'audio' ? <AudioPrompt hanzi={round.question.hanzi} label="Play audio prompt" />
                             : <Text selectable testID="practice-prompt" style={[styles.hanzi, settings.inputMode !== 'hanzi' && styles.textPrompt,
@@ -206,8 +222,8 @@ const PracticeScreen = ({ navigation }) => {
                         </View>
                         {!answer && <ModernButton title="I don't know" variant="secondary" onPress={() => submit(null, true)} style={styles.unknown} textStyle={{ fontSize: 15 }} />}
                     </View>}
-                </View>
-                {hasRevealed && <View testID="practice-feedback" style={styles.feedback} onLayout={event => {
+                </View>}
+                {hasRevealed && <View testID="practice-feedback" style={[styles.feedback, isSelfReview && styles.selfFeedback]} onLayout={event => {
                     if (!split && !feedbackScrolled.current) {
                         feedbackScrolled.current = true;
                         scrollRef.current?.scrollTo({ y: cardTop.current + event.nativeEvent.layout.y - 16, animated: true });
@@ -224,9 +240,8 @@ const PracticeScreen = ({ navigation }) => {
                         </View>
                     </View>}
                     <View style={styles.feedbackContent}>
-                        {isSelfReview ? <View testID="self-review-answer" style={styles.selfAnswer}>{answerWord(round.question, 'correct', true)}</View>
-                            : settings.inputMode !== 'hanzi' ? answerWord(round.question, 'correct', false, false) : null}
-                        <ExampleSentence item={round.question} showSource={false} />
+                        {isSelfReview ? fullAnswer(round.question)
+                            : settings.inputMode !== 'hanzi' ? answerWord(round.question, 'correct', false) : null}
                         {answer === 'wrong' && selected && !isSelfReview && <View style={styles.selectedDetail}>
                             <Pressable accessibilityRole="button" accessibilityState={{ expanded: Boolean(details.selected) }}
                                 style={styles.detailToggle} onPress={() => setDetails(value => ({ ...value, selected: !value.selected }))}>
@@ -253,6 +268,9 @@ const PracticeScreen = ({ navigation }) => {
                 {items.length < minimumItems ? <ModernButton title="Choose vocabulary" onPress={() => navigation.navigate('Settings')} />
                     : queue === 'review' && remaining > 0 ? <ModernButton title="Practice new words" onPress={() => setQueue('new')} />
                     : queue === 'new' && training.dueCount > 0 ? <ModernButton title="Review words" onPress={() => setQueue('review')} /> : null}
+            </View>}
+            {hasRevealed && round && hasExamples && <View testID="practice-examples" accessibilityLabel="Examples" style={[styles.card, styles.exampleCard]}>
+                <ExampleSentence item={round.question} showSource={false} />
             </View>}
             <View style={styles.progressRow}>
                 <Text style={styles.meta}>New today: {daily.introducedToday} / {daily.allowance}</Text>
@@ -291,7 +309,7 @@ const createStyles = (c, t, split) => StyleSheet.create({
     mobileBrand: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     pageHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
     title: { fontFamily: t.uiFont, fontSize: 30, lineHeight: 40, fontWeight: '600', color: c.text },
-    settingsButton: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: c.border, borderRadius: 6 },
+    settingsButton: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderWidth: 1, borderColor: c.border, borderRadius: 10 },
     toolbar: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 },
     tabs: { flexDirection: 'row', borderBottomWidth: 1, borderColor: c.border, gap: 20 },
     tab: { flexDirection: 'row', gap: 9, alignItems: 'center', minHeight: 48, borderBottomWidth: 2, borderBottomColor: 'transparent' },
@@ -299,14 +317,20 @@ const createStyles = (c, t, split) => StyleSheet.create({
     tabLabel: { fontFamily: t.uiFont, color: c.textSecondary, fontSize: 15, fontWeight: '600' },
     tabCount: { color: c.textSecondary, fontSize: 13, paddingHorizontal: 7, paddingVertical: 2, backgroundColor: c.backgroundMuted, borderRadius: 4 },
     meta: { fontFamily: t.uiFont, fontSize: 13, color: c.textSecondary, lineHeight: 21, flexShrink: 1 },
-    card: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 10, overflow: 'hidden' },
+    card: { backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 14, overflow: 'hidden' },
+    exampleCard: { paddingHorizontal: split ? 28 : 20, paddingVertical: 22 },
     studyRow: { flexDirection: split ? 'row' : 'column' },
     selfStudyRow: { flexDirection: 'column' },
     selfPrompt: { width: '100%', minHeight: split ? 220 : 160, borderRightWidth: 0, borderBottomWidth: 0 },
     revealSelfRow: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 28 },
     showAnswer: { width: '100%', maxWidth: 320, minHeight: 48 },
-    selfAnswer: { paddingBottom: 20, borderBottomWidth: 1, borderColor: c.border, marginBottom: 8 },
-    recallRating: { flexDirection: split ? 'row' : 'column', gap: 12, marginTop: 16 },
+    selfAnswer: { gap: 8, paddingTop: 4 },
+    revealedHeading: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 16 },
+    revealedHanzi: { color: c.text, fontFamily: t.studyFont, fontSize: split ? 64 : 52, lineHeight: split ? 88 : 76, fontWeight: '400', flexShrink: 1 },
+    revealedPinyin: { color: c.textSecondary, fontFamily: t.studyFont, fontSize: split ? 24 : 22, lineHeight: 36 },
+    revealedMeaning: { color: c.text, fontFamily: t.uiFont, fontSize: split ? 28 : 24, lineHeight: split ? 40 : 36, marginTop: 8 },
+    revealedDetail: { color: c.textSecondary, fontFamily: t.uiFont, fontSize: 18, lineHeight: 30, maxWidth: 800 },
+    recallRating: { flexDirection: split ? 'row' : 'column', gap: 12, marginTop: 12, paddingTop: 20, borderTopWidth: 1, borderColor: c.border },
     recallButton: { flex: split ? 1 : undefined, minHeight: 48 },
     prompt: { width: split ? '41%' : '100%', alignItems: 'center', justifyContent: 'center', padding: split ? 30 : 16, gap: split ? 14 : 8, minHeight: split ? 350 : 160, borderRightWidth: split ? 1 : 0, borderBottomWidth: split ? 0 : 1, borderColor: c.border },
     hanzi: { color: c.text, fontFamily: t.studyFont, fontSize: split ? 94 : 72, lineHeight: split ? 140 : 108, textAlign: 'center', fontWeight: '400', maxWidth: '100%' },
@@ -321,6 +345,7 @@ const createStyles = (c, t, split) => StyleSheet.create({
     choiceStatus: { position: 'absolute', right: 6, top: 6 },
     unknown: { minHeight: 46, backgroundColor: c.backgroundMuted, borderColor: c.borderStrong },
     feedback: { borderTopWidth: 1, borderColor: c.border },
+    selfFeedback: { borderTopWidth: 0 },
     status: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: split ? 28 : 20, paddingVertical: 18 },
     statusTitle: { fontSize: 16, fontWeight: '600', fontFamily: t.uiFont },
     feedbackContent: { paddingHorizontal: split ? 28 : 20, paddingVertical: 22, gap: 12 },
@@ -339,6 +364,6 @@ const createStyles = (c, t, split) => StyleSheet.create({
     empty: { alignItems: 'center', padding: 36, gap: 20, minHeight: 280, justifyContent: 'center' },
     emptyTitle: { fontFamily: t.uiFont, fontSize: 22, lineHeight: 32, fontWeight: '600', color: c.text },
     modalOverlay: { flex: 1, backgroundColor: c.overlay, alignItems: 'center', justifyContent: 'center', padding: 20 },
-    modal: { backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 10, padding: 24, width: '100%', maxWidth: 560, maxHeight: '85%', gap: 22 },
+    modal: { backgroundColor: c.surface, borderColor: c.border, borderWidth: 1, borderRadius: 14, padding: 24, width: '100%', maxWidth: 560, maxHeight: '85%', gap: 22 },
 });
 export default PracticeScreen;

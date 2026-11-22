@@ -80,6 +80,10 @@ async function pinyinCheck(){
   assert(await evaluate("!document.querySelector('[data-testid=practice-choice]')"),'Self review has no choice grid');
   const complete=await evaluate("document.querySelector('[data-testid=self-review-answer]').textContent");
   assert(complete.includes(target.hanzi)&&complete.includes(target.pinyin)&&complete.includes(target.detailedEnglishTranslation),'The full answer is visible');
+  const answerLayout=await evaluate(`(()=>{const panel=document.querySelector('#practice-panel'),examples=document.querySelector('[data-testid=practice-examples]'),hanzi=document.querySelector('[data-testid=revealed-hanzi]'),sentence=examples.querySelector('[data-testid=word-example-chinese]');return {separate:!panel.contains(examples),below:examples.getBoundingClientRect().top>panel.getBoundingClientRect().bottom,ratingInside:panel.contains(document.querySelector('[data-testid=recall-rating]')),wordSize:parseFloat(getComputedStyle(hanzi).fontSize),sentenceSize:parseFloat(getComputedStyle(sentence).fontSize),pinyinSize:parseFloat(getComputedStyle(document.querySelector('[data-testid=revealed-pinyin]')).fontSize),meaningSize:parseFloat(getComputedStyle(document.querySelector('[data-testid=revealed-meaning]')).fontSize)};})()`);
+  assert(answerLayout.separate&&answerLayout.below&&answerLayout.ratingInside,'Answer and ratings precede a separate example card');
+  assert(answerLayout.wordSize>answerLayout.sentenceSize&&answerLayout.pinyinSize>=22&&answerLayout.meaningSize>=24,'Revealed answer has clear, readable hierarchy');
+  assert(!await evaluate("!!document.querySelector('[data-testid=practice-prompt]')"),'Revealed answer replaces the duplicate prompt');
   assert(!await evaluate("Array.from(document.querySelectorAll('[role=button]')).some(e=>e.textContent==='Next word →')"),'Cannot advance before rating');
   await shot('self-review-answer.png');
   await command('Page.reload');await waitFor("Array.from(document.querySelectorAll('[role=button]')).some(e=>e.textContent==='Show answer')");
@@ -120,6 +124,16 @@ async function pinyinCheck(){
   await viewport(1288,1159);await setState({...seed,settings:{...seed.settings,themeMode:'dark'}});await shot('pinyin-skyline-dark.png');
   await setState({settings:{...prefs,themeMode:'dark',customCardIds:[target.id]},progress:{cards:{}}});await clickText('Show answer');await shot('self-review-dark.png');
   await viewport(390,844);await setState({settings:{...prefs,customCardIds:[target.id]},progress:{cards:{}}});await clickText('Show answer');await pause(400);await shot('self-review-mobile.png');
+  const juice=data.find(word=>word.hanzi==='果汁');
+  for(const [width,themeMode] of [[1288,'dark'],[1288,'light'],[390,'dark'],[320,'dark']]){
+   await viewport(width,1000);await setState({settings:{...prefs,themeMode,customCardIds:[juice.id]},progress:{cards:{}}});
+   await clickText('Show answer');await pause(350);
+   assert(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'),'Revealed answer fits '+width);
+   const copy=await evaluate("document.querySelector('[data-testid=self-review-answer]').textContent");
+   assert(!copy.includes('Means fruit juice.'),'Do not repeat a plain definition');
+   assert(await evaluate("parseFloat(getComputedStyle(document.querySelector('[data-testid=revealed-hanzi]')).fontSize)>parseFloat(getComputedStyle(document.querySelector('[data-testid=word-example-chinese]')).fontSize)"),'Word remains larger than example '+width);
+   await shot('answer-cards-'+width+'-'+themeMode+'.png');
+  }
   assert(exceptions.length===0,'Runtime errors: '+exceptions.join('\n'));
   console.log('PASS: English/pinyin toggles, reset per example, lowered underline, single-line pinyin including long answers at phone widths, no HSK hints, self-review settings/refresh, read-only reveal, one-word decks, remembered/forgotten ratings, duplicate guard, scheduling and mobile/dark layouts.');
  }catch(error){console.error('Browser exceptions:',exceptions);throw error;}finally{if(socket?.readyState===WebSocket.OPEN){try{await send('Browser.close');}catch{}}child.kill();}

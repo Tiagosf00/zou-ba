@@ -9,13 +9,13 @@ export const lightColors = {
  border: '#DEDFD9', borderStrong: '#BBBFB7', shadow: '#555A55', overlay: 'rgba(29,34,31,0.3)', skyline: '#B98A70',
 };
 export const darkColors = {
- primary: '#9AC9BB', primaryStrong: '#9AC9BB', primarySoft: '#2B3E39', accent: '#93C5AD', accentSoft: '#273B32',
- background: '#171C1E', backgroundMuted: '#2A3335', surface: '#202628', surfaceMuted: '#1A2022',
- text: '#E8EDEB', textSecondary: '#B2BEB9', textMuted: '#A1ADA9', onPrimary: '#172521',
- success: '#93C5AD', successSoft: '#273B32', error: '#DDBA7B', errorSoft: '#3B3426',
- border: '#354043', borderStrong: '#53625F', shadow: '#000000', overlay: 'rgba(0,0,0,0.5)', skyline: '#729B8D',
+ primary: '#79C5AF', primaryStrong: '#93D4C1', primarySoft: '#292929', accent: '#95B4CF', accentSoft: '#252525',
+ background: '#141414', backgroundMuted: '#2A2A2A', surface: '#202020', surfaceMuted: '#191919',
+ text: '#F1EDE5', textSecondary: '#BDC5CF', textMuted: '#A0ADBD', onPrimary: '#142A23',
+ success: '#8BCBA5', successSoft: '#252525', error: '#DFB07D', errorSoft: '#2B2B2B',
+ border: '#383838', borderStrong: '#555555', shadow: '#000000', overlay: 'rgba(0,0,0,0.6)', skyline: '#7C9BA7',
 };
-export const radii = { sm: 6, md: 8, lg: 10, pill: 999 };
+export const radii = { sm: 8, md: 12, lg: 14, pill: 999 };
 export const spacing = { xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 };
 export const typography = { headingFont: uiFont, uiFont, studyFont, brandFont: 'Georgia' };
 export const createShadows = () => ({ sm: {}, md: {}, lg: {} });

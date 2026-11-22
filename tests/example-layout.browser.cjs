@@ -48,7 +48,9 @@ const seed={settings:{vocabularyPool:'custom',customCardIds:[word.id,...data.sli
   const layout=await evaluate(`(()=>{const sentence=document.querySelector('[data-testid=word-example-chinese]'),controls=document.querySelector('[data-testid=example-controls]'),source=document.querySelector('[data-testid=example-source]'),panel=document.querySelector('#practice-panel'),detail=Array.from(document.querySelectorAll('[role=button]')).find(e=>e.textContent.includes('Detailed meaning'));return {font:parseFloat(getComputedStyle(sentence).fontSize),sentence:sentence.getBoundingClientRect().toJSON(),controls:controls.getBoundingClientRect().toJSON(),source:source.getBoundingClientRect().toJSON(),panel:panel.getBoundingClientRect().toJSON(),detail:detail.getBoundingClientRect().toJSON(),sourceOutside:!source.closest('#practice-panel')};})()`);
   assert(layout.font>=40,'The Chinese example must lead the typography');
   assert(layout.controls.top>=layout.sentence.bottom,'Controls below the sentence');
-  assert(layout.detail.top>=layout.sentence.bottom,'Detailed meaning below the example');
+  assert(layout.detail.bottom<=layout.sentence.top,'Answer details stay above the separate example card');
+  assert(await evaluate("!document.querySelector('[data-testid=practice-examples]').closest('#practice-panel')"),'Examples have their own card');
+  assert(layout.sentence.top>layout.panel.bottom,'Examples follow the answer card');
   assert(layout.sourceOutside && layout.source.top>=layout.panel.bottom,'Source credit belongs outside the example/card');
   assert(await evaluate("!document.querySelector('[data-testid=word-example-english]')&&!document.querySelector('[data-testid=word-example-pinyin]')"),'Hints hidden initially');
   await shot('example-focus-dark.png');

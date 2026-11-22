@@ -82,9 +82,9 @@ export default function AppNavigation({ state, navigation, desktop }) {
 }
 const styles = StyleSheet.create({
     sidebar: { width: SIDEBAR_WIDTH, padding: 16, paddingTop: 36, borderRightWidth: 1 },
-    item: { borderRadius: 6, gap: 12 },
+    item: { borderRadius: 10, gap: 12 },
     verticalItem: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, minHeight: 46 },
-    mobileItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 50, borderRadius: 6 },
+    mobileItem: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 50, borderRadius: 10 },
     bottom: { flexDirection: 'row', paddingHorizontal: 8, paddingTop: 7, borderTopWidth: 1 },
     more: { position: 'absolute', left: 12, right: 12, bottom: 12, borderWidth: 1, borderRadius: 12, padding: 20, gap: 5 },
 });

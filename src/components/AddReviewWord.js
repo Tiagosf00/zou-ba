@@ -58,7 +58,7 @@ export default function AddReviewWord({ cards, items, reviewCardIds, onAdd, disa
 }
 
 const createStyles = (c, t) => StyleSheet.create({
-    container: { borderWidth: 1, borderColor: c.border, borderRadius: 8, backgroundColor: c.surface, overflow: 'hidden' },
+    container: { borderWidth: 1, borderColor: c.border, borderRadius: 12, backgroundColor: c.surface, overflow: 'hidden' },
     search: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingLeft: 14, paddingRight: 6, minHeight: 50 },
     input: { flex: 1, minWidth: 0, minHeight: 48, color: c.text, fontFamily: t.uiFont, fontSize: 14, outlineStyle: 'none' },
     clear: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
@@ -69,7 +69,7 @@ const createStyles = (c, t) => StyleSheet.create({
     hanzi: { color: c.text, fontFamily: t.studyFont, fontSize: 24, lineHeight: 34 },
     pinyin: { color: c.textSecondary, fontFamily: t.uiFont, fontSize: 15, lineHeight: 24 },
     meaning: { color: c.textSecondary, fontFamily: t.uiFont, fontSize: 14, lineHeight: 22 },
-    add: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: c.borderStrong, borderRadius: 6, paddingHorizontal: 11 },
+    add: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1, borderColor: c.borderStrong, borderRadius: 10, paddingHorizontal: 11 },
     added: { borderColor: 'transparent' },
     addText: { color: c.primaryStrong, fontFamily: t.uiFont, fontSize: 13, fontWeight: '500' },
     empty: { padding: 18, color: c.textSecondary, fontFamily: t.uiFont, fontSize: 14 },
