@@ -12,6 +12,9 @@ const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
 const AUTH_WINDOW_MS = 1000 * 60 * 15;
 const AUTH_ATTEMPT_LIMIT = 10;
 const MAX_STATE_BYTES = 1024 * 1024;
+const MAX_STATE_VERSIONS = 3;
+const STATE_VERSION_INTERVAL_MS = 24 * 60 * 60 * 1000;
+const STATE_VERSION_TTL_MS = 7 * STATE_VERSION_INTERVAL_MS;
 const COMPACT_STATE_ENCODING_HEADER = 'X-Zou-Ba-State-Encoding';
 const COMPACT_STATE_ENCODING_VALUE = 'compact-v2';
 const DEFAULT_ALLOWED_ORIGINS = [
@@ -690,53 +693,93 @@ export const mergeAppStateForSave = (
     };
 };
 
-const saveUserStateVersion = async (env, userId, stateRecord) => {
-    if (!stateRecord?.serialized) {
-        return;
-    }
+const sortStateKeys = (value) => {
+    if (Array.isArray(value)) return value.map(sortStateKeys);
+    if (!value || typeof value !== 'object') return value;
+    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, sortStateKeys(value[key])]));
+};
 
-    await env.DB.prepare(
-        `
-            INSERT INTO user_state_versions (id, user_id, state_json, state_updated_at, created_at)
-            VALUES (?1, ?2, ?3, ?4, ?5)
-        `,
-    )
-        .bind(
-            crypto.randomUUID(),
-            userId,
-            stateRecord.serialized,
-            stateRecord.state?.updatedAt || stateRecord.updatedAt || null,
-            getNowIso(),
+const stateContent = (state) => {
+    const compact = compactCloudState(state);
+    // Sync acknowledgement timestamps are not changes to the user's progress.
+    delete compact.u;
+    delete compact.p.u;
+    if (compact.p.d) {
+        compact.p.d = { ...compact.p.d };
+        delete compact.p.d.updatedAt;
+    }
+    return JSON.stringify(sortStateKeys(compact));
+};
+
+const pruneUserVersions = (env, userId, nowIso) => env.DB.prepare(`
+    DELETE FROM user_state_versions
+    WHERE user_id = ?1 AND (
+        created_at < ?2 OR id IN (
+            SELECT id FROM user_state_versions WHERE user_id = ?1
+            ORDER BY created_at DESC, id DESC LIMIT -1 OFFSET ?3
         )
-        .run();
-};
-
-const saveUserState = async (env, userId, state) => {
-    const existingRecord = await getUserStateRecord(env, userId);
-    const nowIso = getNowIso();
-    const stateToSave = mergeAppStateForSave(existingRecord?.state || null, state, nowIso);
-    const normalizedPayload = normalizeStatePayload(stateToSave);
-
-    if (!normalizedPayload.ok) {
-        throw new Error(normalizedPayload.error);
-    }
-
-    await saveUserStateVersion(env, userId, existingRecord);
-
-    await env.DB.prepare(
-        `
-            INSERT INTO user_states (user_id, state_json, created_at, updated_at)
-            VALUES (?1, ?2, ?3, ?3)
-            ON CONFLICT(user_id) DO UPDATE SET
-                state_json = excluded.state_json,
-                updated_at = excluded.updated_at
-        `,
     )
-        .bind(userId, normalizedPayload.serialized, nowIso)
-        .run();
+`).bind(userId, new Date(Date.parse(nowIso) - STATE_VERSION_TTL_MS).toISOString(), MAX_STATE_VERSIONS);
 
-    return normalizedPayload.state;
+export const saveUserState = async (env, userId, state) => {
+    // Re-merge if another device saves between our read and transactional write.
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        const existingRecord = await getUserStateRecord(env, userId);
+        const nowIso = getNowIso();
+        const stateToSave = mergeAppStateForSave(existingRecord?.state || null, state, nowIso);
+        const normalizedPayload = normalizeStatePayload(stateToSave);
+
+        if (!normalizedPayload.ok) throw new Error(normalizedPayload.error);
+
+        if (existingRecord && stateContent(existingRecord.state) === stateContent(stateToSave)) {
+            // Return a fresh acknowledgement so existing clients settle their pending sync.
+            return normalizedPayload.state;
+        }
+
+        const results = await env.DB.batch([
+            pruneUserVersions(env, userId, nowIso),
+            env.DB.prepare(`
+                INSERT INTO user_state_versions (id, user_id, state_json, state_updated_at, created_at)
+                SELECT ?1, user_id, state_json, updated_at, ?3 FROM user_states
+                WHERE user_id = ?2 AND state_json = ?4
+                    AND NOT EXISTS (
+                        SELECT 1 FROM user_state_versions
+                        WHERE user_id = ?2 AND created_at > ?5
+                    )
+            `).bind(crypto.randomUUID(), userId, nowIso, existingRecord?.serialized || null,
+                new Date(Date.parse(nowIso) - STATE_VERSION_INTERVAL_MS).toISOString()),
+            env.DB.prepare(`
+                INSERT INTO user_states (user_id, state_json, created_at, updated_at)
+                VALUES (?1, ?2, ?3, ?3)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    state_json = excluded.state_json,
+                    updated_at = excluded.updated_at
+                WHERE user_states.state_json = ?4
+            `).bind(userId, normalizedPayload.serialized, nowIso, existingRecord?.serialized || null),
+            pruneUserVersions(env, userId, nowIso),
+        ]);
+
+        if (results[2].meta.changes > 0) return normalizedPayload.state;
+    }
+    throw new Error('Your progress changed on another device. Please sync again.');
 };
+
+export const cleanupStorage = async (env, now = Date.now()) => env.DB.batch([
+    env.DB.prepare(`DELETE FROM user_state_versions WHERE created_at < ?1`)
+        .bind(new Date(now - STATE_VERSION_TTL_MS).toISOString()),
+    env.DB.prepare(`
+        DELETE FROM user_state_versions WHERE id IN (
+            SELECT id FROM (
+                SELECT id, ROW_NUMBER() OVER (
+                    PARTITION BY user_id ORDER BY created_at DESC, id DESC
+                ) AS version_rank FROM user_state_versions
+            ) WHERE version_rank > ?1
+        )
+    `).bind(MAX_STATE_VERSIONS),
+    env.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?1').bind(new Date(now).toISOString()),
+    env.DB.prepare('DELETE FROM auth_attempts WHERE created_at < ?1')
+        .bind(new Date(now - AUTH_WINDOW_MS).toISOString()),
+]);
 
 const getAuthenticatedSession = async (request, env) => {
     const authorizationHeader = request.headers.get('Authorization') || '';
@@ -772,10 +815,10 @@ const getAuthenticatedSession = async (request, env) => {
         `
             UPDATE sessions
             SET last_seen_at = ?2
-            WHERE id = ?1
+            WHERE id = ?1 AND last_seen_at < ?3
         `,
     )
-        .bind(row.session_id, nowIso)
+        .bind(row.session_id, nowIso, new Date(Date.now() - AUTH_WINDOW_MS).toISOString())
         .run();
 
     return {
@@ -1104,6 +1147,9 @@ export const handleRequest = async (request, env) => {
 };
 
 export default {
+    async scheduled(event, env, ctx) {
+        ctx.waitUntil(cleanupStorage(env));
+    },
     async fetch(request, env) {
         try {
             return await handleRequest(request, env);

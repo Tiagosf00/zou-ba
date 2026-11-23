@@ -3,6 +3,9 @@
 	"name": "zou-ba-backend",
 	"main": "src/index.js",
 	"compatibility_date": "2026-04-19",
+	"triggers": {
+		"crons": ["0 3 * * *"]
+	},
 	"vars": {
 		"ALLOWED_ORIGINS": "https://tiagosf00.github.io,http://localhost:8081,http://127.0.0.1:8081"
 	},
